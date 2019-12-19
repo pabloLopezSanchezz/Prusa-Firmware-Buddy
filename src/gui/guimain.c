@@ -37,6 +37,9 @@ extern screen_t *pscreen_test;
 extern screen_t *pscreen_test_gui;
 extern screen_t *pscreen_test_term;
 extern screen_t *pscreen_test_msgbox;
+    #ifdef LOADCELL_HX711
+extern screen_t *pscreen_test_hx711;
+    #endif //LOADCELL_HX711
 extern screen_t *pscreen_test_graph;
 extern screen_t *pscreen_test_temperature;
 extern screen_t *pscreen_home;
@@ -149,6 +152,9 @@ void gui_run(void) {
     screen_register(pscreen_test_msgbox);
     screen_register(pscreen_test_graph);
     screen_register(pscreen_test_temperature);
+    #ifdef LOADCELL_HX711
+    screen_register(pscreen_test_hx711);
+    #endif //LOADCELL_HX711
     screen_register(pscreen_home);
     screen_register(pscreen_filebrowser);
     screen_register(pscreen_printing);

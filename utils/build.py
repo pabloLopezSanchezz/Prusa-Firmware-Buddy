@@ -58,6 +58,7 @@ class Printer(Enum):
     """Represents the -DPRINTER CMake option."""
 
     MINI = 'MINI'
+    MK4 = 'MK4'
 
 
 class Bootloader(Enum):

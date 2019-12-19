@@ -20,7 +20,7 @@ endif()
 # cmake .. <other options> -DPRINTER=MINI
 # ~~~
 
-set(PRINTER_VALID_OPTS "MINI")
+set(PRINTER_VALID_OPTS "MINI" "MK4")
 set(MOTHERBOARD_VALID_OPTS "1823")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
@@ -129,7 +129,7 @@ target_compile_definitions(
 # Configure Arduino Core
 #
 
-if(${PRINTER} STREQUAL "MINI")
+if(${PRINTER} STREQUAL "MINI" OR ${PRINTER} STREQUAL "MK4")
   set(ARDUINO_CORE_VARIANT "2209")
   set(ARDUINO_CORE_TARGET "STM32F4xx")
 else()
@@ -141,7 +141,7 @@ endif()
 #
 
 # STM32F4::HAL
-if(${PRINTER} STREQUAL "MINI")
+if(${PRINTER} STREQUAL "MINI" OR ${PRINTER} STREQUAL "MK4")
   set(STM32F4_HAL_TARGET "STM32F407xx")
 else()
   message(FATAL_ERROR "Don't know how to configure STM32F4::HAL for printer ${PRINTER}")
@@ -263,8 +263,12 @@ if(GENERATE_BBF)
   message(STATUS "Configured to generate .bbf version of the firmware.")
   message(STATUS "Signing Key: ${SIGNING_KEY}")
 
-  if(PRINTER STREQUAL "MINI")
+  if(PRINTER STREQUAL "MK4")
+    set(PRINTER_TYPE "1")
+  elseif(PRINTER STREQUAL "MINI")
     set(PRINTER_TYPE "2")
+  elseif(PRINTER STREQUAL "XL")
+    set(PRINTER_TYPE "3")
   else()
     message(FATAL_ERROR "Don't know how to encode printer type for ${PRINTER}.")
   endif()
@@ -342,6 +346,7 @@ target_sources(
           src/common/marlin_events.c
           src/common/marlin_errors.c
           src/common/uartrxbuff.c
+          src/common/loadcell_hx711.c
           src/common/Marlin_CardReader.cpp
           src/common/appmain.cpp
           src/common/sim_heater.cpp
@@ -393,6 +398,7 @@ target_sources(
           src/gui/screen_watchdog.c
           src/gui/screen_menu_move.c
           src/gui/screen_lan_settings.c
+          src/gui/test/screen_test_HX711.c
           src/gui/test/screen_test.c
           src/gui/test/screen_test_disp_mem.c
           src/gui/test/screen_test_gui.c

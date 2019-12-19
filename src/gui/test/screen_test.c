@@ -10,6 +10,9 @@ extern screen_t *pscreen_test_term;
 extern screen_t *pscreen_test_msgbox;
 extern screen_t *pscreen_test_graph;
 extern screen_t *pscreen_test_temperature;
+#ifdef LOADCELL_HX711
+extern screen_t *pscreen_test_hx711;
+#endif //LOADCELL_HX711
 extern screen_t *pscreen_test_disp_mem;
 
 #pragma pack(push)
@@ -25,6 +28,9 @@ typedef struct
     window_text_t tst_msgbox;
     window_text_t tst_graph;
     window_text_t tst_temperature;
+#ifdef LOADCELL_HX711
+    window_text_t tst_probe;
+#endif //LOADCELL_HX711
     window_text_t tst_disp_memory;
     int8_t id_tim;
     int8_t id_tim1;
@@ -81,6 +87,14 @@ void screen_test_init(screen_t *screen) {
     window_set_tag(id, 6);
     y += 22;
 
+#ifdef LOADCELL_HX711
+    id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(10, y, 220, 22), &(pd->tst_probe));
+    window_set_text(id, (const char *)"Probe");
+    window_enable(id);
+    window_set_tag(id, 7);
+    y += 22;
+#endif //LOADCELL_HX711
+
     id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(10, y, 220, 22), &(pd->tst_disp_memory));
     window_set_text(id, (const char *)"Disp. R/W");
     window_enable(id);
@@ -118,6 +132,11 @@ int screen_test_event(screen_t *screen, window_t *window, uint8_t event, void *p
         case 6:
             screen_open(pscreen_test_temperature->id);
             return 1;
+#ifdef LOADCELL_HX711
+        case 7:
+            screen_open(pscreen_test_hx711->id);
+            return 1;
+#endif //LOADCELL_HX711
         case 8:
             screen_open(pscreen_test_disp_mem->id);
             return 1;

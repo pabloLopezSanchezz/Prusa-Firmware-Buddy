@@ -14,9 +14,9 @@ const uint8_t eeprom_map_v1[] = {
     VARIANT8_UI16, // EEVAR_VERSION
     VARIANT8_UI8, // EEVAR_FILAMENT_TYPE
     VARIANT8_UI32, // EEVAR_FILAMENT_COLOR
-    VARIANT8_FLT, //
-    VARIANT8_FLT, //
-    VARIANT8_FLT, //
+    VARIANT8_FLT, // EEVAR_LOADCELL_SCALE
+    VARIANT8_FLT, // EEVAR_LOADCELL_THRS
+    VARIANT8_FLT, // EEVAR_LOADCELL_HYST
     VARIANT8_UI8, // EEVAR_RUN_SELFTEST
     VARIANT8_UI8, // EEVAR_RUN_XYZCALIB
     VARIANT8_UI8, // EEVAR_RUN_FIRSTLAY
@@ -27,9 +27,9 @@ const char *eeprom_var_name[] = {
     "VERSION",
     "FILAMENT_TYPE",
     "FILAMENT_COLOR",
-    "UNUSED_1",
-    "UNUSED_2",
-    "UNUSED_3",
+    "LOADCELL_SCALE",
+    "LOADCELL_THRS",
+    "LOADCELL_HYST",
     "RUN_SELFTEST",
     "RUN_XYZCALIB",
     "RUN_FIRSTLAY",
@@ -132,11 +132,11 @@ variant8_t eeprom_var_default(uint8_t id) {
         return variant8_ui8(0);
     case EEVAR_FILAMENT_COLOR:
         return variant8_ui32(0);
-    case EEVAR_UNUSED_1:
+    case EEVAR_LOADCELL_SCALE:
         return variant8_flt(0.0100);
-    case EEVAR_UNUSED_2:
+    case EEVAR_LOADCELL_THRS:
         return variant8_flt(-40);
-    case EEVAR_UNUSED_3:
+    case EEVAR_LOADCELL_HYST:
         return variant8_flt(20);
     case EEVAR_RUN_SELFTEST:
         return variant8_ui8(1);
@@ -174,11 +174,11 @@ int eeprom_var_sprintf(char *str, uint8_t id, variant8_t var) {
         return sprintf(str, "%u", (unsigned int)var.ui8);
     case EEVAR_FILAMENT_COLOR:
         return sprintf(str, "0x%08lx", (unsigned long)var.ui32);
-    case EEVAR_UNUSED_1:
+    case EEVAR_LOADCELL_SCALE:
         return sprintf(str, "%.4f", (double)var.flt);
-    case EEVAR_UNUSED_2:
+    case EEVAR_LOADCELL_THRS:
         return sprintf(str, "%.1f", (double)var.flt);
-    case EEVAR_UNUSED_3:
+    case EEVAR_LOADCELL_HYST:
         return sprintf(str, "%.1f", (double)var.flt);
     case EEVAR_RUN_SELFTEST:
     case EEVAR_RUN_XYZCALIB:

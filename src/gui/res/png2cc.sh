@@ -42,8 +42,14 @@ png2cc wizard_icon_autohome
 png2cc wizard_icon_measure
 png2cc wizard_icon_search
 
+png2cc statusscreen_logo_prusamk3
+png2cc statusscreen_logo_prusamk3_debug
 png2cc statusscreen_logo_prusamini
 png2cc statusscreen_logo_prusamini_debug
+png2cc statusscreen_logo_prusaxl
+png2cc statusscreen_logo_prusaxl_debug
+png2cc statusscreen_logo_prusamk4
+png2cc statusscreen_logo_prusamk4_debug
 
 png2cc icon_pepa_psod
 

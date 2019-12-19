@@ -12,6 +12,8 @@ pipeline {
                     configurations = [
                         [printer: "mini", build_type: "release", bootloader: "no"],
                         [printer: "mini", build_type: "release", bootloader: "empty"],
+                        [printer: "mk4", build_type: "release", bootloader: "no"],
+                        [printer: "mk4", build_type: "release", bootloader: "empty"],
                     ]
                     configurations.each { config ->
                         stage("Build - ${config.printer},${config.build_type},${config.bootloader}boot") {

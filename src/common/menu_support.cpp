@@ -26,15 +26,14 @@ void menu_support() {
     int ver_sub = FW_VERSION % 10;
     const char *stages[] = { "pre-alpha", "alpha", "beta", "RC", "final" };
     sprintf(version, " %d.%d.%d %s", ver_maj, ver_min, ver_sub, (char *)stages[FW_STAGENR]);
-    #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
-    const char *printer = "MINI";
-    #else
-    const char *printer = "???";
-    #endif
+    const char *printers[] = { "???", "MK3", "MINI", "XL", "MK4" };
+    unsigned int printer_type = PRINTER_TYPE;
+    if (printer_type > PRINTER_PRUSA_MK4)
+        printer_type = 0;
     #ifdef _DEBUG
-    sprintf(build, " %d%s (DEBUG_%s)", (int)FW_BUILDNR, (char *)FW_BUILDSX, printer);
+    sprintf(build, " %d%s (DEBUG_%s)", (int)FW_BUILDNR, (char *)FW_BUILDSX, printers[printer_type]);
     #else //_DEBUG
-    sprintf(build, " %d%s (%s)", (int)FW_BUILDNR, (char *)FW_BUILDSX, printer);
+    sprintf(build, " %d%s (%s)", (int)FW_BUILDNR, (char *)FW_BUILDSX, printers[printer_type]);
     #endif //_DEBUG
     STATIC_ITEM_P("version:            ");
     STATIC_ITEM(version);

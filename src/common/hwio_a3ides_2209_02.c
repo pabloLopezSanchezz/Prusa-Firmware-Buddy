@@ -12,6 +12,7 @@
 #include "sim_bed.h"
 #include "sim_motion.h"
 #include "Arduino.h"
+#include "loadcell_hx711.h"
 #include "timer_defaults.h"
 #include "hwio_pindef.h"
 #include "filament_sensor.h"
@@ -630,7 +631,15 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return sim_motion_get_diag(2);
 #else //SIM_MOTION
         case PIN_Z_MIN:
+    #ifdef LOADCELL_HX711
+        #ifdef LOADCELL_LATENCY_TEST
+            if (loadcell_probe)
+                gpio_set(PC13, 0);
+        #endif //LOADCELL_LATENCY_TEST
+            return loadcell_probe;
+    #else //LOADCELL_HX711
             return hwio_di_get_val(_DI_Z_MIN);
+    #endif //LOADCELL_HX711
         case PIN_E_DIAG:
             return hwio_di_get_val(_DI_E_DIAG);
         case PIN_Y_DIAG:
@@ -647,7 +656,11 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
         case PIN_BTN_EN2:
             return hwio_di_get_val(_DI_BTN_EN2) || !hwio_jogwheel_enabled;
         case PIN_FSENSOR:
-            return hwio_di_get_val(_DI_FSENSOR);
+#ifdef FILAMENT_SENSOR_HX711
+            return fsensor_probe;
+#else //FILAMENT_SENSOR_HX711
+            return !fs_did_filament_runout();
+#endif //FILAMENT_SENSOR_HX711
         case PIN_Z_DIR:
             return hwio_do_get_val(_DO_Z_DIR);
         default:

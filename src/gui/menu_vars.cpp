@@ -7,6 +7,10 @@
 
 #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
     #include "gui_config_mini.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+    #include "gui_config_mk4.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
+    #include "gui_config_xl.h"
 #endif
 
 extern "C" {
@@ -31,7 +35,12 @@ const int32_t nozzle_range[3] = { 0, (HEATER_0_MAXTEMP - 15) * 1000, 1000 };
 const int32_t heatbed_range[3] = { 0, BED_MAXTEMP * 1000, 1000 };
 const int32_t printfan_range[3] = { 0, 255000, 1000 };
 const int32_t flowfact_range[3] = { 50000, 150000, 1000 };
+
+#if ((PRINTER_TYPE == PRINTER_PRUSA_MK4) || (PRINTER_TYPE == PRINTER_PRUSA_XL))
+const int32_t feedrate_range[3] = { 50000, 1000000, 1000 };
+#else
 const int32_t feedrate_range[3] = { 10000, 255000, 1000 };
+#endif
 
 const int32_t move_x[3] = { (int32_t)(X_MIN_POS * 1000), (int32_t)(X_MAX_POS * 1000), 1000 };
 const int32_t move_y[3] = { (int32_t)(Y_MIN_POS * 1000), (int32_t)(Y_MAX_POS * 1000), 1000 };

@@ -25,7 +25,10 @@
 
 //--------------------------------------
 //printer variants
+#define PRINTER_PRUSA_MK3 1 //MK3 printer
 #define PRINTER_PRUSA_MINI 2 //MINI printer
+#define PRINTER_PRUSA_XL 3 //XL printer
+#define PRINTER_PRUSA_MK4 4 //MK3 printer with new extruder
 
 #ifndef PRINTER_TYPE
     #error "macro PRINTER_TYPE not defined"
@@ -59,6 +62,8 @@
         #define BOARD A3IDES2209_REV02
     #endif
 #endif //MOTHERBOARD
+
+//#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
 
 #ifdef BOARD
 
@@ -103,8 +108,15 @@
 //display PSOD instead of BSOD
 //#define PSOD_BSOD
 
-//PID calibration service screen
-#define PIDCALIBRATION
+//PID calibration service screen (disabled for XL)
+#if (PRINTER_TYPE != PRINTER_PRUSA_XL)
+    #define PIDCALIBRATION
+#endif
+
+//Enabled Z calibration (MK3, MK4, XL)
+#if ((PRINTER_TYPE == PRINTER_PRUSA_MK3) || (PRINTER_TYPE == PRINTER_PRUSA_MK4) || (PRINTER_TYPE == PRINTER_PRUSA_XL))
+    #define WIZARD_Z_CALIBRATION
+#endif
 
 //guiconfig.h included with config
 #include "guiconfig.h"

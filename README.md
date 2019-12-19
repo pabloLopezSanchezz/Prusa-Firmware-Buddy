@@ -22,10 +22,10 @@ Run `python utils/build.py`. The binaries are then going to be stored under `./b
 
 #### Examples:
 
-Build the firmware for MINI in `debug` mode:
+Build the firmware for MINI and MK4 in `debug` mode:
 
 ```bash
-python utils/build.py --printer mini --build-type debug
+python utils/build.py --printer mini,mk4 --build-type debug
 ```
 
 Build _final_ version for all printers and create signed `.bbf` versions:

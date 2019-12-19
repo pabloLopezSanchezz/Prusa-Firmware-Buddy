@@ -16,6 +16,19 @@
 #define FILAMENT_COLOR_G 0x402
 #define FILAMENT_COLOR_B 0x403
 
+//Load cell HX711
+#define CALIBRATION_FACTOR_PROBE_ADDRESS 0x404
+#define PROBE_HVAL_PROBE_ADDRESS 0x405
+#define HYSTERESIS_PROBE_ADDRESS 0x406
+
+//filament sensor HX711
+#define CALIBRATION_FACTOR_FILAMENT_ADDRESS 0x407
+#define PROBE_HVAL_FILAMENT_ADDRESS 0x408
+#define HYSTERESIS_FILAMENT_ADDRESS 0x409
+
+//HX711 mode(invert/normal)
+#define HX711_MODE_ADRESS 0x40A
+
 //firmware update flag
 #define FW_UPDATE_FLAG_ADDRESS 0x40B
 
@@ -36,6 +49,11 @@ typedef struct {
     uint8_t filament_r;
     uint8_t filament_g; //If you added a variable/s to the EEPROM make sure you increment EEPROM_VER macro
     uint8_t filament_b; //and add it/them to eeprom_initialize() and eeprom_factory_reset() accordingly
+    float calib_factor_probe;
+    float hval_probe;
+    float hysteresis_probe;
+    uint8_t HX711_mode;
+
 } EEPROM_t;
 
 //extern EEPROM_t * const EEPROM;

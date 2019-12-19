@@ -20,6 +20,10 @@ void eeprom_initialize(EEPROM_t *ptr) { //fill up next condition if you add a va
             ptr->filament_r = 0;
             ptr->filament_g = 0;
             ptr->filament_b = 0;
+            ptr->calib_factor_probe = 0;
+            ptr->hval_probe = 0;
+            ptr->hysteresis_probe = 0;
+            ptr->HX711_mode = 0;
         }
         /*-----------PREPARED_FOR_NEXT_VERSIONS-------------
 		if(ptr->eeprom_version <= EEPROM_VER_OFFSET + 1)
@@ -52,6 +56,10 @@ void eeprom_factory_reset(EEPROM_t *ptr) {
     ptr->filament_r = 0;
     ptr->filament_g = 0;
     ptr->filament_b = 0;
+    ptr->calib_factor_probe = 0;
+    ptr->hval_probe = 0;
+    ptr->hysteresis_probe = 0;
+    ptr->HX711_mode = 0;
 
     eeprom_check_sum(ptr);
 }
