@@ -1,3 +1,16 @@
+# Aktuální pokyny z #fw channelu na slacku:
+
+@channel První fáze velkého třesku dokonána:
+Repozitář https://github.com/prusa3d/Marlin_A3ides je zarchivovaný (read-only).
+Pro vývoj teď začněte používat nový repozitář https://github.com/prusa3d/Prusa-Firmware-Buddy-Private. Měli byste tam mít přístup. Pokud ne, napiště mi DM.
+V tomto repozitáři jsou dvě větve: master a private. master je de facto public (bude se automaticky zrcadlit s master větví public repa). Vývoj MINI tedy probíhá vůči této větvi! Naopak, pokud děláte na něčem, co je nesmí ven (MK4/XL), tak dělejte PR vůči private větvi.
+
+Toto není konečný stav, takže stay tuned :)
+
+
+-----
+
+
 # A3ides
 
 Firmware for the Original Prusa 3D Printers based on 32-bit ARM microcontrollers.
