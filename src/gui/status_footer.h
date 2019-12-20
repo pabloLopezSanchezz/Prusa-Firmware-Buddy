@@ -35,9 +35,7 @@ typedef struct
     char text_prnspeed[5]; // "999%"
     char text_z_axis[7]; // "999.95"
 
-#ifdef LCD_HEATBREAK_TO_FILAMENT
     char text_heatbreak[5]; // "99°C"
-#endif
 
     uint32_t last_timer_repaint_temperatures, last_timer_repaint_z;
 
