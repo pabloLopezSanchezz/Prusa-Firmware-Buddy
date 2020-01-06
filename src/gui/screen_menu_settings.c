@@ -15,8 +15,10 @@ extern screen_t screen_menu_temperature;
 extern screen_t screen_menu_move;
 #ifdef _DEBUG
 extern screen_t screen_menu_service;
-extern screen_t screen_test;
 #endif //_DEBUG
+#ifdef PRINTER_PRUSA_MK4
+extern screen_t screen_test;
+#endif
 extern osThreadId webServerTaskHandle;
 
 const char *settings_opt_enable_disable[] = { "Off", "On", NULL };
@@ -29,8 +31,10 @@ typedef enum {
     MI_FACTORY_DEFAULTS,
 #ifdef _DEBUG
     MI_SERVICE,
-    MI_TEST,
 #endif //_DEBUG
+#ifdef PRINTER_PRUSA_MK4
+    MI_TEST,
+#endif
     MI_FW_UPDATE,
     MI_FILAMENT_SENSOR,
     MI_TIMEOUT,
@@ -44,8 +48,10 @@ const menu_item_t _menu_settings_items[] = {
     { { "Factory Reset", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
 #ifdef _DEBUG
     { { "Service", 0, WI_LABEL }, &screen_menu_service },
-    { { "Test", 0, WI_LABEL }, &screen_test },
 #endif //_DEBUG
+#ifdef PRINTER_PRUSA_MK4
+    { { "Test", 0, WI_LABEL }, &screen_test },
+#endif
     { { "FW Update", 0, WI_LABEL }, &screen_menu_fw_update },
     { { "Fil. sens.", 0, WI_SWITCH, .wi_switch_select = { 0, settings_opt_enable_disable } }, SCREEN_MENU_NO_SCREEN },
     { { "Timeout", 0, WI_SWITCH, .wi_switch_select = { 0, settings_opt_enable_disable } }, SCREEN_MENU_NO_SCREEN },

@@ -98,7 +98,13 @@ int screen_splash_event(screen_t *screen, window_t *window, uint8_t event, void 
         uint8_t run_xyzcalib = eeprom_get_var(EEVAR_RUN_XYZCALIB).ui8;
         uint8_t run_firstlay = eeprom_get_var(EEVAR_RUN_FIRSTLAY).ui8;
         uint8_t run_wizard = (run_selftest && run_xyzcalib && run_firstlay) ? 1 : 0;
-        if ((run_wizard || run_firstlay)) {
+		if (
+		#ifdef DISABLE_WIZARD_CHECK_STARTUP
+			0
+		#else
+		 (run_wizard || run_firstlay)
+		#endif
+		 ) {
             if (run_wizard) {
                 screen_stack_push(pscreen_home->id);
                 wizard_run_complete();

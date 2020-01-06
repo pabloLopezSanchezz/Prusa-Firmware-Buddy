@@ -7,8 +7,10 @@
 
 #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
     #include "gui_config_mini.h"
+	#include "Configuration_A3ides_2209_MINI_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     #include "gui_config_mk4.h"
+	#include "Configuration_A3ides_2209_MK4_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
     #include "gui_config_xl.h"
 #endif
@@ -92,3 +94,15 @@ constexpr const char Y_home_gcode[] = {
     nth_char(Y_home, 8)
 };
 }
+#ifdef PRINTER_PRUSA_MK4
+constexpr const int32_t filament_change_slow_load_lenght = 30;
+constexpr const int32_t filament_change_fast_load_lenght = 60;
+constexpr const int32_t filament_change_slow_purge_lenght = 20;
+#else
+constexpr const int32_t filament_change_slow_load_lenght = FILAMENT_CHANGE_SLOW_LOAD_LENGTH;
+constexpr const int32_t filament_change_fast_load_lenght = FILAMENT_CHANGE_FAST_LOAD_LENGTH;
+constexpr const int32_t filament_change_slow_purge_lenght = 40;
+#endif
+
+constexpr const int32_t filament_change_full_load_lenght = filament_change_fast_load_lenght + filament_change_slow_load_lenght;
+constexpr const int32_t filament_change_full_purge_load_lenght = filament_change_full_load_lenght + filament_change_slow_purge_lenght;
