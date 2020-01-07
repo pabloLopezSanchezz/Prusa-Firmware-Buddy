@@ -29,6 +29,7 @@
 #define PRINTER_PRUSA_MINI 2 //MINI printer
 #define PRINTER_PRUSA_XL 3 //XL printer
 #define PRINTER_PRUSA_MK4 4 //MK3 printer with new extruder
+#define PRINTER_PRUSA_iXL 5 //iXL printer with new extruder
 
 #ifndef PRINTER_TYPE
     #error "macro PRINTER_TYPE not defined"
