@@ -26,6 +26,8 @@
         #include "Configuration_A3ides_2209_XL.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
         #include "Configuration_A3ides_2209_MK4.h"
+	#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+        #include "Configuration_A3ides_2209_iXL.h"
     #else
         #error "Unknown PRINTER_TYPE!"
     #endif
@@ -40,6 +42,8 @@
         #include "Configuration_A3ides_2209_XL.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
         #include "Configuration_A3ides_2209_MK4.h"
+    #elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+        #include "Configuration_A3ides_2209_iXL.h"
     #else
         #error "Unknown PRINTER_TYPE!"
     #endif
