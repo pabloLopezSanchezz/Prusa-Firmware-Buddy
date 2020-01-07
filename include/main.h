@@ -62,7 +62,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern UART_HandleTypeDef huart1;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

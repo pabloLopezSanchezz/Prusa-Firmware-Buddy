@@ -50,6 +50,7 @@ add_library(
   Marlin/Marlin/src/gcode/control/M85.cpp
   Marlin/Marlin/src/gcode/control/M86.cpp
   Marlin/Marlin/src/gcode/control/M999.cpp
+  Marlin/Marlin/src/gcode/control/R.cpp
   Marlin/Marlin/src/gcode/control/T.cpp
   Marlin/Marlin/src/gcode/eeprom/M500-M504.cpp
   Marlin/Marlin/src/gcode/feature/advance/M900.cpp
