@@ -17,6 +17,16 @@ printer:
       long: Original Prusa MINI
       setting:
         PRINTER: MINI
+    mk4:
+      short: MK4
+      long: Original Prusa MK4
+      setting:
+        PRINTER: MK4
+    xl:
+      short: XL
+      long: Original Prusa XL
+      setting:
+        PRINTER: XL
 bootloader:
   default: empty
   choices:
