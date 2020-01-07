@@ -78,7 +78,7 @@ void screen_menu_version_info_init(screen_t *screen) {
     //=============SET TEXT================
 
     sprintf(version_info_str,
-        "Firmware version\n%s\n\nBootloader version\n%d.%d.%d\n\nBuddy board\n%d.%d.%d\n%s",
+    		"Firmware version\n%s\n\nBootloader version\n%d.%d.%d\n\nBuddy board FAN 200\n%d.%d.%d\n%s",
         FW_version_str,
         bootloader->major, bootloader->minor, bootloader->patch,
         board_version[0], board_version[1], board_version[2],

@@ -63,7 +63,7 @@
     #endif
 #endif //MOTHERBOARD
 
-#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
+//#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
 
 #ifdef BOARD
 
@@ -90,6 +90,10 @@
 //--------------------------------------
 //ETHERNET configuration
 #define ETHERNET
+
+//--------------------------------------
+// Disable wizard startup check on splash screen
+#define DISABLE_WIZARD_CHECK_STARTUP
 
 //--------------------------------------
 //LCDSIM configuration

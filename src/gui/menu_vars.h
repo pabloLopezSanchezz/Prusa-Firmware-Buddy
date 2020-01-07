@@ -49,6 +49,11 @@ extern const char *const gcode_nozzle_park;
 extern const char X_home_gcode[];
 extern const char Y_home_gcode[];
 
+extern const int32_t filament_change_slow_load_lenght;
+extern const int32_t filament_change_fast_load_lenght;
+extern const int32_t filament_change_full_load_lenght;
+extern const int32_t filament_change_slow_purge_lenght;
+extern const int32_t filament_change_full_purge_load_lenght;
 #ifdef __cplusplus
 }
 #endif //__cplusplus

@@ -108,7 +108,7 @@ static dlg_result_t _gui_dlg_load(void) {
     _dlg_ld_vars ld_vars;
     memset(&ld_vars, '\0', sizeof(ld_vars));
     ld_vars.z_min_extr_pos = 30;
-    return _gui_dlg(&cl_load, &ld_vars, 600000); //10min
+    return _gui_dlg(&cl_load, &ld_vars, 270000); //10min //600000
 }
 
 dlg_result_t gui_dlg_load(void) {
@@ -149,24 +149,24 @@ static int f_LD_WAIT_E_POS__INSERTING(_dlg_vars *p_vars, _dlg_ld_vars *additiona
         marlin_set_wait_user(0);
     }
     //wait E pos >= 40
-    if (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= 40)
+    if (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= filament_change_slow_load_lenght)  //30 mk4
         p_vars->phase++;
-    return 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E]) / 40;
+    return 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E]) / filament_change_slow_load_lenght;  //30 mk4
 }
 
 static int f_LD_WAIT_E_POS__LOADING_TO_NOZ(_dlg_vars *p_vars, _dlg_ld_vars *additional_vars) {
     //wait E pos >= 360
-    if (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= 360)
+    if (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= filament_change_full_load_lenght) //360    //60mk4
         p_vars->phase++;
-    float ret = 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] - 40) / (360 - 40);
+    float ret = 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] - filament_change_slow_load_lenght) / (filament_change_full_load_lenght - filament_change_slow_load_lenght); //40 (360 - 40)  //30) / (60 - 30)mk4
     return ret;
 }
 
 static int f_LD_WAIT_E_POS__PURGING(_dlg_vars *p_vars, _dlg_ld_vars *additional_vars) {
     //wait E pos >= 400
-    if ((additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= 400) && (marlin_motion() == 0))
+    if ((additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= filament_change_full_purge_load_lenght) && (marlin_motion() == 0)) //400 //110mk4
         p_vars->phase++;
-    return 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] - 360) / (400 - 360);
+    return 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] - filament_change_full_load_lenght) / (filament_change_full_purge_load_lenght - filament_change_full_load_lenght); //360 (400 - 360) //mk4 60 / (110 - 60)
 }
 
 static int f_LD_CHECK_MARLIN_EVENT(_dlg_vars *p_vars, _dlg_ld_vars *additional_vars) {
@@ -229,9 +229,9 @@ static const _dlg_state load_states[] = {
     { 10000, window_dlg_statemachine_draw_progress_tot, "Waiting for temp.", &bt_stop_ena, (dlg_state_func)f_SH_WAIT_TEMP },
     { 0, window_dlg_statemachine_draw_progress_tot, "Press CONTINUE and\npush filament into\nthe extruder.", &bt_cont_ena, (dlg_state_func)f_LD_INSERT_FILAMENT },
     { 0, window_dlg_statemachine_draw_progress_tot, "Inserting", &bt_stop_dis, (dlg_state_func)f_LD_GCODE },
-    { 6000, window_dlg_statemachine_draw_progress_tot, "Inserting", &bt_stop_dis, (dlg_state_func)f_LD_WAIT_E_POS__INSERTING },
-    { 10000, window_dlg_statemachine_draw_progress_tot, "Loading to nozzle", &bt_stop_dis, (dlg_state_func)f_LD_WAIT_E_POS__LOADING_TO_NOZ },
-    { 10000, window_dlg_statemachine_draw_progress_tot, "Purging", &bt_stop_dis, (dlg_state_func)f_LD_WAIT_E_POS__PURGING },
+    { 6000, window_dlg_statemachine_draw_progress_tot, "Inserting", &bt_stop_dis, (dlg_state_func)f_LD_WAIT_E_POS__INSERTING }, //6000
+    { 10000, window_dlg_statemachine_draw_progress_tot, "Loading to nozzle", &bt_stop_dis, (dlg_state_func)f_LD_WAIT_E_POS__LOADING_TO_NOZ }, //10000
+    { 10000, window_dlg_statemachine_draw_progress_tot, "Purging", &bt_stop_dis, (dlg_state_func)f_LD_WAIT_E_POS__PURGING }, //10000
     { 0, window_dlg_statemachine_draw_progress_tot, "Purging", &bt_none, (dlg_state_func)f_LD_CHECK_MARLIN_EVENT },
     { 0, window_dlg_statemachine_draw_progress_none, "Is color correct?", &bt_yesno_ena, (dlg_state_func)f_LD_PURGE_USER_INTERACTION }, //can end (state += 2)
     { 0, window_dlg_statemachine_draw_progress_part, "Purging", &bt_yesno_dis, (dlg_state_func)f_LD_PURGE_SHOW_PROGRESS }, //can jump back (state --)

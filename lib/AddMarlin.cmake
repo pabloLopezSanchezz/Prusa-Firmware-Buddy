@@ -82,6 +82,7 @@ add_library(
   Marlin/Marlin/src/gcode/motion/G0_G1.cpp
   Marlin/Marlin/src/gcode/motion/G2_G3.cpp
   Marlin/Marlin/src/gcode/motion/G4.cpp
+  Marlin/Marlin/src/gcode/motion/G5.cpp
   Marlin/Marlin/src/gcode/motion/M290.cpp
   Marlin/Marlin/src/gcode/parser.cpp
   Marlin/Marlin/src/gcode/probe/G30.cpp
