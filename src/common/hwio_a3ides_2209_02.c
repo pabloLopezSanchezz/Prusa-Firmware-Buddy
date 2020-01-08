@@ -45,7 +45,6 @@ extern void Error_Handler(void);
 const uint32_t _di_pin32[] = {
     PIN_Z_MIN, // PA8
     PIN_E_DIAG, // PA15
-    PIN_FSENSOR, // PB4
     PIN_Y_DIAG, // PE1
     PIN_X_DIAG, // PE2
     PIN_Z_DIAG, // PE3
@@ -533,6 +532,10 @@ void hwio_beeper_tone(float frq, uint32_t del) {
 void hwio_beeper_tone2(float frq, uint32_t del, float vol) {
     hwio_beeper_set_vol(vol);
     hwio_beeper_tone(frq, del);
+}
+
+void hwio_beeper_notone(void) {
+    hwio_beeper_set_pwm(0, 0);
 }
 
 void hwio_update_1ms(void) {
