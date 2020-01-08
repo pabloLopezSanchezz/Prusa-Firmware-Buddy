@@ -33,6 +33,10 @@ void window_logo_draw(window_logo_t *window) {
         const char chr = '\4';
         const uint16_t left = 38;
         const uint16_t right = 83;
+#elif PRINTER_TYPE == PRINTER_PRUSA_iXL
+        const char chr = '\4';
+        const uint16_t left = 38;
+        const uint16_t right = 83;
 #endif
 
         // ORIGINAL

@@ -28,6 +28,12 @@
     #else //_DEBUG
         #include "res/cc/png_statusscreen_logo_prusaxl.c" //IDR_PNG_status_logo_prusa_prn
     #endif //_DEBUG
+#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+    #ifdef _DEBUG
+        #include "res/cc/png_statusscreen_logo_prusaxl_debug.c" //IDR_PNG_status_logo_prusa_prn
+    #else //_DEBUG
+        #include "res/cc/png_statusscreen_logo_prusaxl.c" //IDR_PNG_status_logo_prusa_prn
+    #endif //_DEBUG
 #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     #ifdef _DEBUG
         #include "res/cc/png_statusscreen_logo_prusamk4_debug.c" //IDR_PNG_status_logo_prusa_prn
