@@ -15,28 +15,33 @@ printer:
     mini:
       short: MINI
       long: Original Prusa MINI
-      setting:
+      settings:
         PRINTER: MINI
     mk4:
       short: MK4
       long: Original Prusa MK4
-      setting:
+      settings:
         PRINTER: MK4
     xl:
       short: XL
       long: Original Prusa XL
-      setting:
+      settings:
         PRINTER: XL
+    ixl:
+      short: iXL
+      long: Original Prusa iXL
+      settings:
+        PRINTER: iXL
 bootloader:
   default: empty
   choices:
     empty:
       short: EMPTYBOOT
       long: Reserve space for bootloader
-      setting:
+      settings:
         BOOTLOADER: EMPTY
     no:
       short: NOBOOT
       long: Without bootloader
-      setting:
+      settings:
         BOOTLOADER: 'NO'
