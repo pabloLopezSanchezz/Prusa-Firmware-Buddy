@@ -19,9 +19,10 @@ re_semver = re.compile(
 
 
 class PrinterType(Enum):
-    MK = 1  # somewhen in the future
+    MK4 = 1
     MINI = 2
     XL = 3
+    iXL = 4
 
 
 class UndefinedSha256():
