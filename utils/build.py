@@ -59,6 +59,8 @@ class Printer(Enum):
 
     MINI = 'MINI'
     MK4 = 'MK4'
+    XL = 'XL'
+    iXL = 'iXL'
 
 
 class Bootloader(Enum):
