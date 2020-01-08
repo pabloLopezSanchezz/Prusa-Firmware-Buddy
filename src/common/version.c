@@ -9,6 +9,8 @@
     #define FWNAME "Buddy_XL";
 #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     #define FWNAME "Buddy_MK4";
+#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+    #define FWNAME "Buddy_iXL"
 #endif //(PRINTER_TYPE ==
 
 #define _STR(x) #x

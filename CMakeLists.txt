@@ -20,7 +20,7 @@ endif()
 # cmake .. <other options> -DPRINTER=MINI
 # ~~~
 
-set(PRINTER_VALID_OPTS "MINI" "MK4")
+set(PRINTER_VALID_OPTS "MINI" "MK4" "XL" "iXL")
 set(MOTHERBOARD_VALID_OPTS "1823")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
@@ -129,7 +129,8 @@ target_compile_definitions(
 # Configure Arduino Core
 #
 
-if(${PRINTER} STREQUAL "MINI" OR ${PRINTER} STREQUAL "MK4")
+set(ARDUINO_CORE_2209_PRINTERS "MINI" "MK4" "XL" "iXL")
+if(${PRINTER} IN_LIST ARDUINO_CORE_2209_PRINTERS)
   set(ARDUINO_CORE_VARIANT "2209")
   set(ARDUINO_CORE_TARGET "STM32F4xx")
 else()
@@ -141,7 +142,8 @@ endif()
 #
 
 # STM32F4::HAL
-if(${PRINTER} STREQUAL "MINI" OR ${PRINTER} STREQUAL "MK4")
+set(STM32F407XX_PRINTERS "MINI" "MK4" "XL" "iXL")
+if(${PRINTER} IN_LIST STM32F407XX_PRINTERS)
   set(STM32F4_HAL_TARGET "STM32F407xx")
 else()
   message(FATAL_ERROR "Don't know how to configure STM32F4::HAL for printer ${PRINTER}")
@@ -269,6 +271,8 @@ if(GENERATE_BBF)
     set(PRINTER_TYPE "2")
   elseif(PRINTER STREQUAL "XL")
     set(PRINTER_TYPE "3")
+  elseif(PRINTER STREQUAL "iXL")
+    set(PRINTER_TYPE "4")
   else()
     message(FATAL_ERROR "Don't know how to encode printer type for ${PRINTER}.")
   endif()

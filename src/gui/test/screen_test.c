@@ -4,6 +4,7 @@
 #include "config.h"
 #include "dbg.h"
 #include "stm32f4xx_hal.h"
+#include "bsod.h"
 
 extern screen_t *pscreen_test_gui;
 extern screen_t *pscreen_test_term;
@@ -28,6 +29,7 @@ typedef struct
     window_text_t tst_msgbox;
     window_text_t tst_graph;
     window_text_t tst_temperature;
+    window_text_t tst_heat_err;
 #ifdef LOADCELL_HX711
     window_text_t tst_probe;
 #endif //LOADCELL_HX711
@@ -87,11 +89,17 @@ void screen_test_init(screen_t *screen) {
     window_set_tag(id, 6);
     y += 22;
 
+    id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(10, y, 220, 22), &(pd->tst_heat_err));
+    window_set_text(id, (const char *)"HEAT ERROR");
+    window_enable(id);
+    window_set_tag(id, 7);
+    y += 22;
+
 #ifdef LOADCELL_HX711
     id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(10, y, 220, 22), &(pd->tst_probe));
     window_set_text(id, (const char *)"Probe");
     window_enable(id);
-    window_set_tag(id, 7);
+    window_set_tag(id, 9);
     y += 22;
 #endif //LOADCELL_HX711
 
@@ -132,8 +140,11 @@ int screen_test_event(screen_t *screen, window_t *window, uint8_t event, void *p
         case 6:
             screen_open(pscreen_test_temperature->id);
             return 1;
-#ifdef LOADCELL_HX711
         case 7:
+            temp_error("TEST BED ERROR", "Bed",1.0,2.0,3.0,4.0);
+            return 1;
+#ifdef LOADCELL_HX711
+        case 9:
             screen_open(pscreen_test_hx711->id);
             return 1;
 #endif //LOADCELL_HX711
