@@ -417,7 +417,7 @@
     //#define SLOW_PWM_HEATERS      // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
     //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
     // Set/get with gcode: M301 E[extruder number, 0-2]
-    #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature \
+    #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
         // is more than PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
 
     // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
@@ -981,7 +981,7 @@
 
 //#define UNKNOWN_Z_NO_RAISE // Don't raise Z (lower the bed) if Z is "unknown." For beds that fall when Z is powered off.
 
-#define Z_HOMING_HEIGHT 4 // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ... \
+#define Z_HOMING_HEIGHT 4 // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
     // Be sure you have this distance over your Z_MAX_POS in case.
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
