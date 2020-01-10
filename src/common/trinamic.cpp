@@ -48,8 +48,8 @@ void init_tmc(void) {
     pStepX->SGTHRS(115);
     pStepY->SGTHRS(115);
     #else
-    pStepX->SGTHRS(100);
-    pStepY->SGTHRS(100);
+    pStepX->SGTHRS(140);
+    pStepY->SGTHRS(130);
     #endif
     pStepZ->SGTHRS(100);
     pStepE->SGTHRS(100);
