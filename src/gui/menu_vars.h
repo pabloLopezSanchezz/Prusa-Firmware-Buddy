@@ -54,6 +54,7 @@ extern const int32_t filament_change_fast_load_lenght;
 extern const int32_t filament_change_full_load_lenght;
 extern const int32_t filament_change_slow_purge_lenght;
 extern const int32_t filament_change_full_purge_load_lenght;
+extern const float filament_unload_mini_lengt;
 #ifdef __cplusplus
 }
 #endif //__cplusplus

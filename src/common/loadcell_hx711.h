@@ -3,6 +3,7 @@
 #define _LOADCELL_H
 
 #include <inttypes.h>
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,8 +20,14 @@ extern int loadcell_count; // cycle counter
 
 #ifdef FILAMENT_SENSOR_HX711
 
+typedef enum {
+	HX711_has_filament,
+	HX711_no_filament,
+	HX711_disconnected
+}HX711_t;
+
 extern int32_t fsensor_value;
-extern int fsensor_probe;
+extern HX711_t fsensor_probe;
 extern int32_t fsensor_threshold_LO;
 extern int32_t fsensor_threshold_HI;
 

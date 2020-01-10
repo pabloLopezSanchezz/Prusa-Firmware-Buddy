@@ -98,11 +98,14 @@ constexpr const char Y_home_gcode[] = {
 constexpr const int32_t filament_change_slow_load_lenght = 30;
 constexpr const int32_t filament_change_fast_load_lenght = 60;
 constexpr const int32_t filament_change_slow_purge_lenght = 20;
+constexpr const float filament_unload_mini_lengt = 80.0F;
 #else
 constexpr const int32_t filament_change_slow_load_lenght = FILAMENT_CHANGE_SLOW_LOAD_LENGTH;
 constexpr const int32_t filament_change_fast_load_lenght = FILAMENT_CHANGE_FAST_LOAD_LENGTH;
 constexpr const int32_t filament_change_slow_purge_lenght = 40;
+constexpr const float filament_unload_mini_lengt = 392.0F;
 #endif
 
 constexpr const int32_t filament_change_full_load_lenght = filament_change_fast_load_lenght + filament_change_slow_load_lenght;
 constexpr const int32_t filament_change_full_purge_load_lenght = filament_change_full_load_lenght + filament_change_slow_purge_lenght;
+

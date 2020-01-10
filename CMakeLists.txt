@@ -328,7 +328,10 @@ target_sources(
           src/usbh_conf.c
           src/usbd_conf.c
           src/stm32f4xx_hal_timebase_tim.c
-          src/common/filament_sensor.c
+          $<$<STREQUAL:${PRINTER},MINI>:src/common/filament_sensor.c>
+          $<$<STREQUAL:${PRINTER},MK4>:src/common/filament_sensor_hx711.c>
+          $<$<STREQUAL:${PRINTER},XL>:src/common/filament_sensor_hx711.c>
+          $<$<STREQUAL:${PRINTER},iXL>:src/common/filament_sensor_hx711.c>
           src/common/thread_measurement.c
           src/common/diag.c
           src/common/eeprom.c

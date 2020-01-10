@@ -7,8 +7,9 @@
 #include "menu_vars.h"
 
 #ifdef _DEBUG
-extern screen_t screen_test;
+
 #endif //_DEBUG
+extern screen_t screen_test;
 extern screen_t screen_menu_info;
 extern screen_t screen_messages;
 
@@ -23,8 +24,9 @@ enum {
     MI_FILAMENT,
     MI_INFO,
 #ifdef _DEBUG
-    MI_TEST,
+
 #endif //_DEBUG
+	MI_TEST,
     MI_MESSAGES,
 };
 
@@ -40,8 +42,9 @@ const menu_item_t _menu_tune_items[] = {
     { { "Change Filament", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
     { { "Info", 0, WI_LABEL | WI_DISABLED }, &screen_menu_info },
 #ifdef _DEBUG
-    { { "Test", 0, WI_LABEL }, &screen_test },
+
 #endif //_DEBUG
+	   { { "Test", 0, WI_LABEL }, &screen_test },
     { { "Messages", 0, WI_LABEL }, &screen_messages },
 };
 
