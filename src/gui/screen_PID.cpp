@@ -208,7 +208,9 @@ void screen_PID_init(screen_t *screen) {
     pd->autotune_temp_B = 70;
 
     _PID_ctor(&(pd->_PID_E), _EXTRUDER, &pd->autotune_temp_E);
+#if ENABLED(PIDBEDTEMP)
     _PID_ctor(&(pd->_PID_B), _BED, &pd->autotune_temp_B);
+#endif
 
     int16_t id;
     uint16_t col = 2;
@@ -583,16 +585,22 @@ void _PID_ctor(_PID_t *ths, int16_t id, float *autotune_temp) {
     ths->autotune_temp = autotune_temp;
 
     //stupid Marlin has bed PID defined unlike extruder
-    if (id >= 0) {
+#if ENABLED(PIDBEDTEMP)
+    if (id >= 0)
+#endif //ENABLED(PIDBEDTEMP)
+    {
         ths->p_Kp = &PID_PARAM(Kp, ths->ID);
         ths->p_Ki = &PID_PARAM(Ki, ths->ID);
         ths->p_Kd = &PID_PARAM(Kd, ths->ID);
-    } else {
+    }
+#if ENABLED(PIDBEDTEMP)
+    else {
         //should i use temp_bed.pid or tune_pid?
         ths->p_Kp = &Temperature::temp_bed.pid.Kp;
         ths->p_Ki = &Temperature::temp_bed.pid.Ki;
         ths->p_Kd = &Temperature::temp_bed.pid.Kd;
     }
+#endif //ENABLED(PIDBEDTEMP)
 
     ths->raw_Ki = unscalePID_i(*ths->p_Ki);
     ths->raw_Kd = unscalePID_d(*ths->p_Kd);

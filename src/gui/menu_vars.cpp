@@ -13,6 +13,8 @@
 	#include "Configuration_A3ides_2209_MK4_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
     #include "gui_config_xl.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+    #include "gui_config_ixl.h"
 #endif
 
 extern "C" {
