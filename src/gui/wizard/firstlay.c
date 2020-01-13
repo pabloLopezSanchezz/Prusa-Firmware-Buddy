@@ -286,10 +286,6 @@ void _wizard_firstlay_Z_step(firstlay_screen_t *p_screen) {
         "M83", /*extruder relative mode*/
 
 #define V__GCODES_HEAD_END                   \
-    "G28 X", /*HOME X MUST BE ONLY X*/       \
-        X_home_gcode, /*Set X pos */         \
-        "G28 Y", /*HOME Y MUST BE ONLY Y*/   \
-        Y_home_gcode, /*Set Y pos */         \
         "G28", /*autohome*/                  \
         "G29", /*meshbed leveling*/          \
         "G21", /* set units to millimeters*/ \
@@ -337,7 +333,7 @@ const char *V2_gcodes_head_FLEX[] = {
 };
 const size_t V2_gcodes_head_FLEX_sz = sizeof(V2_gcodes_head_FLEX) / sizeof(V2_gcodes_head_FLEX[0]);
 
-//EXTRUDE_PER_MM  0.2 * 0.5 / (pi * 1.75 ^ 2 / 4) = 0.041575‬
+//EXTRUDE_PER_MM  0.2 * 0.5 / (pi * 1.75 ^ 2 / 4) = 0.041575
 
 //todo generate me
 const char *V2_gcodes_body[] = {
