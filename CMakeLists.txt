@@ -117,7 +117,6 @@ target_compile_definitions(
   MOTHERBOARD=${MOTHERBOARD}
   PRINTER_TYPE=PRINTER_PRUSA_${PRINTER}
   FW_VERSION=${VER_MAJOR}${VER_MINOR}${VER_PATCH}
-  FW_BUILDNR=${BUILD_NUMBER}
   $<$<BOOL:${PRERELEASE}>:PRERELEASE=${PRERELEASE}>
   MARLIN_DISABLE_INFINITE_LOOP
   STM32GENERIC
@@ -227,8 +226,11 @@ endif()
 # disable unaligned access
 #
 # * Otherwise, with optimizations turned on, the firmware crashes on startup.
-# * TODO: investigate and potentially turn on again
-add_compile_options(-mno-unaligned-access)
+#
+# The main problem was caused by zlib, thus this switch was propagated directly to it, it seems to
+# be solved now And let's keep this line commented here for emergency situations ;)
+#
+# add_compile_options(-mno-unaligned-access)
 
 # configure linker script
 if(BOOTLOADER)
@@ -338,7 +340,7 @@ target_sources(
           src/common/marlin_vars.c
           src/common/marlin_host.c
           src/common/sim_bed.c
-          src/common/sys.c
+          src/common/sys.cpp
           src/common/sim_nozzle.c
           src/common/hwio_a3ides_2209_02.c
           src/common/putslave.c
@@ -463,4 +465,10 @@ target_sources(
           src/wui/lwsapi.cpp
           src/wui/connect.cpp
           src/wui/connection.cpp
+  )
+
+set_property(
+  SOURCE src/common/version.c
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS FW_BUILDNR=${BUILD_NUMBER}
   )

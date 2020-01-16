@@ -833,8 +833,11 @@
         #define SDSORT_USES_STACK false // Prefer the stack for pre-sorting to give back some SRAM. (Negated by next 2 options.)
         #define SDSORT_CACHE_NAMES false // Keep sorted items in RAM longer for speedy performance. Most expensive option.
         #define SDSORT_DYNAMIC_RAM false // Use dynamic allocation (within SD menus). Least expensive option. Set SDSORT_LIMIT before use!
-        #define SDSORT_CACHE_VFATS 2 // Maximum number of 13-byte VFAT entries to use for sorting. \
-            // Note: Only affects SCROLL_LONG_FILENAMES with SDSORT_CACHE_NAMES but not SDSORT_DYNAMIC_RAM.
+        /**
+         * Maximum number of 13-byte VFAT entries to use for sorting.
+         * Note: Only affects SCROLL_LONG_FILENAMES with SDSORT_CACHE_NAMES but not SDSORT_DYNAMIC_RAM.
+         */
+        #define SDSORT_CACHE_VFATS 2
     #endif
 
     // This allows hosts to request long names for files and folders with M33
@@ -1007,8 +1010,11 @@
 
     //#define DOUBLECLICK_FOR_Z_BABYSTEPPING  // Double-click on the Status Screen for Z Babystepping.
     #if ENABLED(DOUBLECLICK_FOR_Z_BABYSTEPPING)
-        #define DOUBLECLICK_MAX_INTERVAL 1250 // Maximum interval between clicks, in milliseconds. \
-            // Note: Extra time may be added to mitigate controller latency.
+        /**
+         * Maximum interval between clicks, in milliseconds.
+         * Note: Extra time may be added to mitigate controller latency.
+         */
+        #define DOUBLECLICK_MAX_INTERVAL 1250
         #define BABYSTEP_ALWAYS_AVAILABLE // Allow babystepping at all times (not just during movement).
         //#define MOVE_Z_WHEN_IDLE              // Jump to the move Z menu on doubleclick when printer is idle.
         #if ENABLED(MOVE_Z_WHEN_IDLE)
@@ -1311,28 +1317,43 @@
 #define ADVANCED_PAUSE_FEATURE
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
     #define PAUSE_PARK_RETRACT_FEEDRATE 40 // (mm/s) Initial retract feedrate.
-    #define PAUSE_PARK_RETRACT_LENGTH 2 // (mm) Initial retract. \
-        // This short retract is done immediately, before parking the nozzle.
+    /**
+     * (mm) Initial retract.
+     * This short retract is done immediately, before parking the nozzle.
+     */
+    #define PAUSE_PARK_RETRACT_LENGTH 2
     #define FILAMENT_CHANGE_UNLOAD_FEEDRATE 25 // (mm/s) Unload filament feedrate. This can be pretty fast.
     #define FILAMENT_CHANGE_UNLOAD_ACCEL 25 // (mm/s^2) Lower acceleration may allow a faster feedrate.
-    #define FILAMENT_CHANGE_UNLOAD_LENGTH 50 // (mm) The length of filament for a complete unload. \
-        //   For Bowden, the full length of the tube and nozzle.                                   \
-        //   For direct drive, the full length of the nozzle.                                      \
-        //   Set to 0 for manual unloading.
+    /**
+     * (mm) The length of filament for a complete unload.
+     * For Bowden, the full length of the tube and nozzle.
+     * For direct drive, the full length of the nozzle.
+     * Set to 0 for manual unloading.
+     */
+    #define FILAMENT_CHANGE_UNLOAD_LENGTH 50
     #define FILAMENT_CHANGE_SLOW_LOAD_FEEDRATE 6 // (mm/s) Slow move when starting load.
-    #define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 40 // (mm) Slow length, to allow time to insert material. \
-        // 0 to disable start loading and skip to fast load only
+    /**
+     * (mm) Slow length, to allow time to insert material.
+     * 0 to disable start loading and skip to fast load only
+     */
+    #define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 40
     #define FILAMENT_CHANGE_FAST_LOAD_FEEDRATE 25 // (mm/s) Load filament feedrate. This can be pretty fast.
     #define FILAMENT_CHANGE_FAST_LOAD_ACCEL 25 // (mm/s^2) Lower acceleration may allow a faster feedrate.
-    #define FILAMENT_CHANGE_FAST_LOAD_LENGTH 20 // (mm) Load length of filament, from extruder gear to nozzle. \
-        //   For Bowden, the full length of the tube and nozzle.                                               \
-        //   For direct drive, the full length of the nozzle.
+    /**
+     * (mm) Load length of filament, from extruder gear to nozzle.
+     * For Bowden, the full length of the tube and nozzle.
+     * For direct drive, the full length of the nozzle.
+     */
+    #define FILAMENT_CHANGE_FAST_LOAD_LENGTH 20
     //#define ADVANCED_PAUSE_CONTINUOUS_PURGE       // Purge continuously up to the purge length until interrupted.
     #define ADVANCED_PAUSE_PURGE_FEEDRATE 3 // (mm/s) Extrude feedrate (after loading). Should be slower than load feedrate.
-    #define ADVANCED_PAUSE_PURGE_LENGTH 40 // (mm) Length to extrude after loading. \
-        //   Set to 0 for manual extrusion.                                         \
-        //   Filament can be extruded repeatedly from the Filament Change menu      \
-        //   until extrusion is consistent, and to purge old filament.
+    /**
+     * (mm) Length to extrude after loading.
+     * Set to 0 for manual extrusion.
+     * Filament can be extruded repeatedly from the Filament Change menu
+     * until extrusion is consistent, and to purge old filament.
+     */
+    #define ADVANCED_PAUSE_PURGE_LENGTH 40
     #define ADVANCED_PAUSE_RESUME_PRIME 0 // (mm) Extra distance to prime nozzle after returning from park.
 
 // Filament Unload does a Retract, Delay, and Purge first:
@@ -1340,6 +1361,8 @@
     #define FILAMENT_UNLOAD_DELAY 5000 // (ms) Delay for the filament to cool after retract.
     #define FILAMENT_UNLOAD_PURGE_LENGTH 8 // (mm) An unretract is done, then this length is purged.
     #define FILAMENT_UNLOAD_PURGE_FEEDRATE 66 // (mm/s)
+    #define FILAMENT_UNLOAD_PHASE1_LENGHT 20 // (mm)fast phase
+    #define FILAMENT_UNLOAD_PHASE2_LENGHT 30 // (mm)slow phase
 
     #define PAUSE_PARK_NOZZLE_TIMEOUT 45 // (seconds) Time limit before the nozzle is turned off for safety.
     #define FILAMENT_CHANGE_ALERT_BEEPS 10 // Number of alert beeps to play when a response is needed.
@@ -2137,26 +2160,37 @@
 
 //#define I2C_POSITION_ENCODERS
 #if ENABLED(I2C_POSITION_ENCODERS)
-
-    #define I2CPE_ENCODER_CNT 1 // The number of encoders installed; max of 5 \
-        // encoders supported currently.
-
+    /**
+     * The number of encoders installed
+     * max of 5 encoders supported currently.
+     */
+    #define I2CPE_ENCODER_CNT 1
     #define I2CPE_ENC_1_ADDR I2CPE_PRESET_ADDR_X // I2C address of the encoder. 30-200.
     #define I2CPE_ENC_1_AXIS X_AXIS // Axis the encoder module is installed on.  <X|Y|Z|E>_AXIS.
-    #define I2CPE_ENC_1_TYPE I2CPE_ENC_TYPE_LINEAR // Type of encoder:  I2CPE_ENC_TYPE_LINEAR -or- \
-        // I2CPE_ENC_TYPE_ROTARY.
-    #define I2CPE_ENC_1_TICKS_UNIT 2048 // 1024 for magnetic strips with 2mm poles; 2048 for \
-        // 1mm poles. For linear encoders this is ticks / mm,                                \
-        // for rotary encoders this is ticks / revolution.
-    //#define I2CPE_ENC_1_TICKS_REV     (16 * 200)            // Only needed for rotary encoders; number of stepper
-    // steps per full revolution (motor steps/rev * microstepping)
-    //#define I2CPE_ENC_1_INVERT                              // Invert the direction of axis travel.
+    /**
+     * Type of encoder:  I2CPE_ENC_TYPE_LINEAR -or- I2CPE_ENC_TYPE_ROTARY.
+     */
+    #define I2CPE_ENC_1_TYPE I2CPE_ENC_TYPE_LINEAR
+    /**
+     * 1024 for magnetic strips with 2mm poles; 2048 for
+     * 1mm poles. For linear encoders this is ticks / mm,
+     * for rotary encoders this is ticks / revolution.
+     */
+    #define I2CPE_ENC_1_TICKS_UNIT 2048
+    /**
+     * Only needed for rotary encoders; number of stepper
+     * steps per full revolution (motor steps/rev * microstepping)
+     */
+    //#define I2CPE_ENC_1_TICKS_REV     (16 * 200)
+    //#define I2CPE_ENC_1_INVERT // Invert the direction of axis travel.
     #define I2CPE_ENC_1_EC_METHOD I2CPE_ECM_MICROSTEP // Type of error error correction.
-    #define I2CPE_ENC_1_EC_THRESH 0.10 // Threshold size for error (in mm) above which the \
-        // printer will attempt to correct the error; errors                               \
-        // smaller than this are ignored to minimize effects of                            \
-        // measurement noise / latency (filter).
-
+    /**
+     * Threshold size for error (in mm) above which the
+     * printer will attempt to correct the error; errors
+     * smaller than this are ignored to minimize effects of
+     * measurement noise / latency (filter).
+     */
+    #define I2CPE_ENC_1_EC_THRESH 0.10
     #define I2CPE_ENC_2_ADDR I2CPE_PRESET_ADDR_Y // Same as above, but for encoder 2.
     #define I2CPE_ENC_2_AXIS Y_AXIS
     #define I2CPE_ENC_2_TYPE I2CPE_ENC_TYPE_LINEAR
@@ -2181,20 +2215,23 @@
     #define I2CPE_DEF_TICKS_REV (16 * 200)
     #define I2CPE_DEF_EC_METHOD I2CPE_ECM_NONE
     #define I2CPE_DEF_EC_THRESH 0.1
-
-//#define I2CPE_ERR_THRESH_ABORT  100.0                   // Threshold size for error (in mm) error on any given
-// axis after which the printer will abort. Comment out to
-// disable abort behaviour.
-
-    #define I2CPE_TIME_TRUSTED 10000 // After an encoder fault, there must be no further fault \
-        // for this amount of time (in ms) before the encoder                                  \
-        // is trusted again.
-
     /**
-   * Position is checked every time a new command is executed from the buffer but during long moves,
-   * this setting determines the minimum update time between checks. A value of 100 works well with
-   * error rolling average when attempting to correct only for skips and not for vibration.
-   */
+     * Threshold size for error (in mm) error on any given
+     * axis after which the printer will abort. Comment out to
+     * disable abort behaviour.
+     */
+    //#define I2CPE_ERR_THRESH_ABORT  100.0
+    /**
+     * After an encoder fault, there must be no further fault
+     * for this amount of time (in ms) before the encoder
+     * is trusted again.
+     */
+    #define I2CPE_TIME_TRUSTED 10000
+    /**
+     * Position is checked every time a new command is executed from the buffer but during long moves,
+     * this setting determines the minimum update time between checks. A value of 100 works well with
+     * error rolling average when attempting to correct only for skips and not for vibration.
+     */
     #define I2CPE_MIN_UPD_TIME_MS 4 // (ms) Minimum time between encoder checks.
 
     // Use a rolling average to identify persistant errors that indicate skips, as opposed to vibration and noise.
@@ -2217,8 +2254,11 @@
     //#define MAX7219_GCODE          // Add the M7219 G-code to control the LED matrix
     #define MAX7219_INIT_TEST 2 // Do a test pattern at initialization (Set to 2 for spiral)
     #define MAX7219_NUMBER_UNITS 1 // Number of Max7219 units in chain.
-    #define MAX7219_ROTATE 0 // Rotate the display clockwise (in multiples of +/- 90°) \
-        // connector at:  right=0   bottom=-90  top=90  left=180
+    /**
+     * Rotate the display clockwise (in multiples of +/- 90°)
+     * connector at:  right=0   bottom=-90  top=90  left=180
+     */
+    #define MAX7219_ROTATE 0
     //#define MAX7219_REVERSE_ORDER  // The individual LED matrix units may be in reversed order
 
     /**
@@ -2228,10 +2268,12 @@
     #define MAX7219_DEBUG_PRINTER_ALIVE // Blink corner LED of 8x8 matrix to show that the firmware is functioning
     #define MAX7219_DEBUG_PLANNER_HEAD 3 // Show the planner queue head position on this and the next LED matrix row
     #define MAX7219_DEBUG_PLANNER_TAIL 5 // Show the planner queue tail position on this and the next LED matrix row
-
-    #define MAX7219_DEBUG_PLANNER_QUEUE 0 // Show the current planner queue depth on this and the next LED matrix row \
-        // If you experience stuttering, reboots, etc. this option can reveal how                                     \
-        // tweaks made to the configuration are affecting the printer in real-time.
+    /**
+     * Show the current planner queue depth on this and the next LED matrix row
+     * If you experience stuttering, reboots, etc. this option can reveal how
+     * tweaks made to the configuration are affecting the printer in real-time.
+     */
+    #define MAX7219_DEBUG_PLANNER_QUEUE 0
 #endif
 
 /**
@@ -2243,8 +2285,11 @@
  */
 //#define NANODLP_Z_SYNC
 #if ENABLED(NANODLP_Z_SYNC)
-//#define NANODLP_ALL_AXIS  // Enables "Z_move_comp" output on any axis move.
-// Default behaviour is limited to Z axis only.
+/**
+ * Enables "Z_move_comp" output on any axis move.
+ * Default behaviour is limited to Z axis only.
+ */
+//#define NANODLP_ALL_AXIS
 #endif
 
 /**

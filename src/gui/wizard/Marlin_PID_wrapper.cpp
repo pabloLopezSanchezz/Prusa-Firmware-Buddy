@@ -6,28 +6,28 @@ extern "C" {
 
 //Kp is not scaled
 float get_Kp_Bed() {
-#if (PRINTER_TYPE == PRINTER_PRUSA_XL)
-    return 0;
-#else //(PRINTER_TYPE != PRINTER_PRUSA_XL)
+#if ENABLED(PIDTEMPBED)
     return Temperature::temp_bed.pid.Kp;
+#else
+    return 0;
 #endif
 }
 
 //Ki is scaled
 float get_Ki_Bed() {
-#if (PRINTER_TYPE == PRINTER_PRUSA_XL)
-    return 0;
-#else //(PRINTER_TYPE != PRINTER_PRUSA_XL)
+#if ENABLED(PIDTEMPBED)
     return unscalePID_i(Temperature::temp_bed.pid.Ki);
+#else
+    return 0;
 #endif
 }
 
 //Kd is scaled
 float get_Kd_Bed() {
-#if (PRINTER_TYPE == PRINTER_PRUSA_XL)
-    return 0;
-#else //(PRINTER_TYPE != PRINTER_PRUSA_XL)
+#if ENABLED(PIDTEMPBED)
     return unscalePID_d(Temperature::temp_bed.pid.Kd);
+#else
+    return 0;
 #endif
 }
 

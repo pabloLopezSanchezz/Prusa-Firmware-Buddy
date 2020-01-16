@@ -8,10 +8,6 @@
     #error "FW_VERSION not defined"
 #endif
 
-#if !defined(FW_BUILDNR)
-    #error "FW_BUILDNR not defined"
-#endif
-
 #if !defined(FW_BUILDSX)
     #define FW_BUILDSX "" //build suffix
 #endif
@@ -114,6 +110,7 @@
 //#define PSOD_BSOD
 
 //PID calibration service screen (disabled for XL)
+//! @todo what about iXL? Shoudn't it be enabled everywhere and only bed PID disabled using PIDBEDTEMP macro?
 #if (PRINTER_TYPE != PRINTER_PRUSA_XL)
     #define PIDCALIBRATION
 #endif

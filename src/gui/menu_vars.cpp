@@ -7,12 +7,14 @@
 
 #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
     #include "gui_config_mini.h"
-	#include "Configuration_A3ides_2209_MINI_adv.h"
+    #include "Configuration_A3ides_2209_MINI_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     #include "gui_config_mk4.h"
-	#include "Configuration_A3ides_2209_MK4_adv.h"
+    #include "Configuration_A3ides_2209_MK4_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
     #include "gui_config_xl.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+    #include "gui_config_ixl.h"
 #endif
 
 extern "C" {
@@ -59,6 +61,7 @@ constexpr const int park_points[3] = NOZZLE_PARK_POINT;
 
 constexpr const int X_home = X_HOME_DIR > 0 ? X_MAX_POS : X_MIN_POS;
 constexpr const int Y_home = Y_HOME_DIR > 0 ? Y_MAX_POS : Y_MIN_POS;
+constexpr const int Z_home = Z_HOME_DIR > 0 ? Z_MAX_POS : Z_MIN_POS;
 
 constexpr const char X_home_gcode[] = {
     'G',
@@ -93,6 +96,24 @@ constexpr const char Y_home_gcode[] = {
     nth_char(Y_home, 7),
     nth_char(Y_home, 8)
 };
+
+constexpr const char Z_home_gcode[] = {
+    'G',
+    '9',
+    '2',
+    ' ',
+    'Z',
+    nth_char(Z_home, 0),
+    nth_char(Z_home, 1),
+    nth_char(Z_home, 2),
+    nth_char(Z_home, 3),
+    nth_char(Z_home, 4),
+    nth_char(Z_home, 5),
+    nth_char(Z_home, 6),
+    nth_char(Z_home, 7),
+    nth_char(Z_home, 8)
+};
+
 }
 
 constexpr const int32_t filament_change_slow_load_length = FILAMENT_CHANGE_SLOW_LOAD_LENGTH;
