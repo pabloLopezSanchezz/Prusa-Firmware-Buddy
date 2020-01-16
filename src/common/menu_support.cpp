@@ -31,9 +31,9 @@ void menu_support() {
     if (printer_type > PRINTER_PRUSA_MK4)
         printer_type = 0;
     #ifdef _DEBUG
-    sprintf(build, " %d%s (DEBUG_%s)", (int)FW_BUILDNR, (char *)FW_BUILDSX, printers[printer_type]);
+sprintf(build, " %d%s (DEBUG_%s)", version_build_nr, (char *)FW_BUILDSX, printers[printer_type]);
     #else //_DEBUG
-    sprintf(build, " %d%s (%s)", (int)FW_BUILDNR, (char *)FW_BUILDSX, printers[printer_type]);
+    sprintf(build, " %d%s (%s)", version_build_nr, (char *)FW_BUILDSX, printers[printer_type]);
     #endif //_DEBUG
     STATIC_ITEM_P("version:            ");
     STATIC_ITEM(version);
