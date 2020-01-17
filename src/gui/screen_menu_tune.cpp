@@ -24,9 +24,13 @@ enum {
     MI_FILAMENT,
     MI_INFO,
 #ifdef _DEBUG
-
+    MI_TEST,
 #endif //_DEBUG
-	MI_TEST,
+
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL)
+    MI_TEST,
+#endif
+
     MI_MESSAGES,
 };
 
@@ -42,9 +46,11 @@ const menu_item_t _menu_tune_items[] = {
     { { "Change Filament", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
     { { "Info", 0, WI_LABEL | WI_DISABLED }, &screen_menu_info },
 #ifdef _DEBUG
-
+	{ { "Test", 0, WI_LABEL }, &screen_test },
 #endif //_DEBUG
-	   { { "Test", 0, WI_LABEL }, &screen_test },
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL)
+    { { "Test", 0, WI_LABEL }, &screen_test },
+#endif
     { { "Messages", 0, WI_LABEL }, &screen_messages },
 };
 
