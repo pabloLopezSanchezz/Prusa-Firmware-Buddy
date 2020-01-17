@@ -152,7 +152,7 @@ static int f_LD_WAIT_E_POS__INSERTING(_dlg_vars *p_vars, _dlg_ld_vars *additiona
         marlin_set_wait_user(0);
     }
     //wait E pos >= 40
-    if (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= filament_change_slow_load_lenght)  //30 mk4
+    if (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] >= filament_change_slow_load_length)  //30 mk4
         p_vars->phase++;
     return 100 * (additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E]) / filament_change_slow_load_length;
 }
