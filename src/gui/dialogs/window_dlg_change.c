@@ -79,7 +79,7 @@ static int f_CH_WAIT_E_POS__RAMMING(_dlg_vars *p_vars, _dlg_ld_vars *additional_
 }
 
 static int f_CH_WAIT_E_POS__UNLOADING(_dlg_vars *p_vars, _dlg_ld_vars *additional_vars) {
-    // 8 ... -392
+    // 8 ... -80
     float pos = additional_vars->p_marlin_vars->pos[MARLIN_VAR_INDEX_E] - additional_vars->e_start;
     if (pos < (filament_unload_mini_length - 1.0F))
         p_vars->phase++;

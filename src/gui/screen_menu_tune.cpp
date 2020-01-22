@@ -7,8 +7,9 @@
 #include "menu_vars.h"
 
 #ifdef _DEBUG
-extern screen_t screen_test;
+
 #endif //_DEBUG
+extern screen_t screen_test;
 extern screen_t screen_menu_info;
 extern screen_t screen_messages;
 
@@ -22,9 +23,14 @@ enum {
     MI_BABYSTEP,
     MI_FILAMENT,
     MI_INFO,
-#ifdef _DEBUG
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
     MI_TEST,
-#endif //_DEBUG
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+
+#else
+    #error // unknown printer
+#endif
+
     MI_MESSAGES,
 };
 
@@ -39,9 +45,13 @@ const menu_item_t _menu_tune_items[] = {
     { { "Live Adjust Z", 0, WI_SPIN_FL }, SCREEN_MENU_NO_SCREEN }, //set later
     { { "Change Filament", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
     { { "Info", 0, WI_LABEL | WI_DISABLED }, &screen_menu_info },
-#ifdef _DEBUG
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
     { { "Test", 0, WI_LABEL }, &screen_test },
-#endif //_DEBUG
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+
+#else
+    #error // unknown printer
+#endif
     { { "Messages", 0, WI_LABEL }, &screen_messages },
 };
 

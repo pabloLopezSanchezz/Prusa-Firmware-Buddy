@@ -1,10 +1,9 @@
 // loadcell_hx711.c
-
-#include "config.h"
+#include "loadcell_hx711.h"
 
 #ifdef LOADCELL_HX711
 
-    #include "loadcell_hx711.h"
+
     #include "gpio.h"
     #include "dbg.h"
     #include "cmsis_os.h"
@@ -43,7 +42,7 @@ uint8_t previous_cycle = 0;
 uint8_t fsensor_disable = 0;
 
 int32_t fsensor_value = 0;
-int fsensor_probe = 0;
+HX711_t fsensor_probe = HX711_has_filament;
 int32_t fsensor_threshold_LO = FILAMENT_SENSOR_HX711_LOW;
 int32_t fsensor_threshold_HI = FILAMENT_SENSOR_HX711_HIGH;
 
@@ -166,15 +165,23 @@ static inline void fsensor_cycle(void) {
         #endif
     fsensor_value = hx711_read_raw();
     // update probe variable
-    if (fsensor_probe) {
         if (fsensor_value <= (fsensor_threshold_LO))
-            fsensor_probe = 0;
-    } else {
-        if (fsensor_value >= fsensor_threshold_HI) {
-            fsensor_probe = 1;
+        {
+            fsensor_probe = HX711_has_filament;
         }
+        else if(fsensor_value < 2000)
+        {
+        	fsensor_probe = HX711_disconnected;
+        }
+
+        else
+        {
+            fsensor_probe = HX711_no_filament;
+        }
+
+
     }
-}
+
 
 // Public function to handle masking filament sensor
 void set_fsensor_disable(uint8_t state) {
