@@ -7,6 +7,12 @@
 
 #include "guitypes.h"
 
+///////////////////////////
+// display type selector //
+///////////////////////////
+#define USE_ST7789
+//#define USE_ILI9488
+
 typedef struct _display_t display_t;
 
 typedef void(display_init_t)(void);

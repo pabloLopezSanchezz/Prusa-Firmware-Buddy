@@ -57,6 +57,13 @@
 #define ST7789V_PIN_RS PD11 // RS signal pin
 #define ST7789V_PIN_RST PC8 // RESET signal pin
 
+//Graphical display ILI9488 configuration
+#define ILI9488_PIN_CS 	PC9 // CS signal pin
+#define ILI9488_PIN_RS 	PD11 // RS signal pin
+#define ILI9488_PIN_RST	PC8 // RESET signal pin
+
+
+
 //--------------------------------------
 //Jogwheel configuration
 #define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin

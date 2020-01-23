@@ -475,6 +475,7 @@ target_sources(
           src/guiapi/src/jogwheel.c
           src/guiapi/src/window_numb.c
           src/guiapi/src/st7789v.c
+          src/guiapi/src/ili9488.c
           src/guiapi/src/window_icon.c
           src/guiapi/src/window_spin.c
           src/guiapi/src/window_text.c
