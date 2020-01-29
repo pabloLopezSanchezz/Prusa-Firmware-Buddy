@@ -39,6 +39,9 @@
 
 extern void USBSerial_put_rx_data(uint8_t *buffer, uint32_t length);
 
+extern void reset_trinamic_drivers();
+
+
 extern "C" {
 
 extern uartrxbuff_t uart6rxbuff; // PUT rx buffer
@@ -103,6 +106,8 @@ void app_run(void) {
             for (int i = 0; i < hwio_fan_get_cnt(); ++i)
                 hwio_fan_set_pwm(i, 0); // disable fans
         }
+        reset_trinamic_drivers();
+        init_tmc();
     } else
         app_setup();
     //DBG("after setup (%ld ms)", HAL_GetTick());
