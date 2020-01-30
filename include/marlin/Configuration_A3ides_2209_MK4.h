@@ -689,7 +689,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
-    { 100, 100, 400, 400 } //E0 280 295
+    { 100, 100, 400, 420 } //E0 280 295
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -706,7 +706,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_ACCELERATION \
-    { 1000, 1000, 1000, 5000 }
+    { 1250, 1250, 1000, 1500 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -717,7 +717,7 @@
  *   M204 T    Travel Acceleration
  */
 #define DEFAULT_ACCELERATION 1250 // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION 1250 // E acceleration for retracts
+#define DEFAULT_RETRACT_ACCELERATION 800 // E acceleration for retracts
 #define DEFAULT_TRAVEL_ACCELERATION 1250 // X, Y, Z acceleration for travel (non printing) moves
 
 //

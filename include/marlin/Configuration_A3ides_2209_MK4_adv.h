@@ -1322,16 +1322,16 @@
         //   For direct drive, the full length of the nozzle.
         //   Set to 0 for manual unloading.
     #define FILAMENT_CHANGE_SLOW_LOAD_FEEDRATE 6 // (mm/s) Slow move when starting load.
-    #define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 60 // (mm) Slow length, to allow time to insert material.
+    #define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 30 // (mm) Slow length, to allow time to insert material. //60
         // 0 to disable start loading and skip to fast load only
-    #define FILAMENT_CHANGE_FAST_LOAD_FEEDRATE 40 // (mm/s) Load filament feedrate. This can be pretty fast.
-    #define FILAMENT_CHANGE_FAST_LOAD_ACCEL 200 // (mm/s^2) Lower acceleration may allow a faster feedrate.
-    #define FILAMENT_CHANGE_FAST_LOAD_LENGTH 75 // (mm) Load length of filament, from extruder gear to nozzle.
+    #define FILAMENT_CHANGE_FAST_LOAD_FEEDRATE 20 // (mm/s) Load filament feedrate. This can be pretty fast. //40
+    #define FILAMENT_CHANGE_FAST_LOAD_ACCEL 100 // (mm/s^2) Lower acceleration may allow a faster feedrate.  //200
+    #define FILAMENT_CHANGE_FAST_LOAD_LENGTH 50 // (mm) Load length of filament, from extruder gear to nozzle. //75
         //   For Bowden, the full length of the tube and nozzle.
         //   For direct drive, the full length of the nozzle.
     //#define ADVANCED_PAUSE_CONTINUOUS_PURGE       // Purge continuously up to the purge length until interrupted.
     #define ADVANCED_PAUSE_PURGE_FEEDRATE 3 // (mm/s) Extrude feedrate (after loading). Should be slower than load feedrate.
-    #define ADVANCED_PAUSE_PURGE_LENGTH 50 // (mm) Length to extrude after loading.
+    #define ADVANCED_PAUSE_PURGE_LENGTH 35 // (mm) Length to extrude after loading. //50
         //   Set to 0 for manual extrusion.
         //   Filament can be extruded repeatedly from the Filament Change menu
         //   until extrusion is consistent, and to purge old filament.
@@ -1591,7 +1591,7 @@
    */
     #define STEALTHCHOP_XY
     #define STEALTHCHOP_Z
-    #define STEALTHCHOP_E
+    //#define STEALTHCHOP_E
 
     /**
    * Optimize spreadCycle chopper parameters by using predefined parameter sets

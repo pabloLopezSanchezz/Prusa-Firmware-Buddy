@@ -104,6 +104,20 @@ void fs_disable() {
     taskEXIT_CRITICAL();
 }
 
+uint8_t fs_get__send_M600_on__and_disable() {
+    taskENTER_CRITICAL();
+    uint8_t ret = status.send_M600_on;
+    status.send_M600_on = M600_never;
+    taskEXIT_CRITICAL();
+    return ret;
+}
+void fs_restore__send_M600_on(uint8_t send_M600_on) {
+    taskENTER_CRITICAL();
+    //cannot call _init(); - it could cause stacking in unincialized state
+    status.send_M600_on = send_M600_on;
+    taskEXIT_CRITICAL();
+}
+
 fsensor_t fs_wait_inicialized() {
     fsensor_t ret = fs_get_state();
     while (ret == FS_NOT_INICIALIZED) {
@@ -111,6 +125,12 @@ fsensor_t fs_wait_inicialized() {
         ret = fs_get_state();
     }
     return ret;
+}
+
+void fs_clr_sent(){
+    taskENTER_CRITICAL();
+	status.M600_sent = 0;
+    taskEXIT_CRITICAL();
 }
 
 /*---------------------------------------------------------------------------*/
