@@ -182,7 +182,7 @@ void app_cdc_rx(uint8_t *buffer, uint32_t length) {
     USBSerial_put_rx_data(buffer, length);
 }
 
-void app_tim6_tick(void) {
+void adc_tick_1ms(void) {
     adc_cycle();
 #ifdef SIM_HEATER
     static uint8_t cnt_sim_heater = 0;
@@ -276,6 +276,7 @@ void app_tim6_tick(void) {
 void app_tim14_tick(void) {
     jogwheel_update_1ms();
     hwio_update_1ms();
+    adc_tick_1ms();
 }
 
 
