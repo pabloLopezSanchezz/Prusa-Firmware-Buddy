@@ -899,8 +899,8 @@
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
 #define EXTRA_PROBING 1
-#define EXTRA_PROBING_TOL 0.1 // If the measured Z value is larger than this value, remove it and remeasure
-#define EXTRA_PROBING_RAIL 1.2 // Maximum value of Z measurement
+#define EXTRA_PROBING_TOL 0.2 // If the measured Z value is larger than this value, remove it and remeasure
+#define EXTRA_PROBING_RAIL 1.4 // Maximum value of Z measurement
 #define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
 
 //#define EXTRA_PROBING_DBG
@@ -920,7 +920,7 @@
  */
 #define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
 #define Z_CLEARANCE_BETWEEN_PROBES 3 // Z Clearance between probe points 1
-#define Z_CLEARANCE_MULTI_PROBE 0.5 // Z Clearance between multiple probes
+#define Z_CLEARANCE_MULTI_PROBE 0.7 // Z Clearance between multiple probes
 #define Z_AFTER_PROBING 1 // Z position after probing is done 2
 
 #define Z_PROBE_LOW_POINT -1 // Farthest distance below the trigger-point to go before stopping
@@ -1008,8 +1008,8 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 255
-#define Y_BED_SIZE 212
+#define X_BED_SIZE 250
+#define Y_BED_SIZE 210
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
