@@ -15,6 +15,8 @@
     #include "gui_config_xl.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
     #include "gui_config_ixl.h"
+#else
+    #error "Unknown PRINTER_TYPE."
 #endif
 
 extern "C" {
