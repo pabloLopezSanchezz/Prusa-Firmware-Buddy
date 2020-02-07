@@ -10,6 +10,8 @@
 #include "hwio_a3ides.h"
 #include "sys.h"
 #include "gpio.h"
+#include "metric.h"
+#include "cpu_utils.h"
 
 #ifdef LOADCELL_HX711
     #include "loadcell_hx711.h"
@@ -44,6 +46,10 @@ extern void reset_trinamic_drivers();
 
 extern "C" {
 
+metric_t metric_app_start = METRIC("app_start", METRIC_VALUE_EVENT, 0, METRIC_HANDLER_ENABLE_ALL);
+metric_t metric_maintask_event = METRIC("maintask_loop", METRIC_VALUE_EVENT, 0, METRIC_HANDLER_DISABLE_ALL);
+metric_t metric_cpu_usage = METRIC("cpu_usage", METRIC_VALUE_INTEGER, 1000, METRIC_HANDLER_ENABLE_ALL);
+
 extern uartrxbuff_t uart6rxbuff; // PUT rx buffer
 extern uartslave_t uart6slave; // PUT slave
 
@@ -56,6 +62,8 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 #endif //_DEBUG
 
 void app_setup(void) {
+    metric_record_event(&metric_app_start);
+
     setup();
 
     init_tmc();
@@ -125,6 +133,8 @@ void app_run(void) {
     }
 
     while (1) {
+        metric_record_event(&metric_maintask_event);
+        metric_record_integer(&metric_cpu_usage, osGetCPUUsage());
         if (marlin_server_processing()) {
             loop();
         }
