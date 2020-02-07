@@ -21,22 +21,24 @@ void window_logo_draw(window_logo_t *window) {
 
     {
         font_t *logo = resource_font(IDR_FNT_original_prusa);
-#if PRINTER_TYPE == PRINTER_PRUSA_MK4
-        const char chr = '\3';
-        const uint16_t left = 3;
-        const uint16_t right = 118;
-#elif PRINTER_TYPE == PRINTER_PRUSA_MINI
+#if PRINTER_TYPE == PRINTER_PRUSA_MINI
         const char chr = '\2';
         const uint16_t left = 16;
         const uint16_t right = 105;
+#elif PRINTER_TYPE == PRINTER_PRUSA_MK4
+        const char chr = '\3';
+        const uint16_t left = 3;
+        const uint16_t right = 118;
 #elif PRINTER_TYPE == PRINTER_PRUSA_XL
-        const char chr = '\4';
+        const char chr = '\4'
         const uint16_t left = 38;
         const uint16_t right = 83;
 #elif PRINTER_TYPE == PRINTER_PRUSA_iXL
         const char chr = '\4';
         const uint16_t left = 38;
         const uint16_t right = 83;
+#else
+    #error "Unknown PRINTER_TYPE."
 #endif
 
         // ORIGINAL
