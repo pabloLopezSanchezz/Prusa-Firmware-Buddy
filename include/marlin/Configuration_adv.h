@@ -1,21 +1,19 @@
-//Configuration_adv.h
-#ifndef _CONFIGURATION_ADV_H
-#define _CONFIGURATION_ADV_H
+//! @file
+#pragma once
 
 #include "config.h"
 
-#if (MOTHERBOARD == 1821 || MOTHERBOARD == 1823)
-
-    #if (PRINTER_TYPE == PRINTER_PRUSA_MK3)
-        #include "Configuration_A3ides_2209_MK3_adv.h"
-    #elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+#if ((MOTHERBOARD == 1821) || (MOTHERBOARD == 1823))
+    #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
         #include "Configuration_A3ides_2209_MINI_adv.h"
+    #elif (PRINTER_TYPE == PRINTER_PRUSA_MK3)
+        #include "Configuration_A3ides_2209_MK3_adv.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
         #include "Configuration_A3ides_2209_XL_adv.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
         #include "Configuration_A3ides_2209_MK4_adv.h"
-	#elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
-		#include "Configuration_A3ides_2209_iXL_adv.h"
+    #elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
+        #include "Configuration_A3ides_2209_iXL_adv.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR)
         #include "Configuration_A3ides_2209_Manipulator_adv.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_PICKER)
@@ -28,5 +26,3 @@
 #else
     #error "Unknown MOTHERBOARD!"
 #endif
-
-#endif //_CONFIGURATION_ADV_H

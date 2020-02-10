@@ -1,21 +1,19 @@
-//Configuration.h
-#ifndef _CONFIGURATION_H
-#define _CONFIGURATION_H
+//! @file
+#pragma once
 
 #include "config.h"
 
 #if ((MOTHERBOARD == 1821) || (MOTHERBOARD == 1823))
-
-    #if (PRINTER_TYPE == PRINTER_PRUSA_MK3)
-        #include "Configuration_A3ides_2209_MK3.h"
-    #elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+    #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
         #include "Configuration_A3ides_2209_MINI.h"
+    #elif (PRINTER_TYPE == PRINTER_PRUSA_MK3)
+        #include "Configuration_A3ides_2209_MK3.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
         #include "Configuration_A3ides_2209_XL.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
         #include "Configuration_A3ides_2209_MK4.h"
-	#elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
-		#include "Configuration_A3ides_2209_iXL.h"
+    #elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
+        #include "Configuration_A3ides_2209_iXL.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR)
         #include "Configuration_A3ides_2209_Manipulator.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_PICKER)
@@ -34,5 +32,3 @@
     #define EXTENSIBLE_UI
     #define NO_LCD_MENUS
 #endif
-
-#endif //_CONFIGURATION_H
