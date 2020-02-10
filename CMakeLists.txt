@@ -25,7 +25,15 @@ endif()
 # cmake .. <other options> -DPRINTER=MINI
 # ~~~
 
-set(PRINTER_VALID_OPTS "MINI" "MK4" "XL" "iXL")
+set(PRINTER_VALID_OPTS
+    "MINI"
+    "MK4"
+    "XL"
+    "IXL"
+    "MANIPULATOR"
+    "PICKER"
+    "EXTRACTOR"
+    )
 set(MOTHERBOARD_VALID_OPTS "1823")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
@@ -132,7 +140,15 @@ target_compile_definitions(
 # Configure Arduino Core
 #
 
-set(ARDUINO_CORE_2209_PRINTERS "MINI" "MK4" "XL" "iXL")
+set(ARDUINO_CORE_2209_PRINTERS
+    "MINI"
+    "MK4"
+    "XL"
+    "IXL"
+    "MANIPULATOR"
+    "PICKER"
+    "EXTRACTOR"
+    )
 if(${PRINTER} IN_LIST ARDUINO_CORE_2209_PRINTERS)
   set(ARDUINO_CORE_VARIANT "2209")
   set(ARDUINO_CORE_TARGET "STM32F4xx")
@@ -145,7 +161,15 @@ endif()
 #
 
 # STM32F4::HAL
-set(STM32F407XX_PRINTERS "MINI" "MK4" "XL" "iXL")
+set(STM32F407XX_PRINTERS
+    "MINI"
+    "MK4"
+    "XL"
+    "IXL"
+    "MANIPULATOR"
+    "PICKER"
+    "EXTRACTOR"
+    )
 if(${PRINTER} IN_LIST STM32F407XX_PRINTERS)
   set(STM32F4_HAL_TARGET "STM32F407xx")
 else()
@@ -280,8 +304,14 @@ if(GENERATE_BBF)
     set(PRINTER_TYPE "2")
   elseif(PRINTER STREQUAL "XL")
     set(PRINTER_TYPE "3")
-  elseif(PRINTER STREQUAL "iXL")
+  elseif(PRINTER STREQUAL "IXL")
     set(PRINTER_TYPE "4")
+  elseif(PRINTER STREQUAL "MANIPULATOR")
+    set(PRINTER_TYPE "5")
+  elseif(PRINTER STREQUAL "PICKER")
+    set(PRINTER_TYPE "6")
+  elseif(PRINTER STREQUAL "EXTRACTOR")
+    set(PRINTER_TYPE "7")
   else()
     message(FATAL_ERROR "Don't know how to encode printer type for ${PRINTER}.")
   endif()
@@ -354,7 +384,7 @@ target_sources(
           $<$<STREQUAL:${PRINTER},MINI>:src/common/filament_sensor.c>
           $<$<STREQUAL:${PRINTER},MK4>:src/common/filament_sensor_hx711.c>
           $<$<STREQUAL:${PRINTER},XL>:src/common/filament_sensor_hx711.c>
-          $<$<STREQUAL:${PRINTER},iXL>:src/common/filament_sensor_hx711.c>
+          $<$<STREQUAL:${PRINTER},IXL>:src/common/filament_sensor_hx711.c>
           src/common/thread_measurement.c
           src/common/diag.c
           src/common/eeprom.c

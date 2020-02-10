@@ -66,7 +66,10 @@ class Printer(Enum):
     MINI = 'MINI'
     MK4 = 'MK4'
     XL = 'XL'
-    iXL = 'iXL'
+    IXL = 'IXL'
+    MANIPULATOR = 'MANIPULATOR'
+    PICKER = 'PICKER'
+    EXTRACTOR = 'EXTRACTOR'
 
 
 class Bootloader(Enum):

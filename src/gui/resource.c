@@ -16,7 +16,7 @@
     #else //_DEBUG
         #include "res/cc/png_statusscreen_logo_prusamk3.c" //IDR_PNG_status_logo_prusa_prn
     #endif //_DEBUG
-#elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MINI || PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR || PRINTER_TYPE == PRINTER_PRUSA_PICKER || PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR)
     #ifdef _DEBUG
         #include "res/cc/png_statusscreen_logo_prusamini_debug.c" //IDR_PNG_status_logo_prusa_prn
     #else //_DEBUG
@@ -28,7 +28,7 @@
     #else //_DEBUG
         #include "res/cc/png_statusscreen_logo_prusaxl.c" //IDR_PNG_status_logo_prusa_prn
     #endif //_DEBUG
-#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+#elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
     #ifdef _DEBUG
         #include "res/cc/png_statusscreen_logo_prusaxl_debug.c" //IDR_PNG_status_logo_prusa_prn
     #else //_DEBUG

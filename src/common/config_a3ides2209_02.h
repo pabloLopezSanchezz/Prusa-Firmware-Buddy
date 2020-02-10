@@ -65,7 +65,7 @@
 
 //--------------------------------------
 //Loadcell HX711 configuration
-#if ((PRINTER_TYPE == PRINTER_PRUSA_MK4) || (PRINTER_TYPE == PRINTER_PRUSA_XL) || (PRINTER_TYPE == PRINTER_PRUSA_iXL))
+#if ((PRINTER_TYPE == PRINTER_PRUSA_MK4) || (PRINTER_TYPE == PRINTER_PRUSA_XL) || (PRINTER_TYPE == PRINTER_PRUSA_IXL))
 
     #define LOADCELL_HX711
 

@@ -25,7 +25,8 @@ void window_logo_draw(window_logo_t *window) {
         const char chr = '\3';
         const uint16_t left = 3;
         const uint16_t right = 118;
-#elif PRINTER_TYPE == PRINTER_PRUSA_MINI
+#elif ((PRINTER_TYPE == PRINTER_PRUSA_MINI) || (PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR) \
+        || (PRINTER_TYPE == PRINTER_PRUSA_PICKER) || (PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR))
         const char chr = '\2';
         const uint16_t left = 16;
         const uint16_t right = 105;
@@ -33,10 +34,12 @@ void window_logo_draw(window_logo_t *window) {
         const char chr = '\4';
         const uint16_t left = 38;
         const uint16_t right = 83;
-#elif PRINTER_TYPE == PRINTER_PRUSA_iXL
+#elif PRINTER_TYPE == PRINTER_PRUSA_IXL
         const char chr = '\4';
         const uint16_t left = 38;
         const uint16_t right = 83;
+#else
+    #error "Unknown PRINTER_TYPE."
 #endif
 
         // ORIGINAL
