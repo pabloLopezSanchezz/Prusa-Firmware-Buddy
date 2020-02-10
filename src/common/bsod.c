@@ -115,6 +115,10 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 #define PADDING 10
 #define X_MAX (display->w - PADDING * 2)
 
+#ifndef HAS_GUI
+    #error "HAS_GUI not defined"
+#elif HAS_GUI
+
 //! @brief Put HW into safe state, activate display safe mode and initialize it twice
 static void stop_common(void) {
     hwio_safe_state();
@@ -191,6 +195,7 @@ void temp_error(const char *error, const char *module, float t_noz, float tt_noz
     general_error(error, buff);
 }
 
+
 void _bsod(const char *fmt, const char *file_name, int line_number, ...) {
     va_list args;
     va_start(args, line_number);
@@ -265,3 +270,9 @@ void _bsod(const char *fmt, const char *file_name, int line_number, ...) {
 
     va_end(args);
 }
+
+#else
+void _bsod(const char *fmt, const char *file_name, int line_number, ...){}
+void general_error(const char *error, const char *module){}
+void temp_error(const char *error, const char *module, float t_noz, float tt_noz, float t_bed, float tt_bed){}
+#endif
