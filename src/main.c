@@ -260,8 +260,10 @@ int main(void) {
     idleTaskHandle = osThreadCreate(osThread(idleTask), NULL);
 
     /* definition and creation of webServerTask */
+#ifndef USE_ILI9488
     osThreadDef(webServerTask, StartWebServerTask, osPriorityNormal, 0, 4096);
     webServerTaskHandle = osThreadCreate(osThread(webServerTask), NULL);
+#endif
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
