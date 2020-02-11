@@ -919,7 +919,7 @@
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
 #define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES 3 // Z Clearance between probe points 1
+#define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points 1
 #define Z_CLEARANCE_MULTI_PROBE 0.7 // Z Clearance between multiple probes
 #define Z_AFTER_PROBING 1 // Z position after probing is done 2
 
