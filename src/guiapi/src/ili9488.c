@@ -127,11 +127,13 @@ static inline void ili9488_fill_ui16(uint16_t *p, uint16_t v, uint16_t c) {
         *(p++) = v;
 }
 
-static void ili9488_fill_ui24(uint8_t *p, uint32_t v, uint16_t c) {
+static void ili9488_fill_ui24(uint8_t *p, uint32_t v, int c) {
     while (c--)
     {
-    	*(uint32_t *)p = v;
-    	p += 3;
+       p[0] = 0xFF & v;
+       p[1] = 0xFF & (v >> 8);
+       p[2] = 0xFF & (v >> 16);
+       p += 3;
     }
 }
 
@@ -179,7 +181,7 @@ void ili9488_spi_wr_bytes(uint8_t *pb, uint16_t size) {
 
 void ili9488_spi_rd_bytes(uint8_t *pb, uint16_t size) {
     HAL_StatusTypeDef ret;
-#if 0
+#if 1
 //#ifdef ILI9488_DMA
 	if (size <= 4)
 		ret = HAL_SPI_Receive(ili9488_config.phspi, pb, size, HAL_MAX_DELAY);
