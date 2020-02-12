@@ -29,7 +29,10 @@ class PrinterType(Enum):
     MK4 = 1
     MINI = 2
     XL = 3
-    iXL = 4
+    IXL = 4
+    MANIPULATOR = 5
+    PICKER = 6
+    EXTRACTOR = 7
 
 
 class UndefinedSha256():

@@ -13,8 +13,17 @@
     #include "Configuration_A3ides_2209_MK4_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
     #include "gui_config_xl.h"
-#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+#elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
     #include "gui_config_ixl.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR)
+    #include "gui_config_manipulator.h"
+    #include "Configuration_A3ides_2209_Manipulator_adv.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_PICKER)
+    #include "gui_config_picker.h"
+    #include "Configuration_A3ides_2209_Picker_adv.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR)
+    #include "gui_config_extractor.h"
+    #include "Configuration_A3ides_2209_Extractor_adv.h"
 #else
     #error "Unknown PRINTER_TYPE."
 #endif

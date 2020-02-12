@@ -20,6 +20,14 @@ const int project_build_number = FW_BUILD_NUMBER;
     const char project_firmware_name[] = "Buddy_XL";
 #elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     const char project_firmware_name[] = "Buddy_MK4";
-#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+#elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
     const char project_firmware_name[] = "Buddy_iXL";
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR)
+    const char project_firmware_name[] = "Buddy_Manipulator";
+#elif (PRINTER_TYPE == PRINTER_PRUSA_PICKER)
+    const char project_firmware_name[] = "Buddy_Picker";
+#elif (PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR)
+    const char project_firmware_name[] = "Buddy_Extractor";
+#else
+    #error "Unknown PRINTER_TYPE."
 #endif

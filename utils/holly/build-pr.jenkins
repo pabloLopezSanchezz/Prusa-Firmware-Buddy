@@ -16,6 +16,16 @@ pipeline {
                         [printer: "mini", build_type: "release", bootloader: "empty"],
                         [printer: "mk4", build_type: "release", bootloader: "no"],
                         [printer: "mk4", build_type: "release", bootloader: "empty"],
+                        [printer: "xl", build_type: "release", bootloader: "no"],
+                        [printer: "xl", build_type: "release", bootloader: "empty"],
+                        [printer: "ixl", build_type: "release", bootloader: "no"],
+                        [printer: "ixl", build_type: "release", bootloader: "empty"],
+                        [printer: "manipulator", build_type: "release", bootloader: "no"],
+                        [printer: "manipulator", build_type: "release", bootloader: "empty"],
+                        [printer: "picker", build_type: "release", bootloader: "no"],
+                        [printer: "picker", build_type: "release", bootloader: "empty"],
+                        [printer: "extractor", build_type: "release", bootloader: "no"],
+                        [printer: "extractor", build_type: "release", bootloader: "empty"],
                     ]
 
                     // prepare version suffix

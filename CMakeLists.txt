@@ -25,7 +25,15 @@ endif()
 # cmake .. <other options> -DPRINTER=MINI
 # ~~~
 
-set(PRINTER_VALID_OPTS "MINI" "MK4" "XL" "iXL")
+set(PRINTER_VALID_OPTS
+    "MINI"
+    "MK4"
+    "XL"
+    "IXL"
+    "MANIPULATOR"
+    "PICKER"
+    "EXTRACTOR"
+    )
 set(MOTHERBOARD_VALID_OPTS "1823")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
@@ -103,8 +111,8 @@ set(unused "${CMAKE_VERBOSE_MAKEFILE} ${CMAKE_RULE_MESSAGES}")
 
 # Set printer features
 set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI")
-set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "iXL")
-set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "iXL")
+set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
+set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL")
 
 if(${PRINTER} IN_LIST PRINTERS_WITH_FILAMENT_SENSOR_YES)
   set(FILAMENT_SENSOR YES)
@@ -151,7 +159,15 @@ target_compile_definitions(
 # Configure Arduino Core
 #
 
-set(ARDUINO_CORE_2209_PRINTERS "MINI" "MK4" "XL" "iXL")
+set(ARDUINO_CORE_2209_PRINTERS
+    "MINI"
+    "MK4"
+    "XL"
+    "IXL"
+    "MANIPULATOR"
+    "PICKER"
+    "EXTRACTOR"
+    )
 if(${PRINTER} IN_LIST ARDUINO_CORE_2209_PRINTERS)
   set(ARDUINO_CORE_VARIANT "2209")
   set(ARDUINO_CORE_TARGET "STM32F4xx")
@@ -164,7 +180,15 @@ endif()
 #
 
 # STM32F4::HAL
-set(STM32F407XX_PRINTERS "MINI" "MK4" "XL" "iXL")
+set(STM32F407XX_PRINTERS
+    "MINI"
+    "MK4"
+    "XL"
+    "IXL"
+    "MANIPULATOR"
+    "PICKER"
+    "EXTRACTOR"
+    )
 if(${PRINTER} IN_LIST STM32F407XX_PRINTERS)
   set(STM32F4_HAL_TARGET "STM32F407xx")
 else()
@@ -303,8 +327,14 @@ if(GENERATE_BBF)
     set(PRINTER_TYPE "2")
   elseif(PRINTER STREQUAL "XL")
     set(PRINTER_TYPE "3")
-  elseif(PRINTER STREQUAL "iXL")
+  elseif(PRINTER STREQUAL "IXL")
     set(PRINTER_TYPE "4")
+  elseif(PRINTER STREQUAL "MANIPULATOR")
+    set(PRINTER_TYPE "5")
+  elseif(PRINTER STREQUAL "PICKER")
+    set(PRINTER_TYPE "6")
+  elseif(PRINTER STREQUAL "EXTRACTOR")
+    set(PRINTER_TYPE "7")
   else()
     message(FATAL_ERROR "Don't know how to encode printer type for ${PRINTER}.")
   endif()

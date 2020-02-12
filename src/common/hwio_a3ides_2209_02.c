@@ -658,12 +658,6 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return hwio_di_get_val(_DI_BTN_EN1) || !hwio_jogwheel_enabled;
         case PIN_BTN_EN2:
             return hwio_di_get_val(_DI_BTN_EN2) || !hwio_jogwheel_enabled;
-        case PIN_FSENSOR:
-#ifdef FILAMENT_SENSOR_HX711
-            return fsensor_probe;
-#else //FILAMENT_SENSOR_HX711
-            return !fs_did_filament_runout();
-#endif //FILAMENT_SENSOR_HX711
         case PIN_Z_DIR:
             return hwio_do_get_val(_DO_Z_DIR);
         default:
