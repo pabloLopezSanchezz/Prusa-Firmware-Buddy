@@ -150,6 +150,7 @@ target_compile_definitions(
   MOTHERBOARD=${MOTHERBOARD}
   PRINTER_TYPE=PRINTER_PRUSA_${PRINTER}
   MARLIN_DISABLE_INFINITE_LOOP
+  PROCESS_CUSTOM_GCODE
   STM32GENERIC
   STM32F4
   _EXTUI
@@ -427,6 +428,8 @@ target_sources(
           src/common/version.c
           src/common/marlin_events.c
           src/common/marlin_errors.c
+          src/common/metric.c
+          src/common/metric_handlers.c
           src/common/uartrxbuff.c
           src/common/loadcell_hx711.c
           src/common/Marlin_CardReader.cpp
@@ -443,7 +446,9 @@ target_sources(
           src/common/print_utils.cpp
           src/common/Marlin_eeprom.cpp
           src/common/base64_stream_decoder.cpp
+          src/marlin_stubs/gcode.cpp
           src/marlin_stubs/G28.cpp
+          src/marlin_stubs/M330.cpp
           src/marlin_stubs/pause/G27.cpp
           src/marlin_stubs/pause/M125.cpp
           src/marlin_stubs/pause/M600.cpp
