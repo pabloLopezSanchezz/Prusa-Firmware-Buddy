@@ -52,6 +52,6 @@ static void uart_handler(metric_point_t *point) {
 metric_handler_t metric_handler_uart = {
     .identifier = METRIC_HANDLER_UART_ID,
     .name = "UART",
-    .on_new_metric_fn = NULL,
+    .on_metric_registered_fn = NULL,
     .handle_fn = uart_handler,
 };

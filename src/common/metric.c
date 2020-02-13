@@ -8,12 +8,15 @@
 
 static void metric_system_task_run();
 
+// task definition
 osThreadDef(metric_system_task, metric_system_task_run, osPriorityAboveNormal,
     0, 1024);
 static osThreadId metric_system_task;
 
+// thread definition
 osMailQDef(metric_system_queue, 6, metric_point_t);
 static osMessageQId metric_system_queue;
+
 static metric_handler_t **metric_system_handlers;
 static bool metric_system_initialized = false;
 static uint16_t dropped_points_count = 0;
@@ -58,38 +61,38 @@ static void metric_system_task_run() {
         }
 
         osMailFree(metric_system_queue, point);
-
         metric_record_integer(&metric_dropped_points, dropped_points_count);
     }
 }
 
 static bool check_min_interval(metric_t *metric) {
-    if (metric->min_interval_ms) {
+    if (metric->min_interval_ms)
         return (HAL_GetTick() - metric->_last_update_timestamp) >= metric->min_interval_ms;
-    } else {
+    else
         return true;
-    }
 }
 
 static void update_min_interval(metric_t *metric) {
     metric->_last_update_timestamp = HAL_GetTick();
 }
 
-static void advertise_metric(metric_t *metric) {
+static void register_metric(metric_t *metric) {
+    if (!metric->_registered)
+        return;
     for (metric_handler_t **handlers = metric_system_handlers; *handlers != NULL; handlers++) {
         metric_handler_t *handler = *handlers;
-        if (handler->on_new_metric_fn)
-            handler->on_new_metric_fn(metric);
+        if (handler->on_metric_registered_fn)
+            handler->on_metric_registered_fn(metric);
     }
-    metric->_advertised = true;
+    metric->_registered = true;
     metric_linked_list_append(metric);
 }
 
 static metric_point_t *point_check_and_prepare(metric_t *metric, metric_value_type_t type) {
     if (!metric_system_initialized)
         return NULL;
-    if (!metric->_advertised)
-        advertise_metric(metric);
+    if (!metric->_registered)
+        register_metric(metric);
     if (metric->type != type) {
         metric_record_error(metric, "invalid type");
         return NULL;
