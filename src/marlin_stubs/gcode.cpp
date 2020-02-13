@@ -9,18 +9,18 @@ bool GcodeSuite::process_parsed_command_custom(bool no_ok) {
         switch (parser.codenum) {
         case 330:
             PrusaGcodeSuite::M330();
-            break;
+            return true;
         case 331:
             PrusaGcodeSuite::M331();
-            break;
+            return true;
         case 332:
             PrusaGcodeSuite::M332();
-            break;
+            return true;
         case 333:
             PrusaGcodeSuite::M333();
-            break;
+            return true;
         }
-        break;
+        return false;
     default:
         return false;
     }
