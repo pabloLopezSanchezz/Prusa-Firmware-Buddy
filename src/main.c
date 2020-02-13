@@ -54,6 +54,7 @@
 #include "timer_defaults.h"
 #include "lwsapi.h" // for lwsapi_init function
 #include "thread_measurement.h"
+#include "metric_handlers.h"
 
 /* USER CODE END Includes */
 
@@ -229,6 +230,12 @@ int main(void) {
     uartrxbuff_open(&uart6rxbuff);
     uartslave_init(&uart6slave, &uart6rxbuff, sizeof(uart6slave_line), uart6slave_line);
     putslave_init(&uart6slave);
+
+    static metric_handler_t *handlers[] = {
+        &metric_handler_uart,
+        NULL
+    };
+    metric_system_init(handlers);
 
     /* USER CODE END 2 */
 
