@@ -217,7 +217,7 @@ void status_footer_update_z_axis(status_footer_t *footer) {
 }
 
 void status_footer_update_filament(status_footer_t *footer) {
-    window_set_text(footer->wt_filament.win.id, filaments[get_filament()].name);
+    //window_set_text(footer->wt_filament.win.id, filaments[get_filament()].name);
 #ifndef LCD_HEATBREAK_TO_FILAMENT
     window_set_text(footer->wt_filament.win.id, filaments[get_filament()].name);
 #endif

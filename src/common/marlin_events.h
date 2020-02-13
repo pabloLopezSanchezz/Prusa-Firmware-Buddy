@@ -58,7 +58,7 @@
 #define MARLIN_CMD_M701 (MARLIN_CMD_M + 701)
 #define MARLIN_CMD_M702 (MARLIN_CMD_M + 702)
 
-#define MARLIN_MAX_MESH_POINTS (4 * 4)
+#define MARLIN_MAX_MESH_POINTS (25)//4 * 4
 
 #pragma pack(push)
 #pragma pack(1)
