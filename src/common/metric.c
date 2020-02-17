@@ -76,23 +76,11 @@ static void update_min_interval(metric_t *metric) {
     metric->_last_update_timestamp = HAL_GetTick();
 }
 
-static void register_metric(metric_t *metric) {
-    if (!metric->_registered)
-        return;
-    for (metric_handler_t **handlers = metric_system_handlers; *handlers != NULL; handlers++) {
-        metric_handler_t *handler = *handlers;
-        if (handler->on_metric_registered_fn)
-            handler->on_metric_registered_fn(metric);
-    }
-    metric->_registered = true;
-    metric_linked_list_append(metric);
-}
-
 static metric_point_t *point_check_and_prepare(metric_t *metric, metric_value_type_t type) {
     if (!metric_system_initialized)
         return NULL;
     if (!metric->_registered)
-        register_metric(metric);
+        metric_register(metric);
     if (metric->type != type) {
         metric_record_error(metric, "invalid type");
         return NULL;
@@ -117,6 +105,18 @@ static void point_enqueue(metric_point_t *recording) {
         update_min_interval(metric);
     else
         osMailFree(metric_system_queue, recording);
+}
+
+void metric_register(metric_t *metric) {
+    if (metric->_registered)
+        return;
+    for (metric_handler_t **handlers = metric_system_handlers; *handlers != NULL; handlers++) {
+        metric_handler_t *handler = *handlers;
+        if (handler->on_metric_registered_fn)
+            handler->on_metric_registered_fn(metric);
+    }
+    metric->_registered = true;
+    metric_linked_list_append(metric);
 }
 
 void metric_record_float(metric_t *metric, float value) {
