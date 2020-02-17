@@ -233,6 +233,7 @@ int main(void) {
 
     static metric_handler_t *handlers[] = {
         &metric_handler_uart,
+        &metric_handler_syslog,
         NULL
     };
     metric_system_init(handlers);

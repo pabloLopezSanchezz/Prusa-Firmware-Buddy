@@ -5,8 +5,9 @@ namespace PrusaGcodeSuite {
 
     /// Metric-related GCodes.
     /// TODO: This is WIP. Those Gcodes need redesign.
-    void M330();
-    void M331();
-    void M332();
-    void M333();
+    void M330(); // select handler
+    void M331(); // enable metric
+    void M332(); // disable metric
+    void M333(); // print metrics and their settings for selected handler
+    void M334(); // handler-specific configuration
 }
