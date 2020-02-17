@@ -54,6 +54,8 @@ class TextProtocolParser:
         elif flag == 's':
             return str(value), tags
         elif flag == 'e':
+            return 1, tags
+        elif flag == 'error':
             return MetricError(str(value)), tags
         else:
             print('invalid value:', value)
