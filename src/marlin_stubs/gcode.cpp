@@ -2,8 +2,14 @@
 
 #include "../../lib/Marlin/Marlin/src/gcode/gcode.h"
 #include "M330.h"
+#include "metric.h"
 
 bool GcodeSuite::process_parsed_command_custom(bool no_ok) {
+    {
+        static metric_t gcode = METRIC("gcode", METRIC_VALUE_STRING, 0, METRIC_HANDLER_DISABLE_ALL);
+        metric_record_string(&gcode, "%s", parser.command_ptr);
+    }
+
     switch (parser.command_letter) {
     case 'M':
         switch (parser.codenum) {
