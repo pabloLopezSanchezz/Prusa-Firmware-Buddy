@@ -83,12 +83,14 @@ static metric_point_t *point_check_and_prepare(metric_t *metric, metric_value_ty
         return NULL;
     if (!metric->_registered)
         metric_register(metric);
+    if (!check_min_interval(metric))
+        return NULL;
     if (metric->type != type) {
         metric_record_error(metric, "invalid type");
         return NULL;
-    } else if (!check_min_interval(metric)) {
-        return NULL;
     }
+    if (!metric->enabled_handlers)
+        return NULL; // don't try to enqueue if nobody is listening
 
     metric_point_t *point = (metric_point_t *)osMailAlloc(metric_system_queue, 0);
     if (!point) {
