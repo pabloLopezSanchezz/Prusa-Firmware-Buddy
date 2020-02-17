@@ -13,15 +13,17 @@ osThreadDef(metric_system_task, metric_system_task_run, osPriorityAboveNormal,
     0, 1024);
 static osThreadId metric_system_task;
 
-// thread definition
+// queue definition
 osMailQDef(metric_system_queue, 6, metric_point_t);
 static osMessageQId metric_system_queue;
 
+// internal variables
 static metric_handler_t **metric_system_handlers;
 static bool metric_system_initialized = false;
 static uint16_t dropped_points_count = 0;
 static metric_t *metric_linked_list_root = NULL;
 
+// internal metrics
 metric_t metric_dropped_points = METRIC("points_dropped", METRIC_VALUE_INTEGER, 1000, METRIC_HANDLER_ENABLE_ALL);
 
 void metric_system_init(metric_handler_t *handlers[]) {
@@ -101,10 +103,12 @@ static metric_point_t *point_check_and_prepare(metric_t *metric, metric_value_ty
 
 static void point_enqueue(metric_point_t *recording) {
     metric_t *metric = recording->metric;
-    if (osMailPut(metric_system_queue, (void *)recording) == osOK)
+    if (osMailPut(metric_system_queue, (void *)recording) == osOK) {
         update_min_interval(metric);
-    else
+    } else {
         osMailFree(metric_system_queue, recording);
+        dropped_points_count += 1;
+    }
 }
 
 void metric_register(metric_t *metric) {
