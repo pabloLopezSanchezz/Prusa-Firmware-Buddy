@@ -10,7 +10,7 @@ static void metric_system_task_run();
 
 // task definition
 osThreadDef(metric_system_task, metric_system_task_run, osPriorityAboveNormal,
-    0, 1024);
+    0, 512);
 static osThreadId metric_system_task;
 
 // queue definition
