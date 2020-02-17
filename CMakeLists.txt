@@ -434,6 +434,7 @@ target_sources(
           src/common/loadcell_hx711.c
           src/common/Marlin_CardReader.cpp
           src/common/appmain.cpp
+          src/common/app_metrics.cpp
           src/common/sim_heater.cpp
           src/common/marlin_server.cpp
           src/common/sim_motion.cpp
