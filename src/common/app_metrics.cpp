@@ -6,8 +6,10 @@
 #include "../Marlin/src/module/stepper.h"
 
 void Buddy::Metrics::RecordMarlinVariables() {
+#if HAS_TEMP_HEATBREAK
     static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&heatbreak, thermalManager.degHeatbreak());
+#endif
 
     static metric_t bed = METRIC("temp_bed", METRIC_VALUE_FLOAT, 2000 + 23, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&bed, thermalManager.degBed());
