@@ -30,6 +30,8 @@
         #define BOARD A3IDES2209_REV01
     #elif (MOTHERBOARD == 1823)
         #define BOARD A3IDES2209_REV02
+    #elif (MOTHERBOARD == 1850)
+        #define BOARD A3IDES2209_REV02
     #endif
 #endif //MOTHERBOARD
 

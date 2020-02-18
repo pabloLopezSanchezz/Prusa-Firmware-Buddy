@@ -47,12 +47,11 @@ set(BOOTLOADER
     "NO"
     CACHE STRING "Selects the bootloader mode (valid values are ${BOOTLOADER_VALID_OPTS})."
     )
-set(MOTHERBOARD
-    $<IF:$<STREQUAL:${PRINTER},MANIPULATOR>,"1850","1823">
-    CACHE
-      STRING
-      "Select the motherboard for which you want to compile the project (valid values are ${MOTHERBOARD_VALID_OPTS})."
-    )
+if(${PRINTER} STREQUAL "MANIPULATOR")
+  set(MOTHERBOARD "1850")
+else()
+  set(MOTHERBOARD "1823")
+endif()
 set(GENERATE_BBF
     "NO"
     CACHE STRING "Whether a .bbf version should be generated."
