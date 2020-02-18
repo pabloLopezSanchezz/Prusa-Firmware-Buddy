@@ -130,6 +130,11 @@ static inline int32_t hx711_read(void)
 }
 */
 
+    #include "metric.h"
+
+metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
+metric_t metric_fsensor_raw = METRIC("fsensor_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
+
 static inline void loadcell_cycle(void) {
     #ifdef HX711_ESP_DEBUG
     gpio_set(LOADCELL_DBG_ESPRX_PIN, 1);
@@ -137,6 +142,7 @@ static inline void loadcell_cycle(void) {
     float load;
     // sample
     loadcell_value = hx711_read_raw();
+    metric_record_integer(&metric_loadcell_raw, loadcell_value);
 
     // scale to grams
     load = loadcell_scale * (loadcell_value - loadcell_offset);
@@ -163,6 +169,7 @@ static inline void fsensor_cycle(void) {
     gpio_set(LOADCELL_DBG_ESPTX_PIN, 1);
         #endif
     fsensor_value = hx711_read_raw();
+    metric_record_integer(&metric_fsensor_raw, fsensor_value);
     // update probe variable
     if (fsensor_value <= (fsensor_threshold_LO)) {
         fsensor_probe = HX711_has_filament;
