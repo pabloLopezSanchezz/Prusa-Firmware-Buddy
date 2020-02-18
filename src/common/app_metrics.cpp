@@ -5,7 +5,12 @@
 #include "../Marlin/src/module/planner.h"
 #include "../Marlin/src/module/stepper.h"
 
+/// This metric is defined in Marlin/src/module/probe.cpp, thus no interface
+extern metric_t metric_probe_z;
+
 void Buddy::Metrics::RecordMarlinVariables() {
+    metric_register(&metric_probe_z);
+
 #if HAS_TEMP_HEATBREAK
     static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&heatbreak, thermalManager.degHeatbreak());
