@@ -5,8 +5,8 @@
 #include "stm32f4xx_hal.h"
 #include "sockets.h"
 
-#define MAC_ADDR_START 0x1FFF781A //MM:MM:MM:SS:SS:SS
-#define MAC_ADDR_SIZE 6
+#define MAC_ADDR_START            0x1FFF781A //MM:MM:MM:SS:SS:SS
+#define MAC_ADDR_SIZE             6
 #define TEXTPROTOCOL_POINT_MAXLEN 63
 
 static int textprotocol_append_point(char *buffer, int buffer_len, metric_point_t *point, int timestamp_diff) {

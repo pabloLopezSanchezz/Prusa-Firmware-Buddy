@@ -4,14 +4,14 @@
 
 //--------------------------------------
 //printer variants
-#define PRINTER_PRUSA_MK3 1 //MK3 printer
-#define PRINTER_PRUSA_MINI 2 //MINI printer
-#define PRINTER_PRUSA_XL 3 //XL printer
-#define PRINTER_PRUSA_MK4 4 //MK3 printer with new extruder
-#define PRINTER_PRUSA_IXL 5 //iXL printer with new extruder
+#define PRINTER_PRUSA_MK3         1 //MK3 printer
+#define PRINTER_PRUSA_MINI        2 //MINI printer
+#define PRINTER_PRUSA_XL          3 //XL printer
+#define PRINTER_PRUSA_MK4         4 //MK3 printer with new extruder
+#define PRINTER_PRUSA_IXL         5 //iXL printer with new extruder
 #define PRINTER_PRUSA_MANIPULATOR 6
-#define PRINTER_PRUSA_PICKER 7
-#define PRINTER_PRUSA_EXTRACTOR 8
+#define PRINTER_PRUSA_PICKER      7
+#define PRINTER_PRUSA_EXTRACTOR   8
 
 #ifndef PRINTER_TYPE
     #error "macro PRINTER_TYPE not defined"
@@ -21,7 +21,7 @@
 
 //--------------------------------------
 //board revisions
-#define OLIMEX_E407 0 //Olimex STM32-E407 devboard (discontinued 1.9.2019)
+#define OLIMEX_E407      0 //Olimex STM32-E407 devboard (discontinued 1.9.2019)
 #define A3IDES2130_REV01 1 //A3ides with TMC2130 rev01 (discontinued 1.9.2019)
 #define A3IDES2209_REV01 2 //A3ides with TMC2209 rev01 (discontinued 1.9.2019)
 #define A3IDES2209_REV02 4 //A3ides with TMC2209 rev02
@@ -89,7 +89,7 @@
 #endif //LCDSIM
 
 //marlin api config
-#define MARLIN_MAX_CLIENTS 3 // maximum number of clients registered in same time
+#define MARLIN_MAX_CLIENTS 3   // maximum number of clients registered in same time
 #define MARLIN_MAX_REQUEST 100 // maximum request length in chars
 
 //display PSOD instead of BSOD

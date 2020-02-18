@@ -35,7 +35,7 @@ extern "C" {
 ///    TODO: complete those instructions
 ///
 
-#define METRIC_HANDLER_ENABLE_ALL (0xffffffff)
+#define METRIC_HANDLER_ENABLE_ALL  (0xffffffff)
 #define METRIC_HANDLER_DISABLE_ALL (0x00000000)
 
 typedef enum {
