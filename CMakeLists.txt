@@ -34,7 +34,7 @@ set(PRINTER_VALID_OPTS
     "PICKER"
     "EXTRACTOR"
     )
-set(MOTHERBOARD_VALID_OPTS "1823")
+set(MOTHERBOARD_VALID_OPTS "1823" "1850")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
 set(PRINTER
@@ -48,7 +48,7 @@ set(BOOTLOADER
     CACHE STRING "Selects the bootloader mode (valid values are ${BOOTLOADER_VALID_OPTS})."
     )
 set(MOTHERBOARD
-    "1823"
+    $<IF:$<STREQUAL:${PRINTER},MANIPULATOR>,"1850","1823">
     CACHE
       STRING
       "Select the motherboard for which you want to compile the project (valid values are ${MOTHERBOARD_VALID_OPTS})."
