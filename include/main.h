@@ -1,8 +1,8 @@
 #pragma once
 #include "printers.h"
 
-#if (!defined(PRINTER_PRUSA_MINI) || !defined(PRINTER_PRUSA_MK4) \
-    || !defined(PRINTER_PRUSA_XL) || !defined(PRINTER_PRUSA_IXL) \
+#if (!defined(PRINTER_PRUSA_MINI) || !defined(PRINTER_PRUSA_MK4)             \
+    || !defined(PRINTER_PRUSA_XL) || !defined(PRINTER_PRUSA_IXL)             \
     || !defined(PRINTER_PRUSA_MANIPULATOR) || !defined(PRINTER_PRUSA_PICKER) \
     || !defined(PRINTER_PRUSA_EXTRACTOR))
     #error "Some printer type not defined."

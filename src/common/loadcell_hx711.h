@@ -9,22 +9,22 @@
 extern "C" {
 #endif //__cplusplus
 
-extern int32_t loadcell_value; // raw value readed from ADC
-extern float loadcell_scale; // scale (calibration value grams/raw)
-extern float loadcell_load; // load in grams
-extern float loadcell_threshold; // threshold for probe in grams
+extern int32_t loadcell_value;    // raw value readed from ADC
+extern float loadcell_scale;      // scale (calibration value grams/raw)
+extern float loadcell_load;       // load in grams
+extern float loadcell_threshold;  // threshold for probe in grams
 extern float loadcell_hysteresis; // hysteresis for probe in grams
-extern int loadcell_probe; // probe status
-extern int loadcell_error; // error counter
-extern int loadcell_count; // cycle counter
+extern int loadcell_probe;        // probe status
+extern int loadcell_error;        // error counter
+extern int loadcell_count;        // cycle counter
 
 #ifdef FILAMENT_SENSOR_HX711
 
 typedef enum {
-	HX711_has_filament,
-	HX711_no_filament,
-	HX711_disconnected
-}HX711_t;
+    HX711_has_filament,
+    HX711_no_filament,
+    HX711_disconnected
+} HX711_t;
 
 extern int32_t fsensor_value;
 extern HX711_t fsensor_probe;

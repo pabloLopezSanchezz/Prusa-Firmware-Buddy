@@ -15,8 +15,8 @@
     #include "../Marlin/src/module/temperature.h"
     #include "marlin_client.h"
 
-    #define SPIN_DIGITS 6
-    #define SPIN_PRECISION 2
+    #define SPIN_DIGITS     6
+    #define SPIN_PRECISION  2
     #define SPIN_INT_DIGITS (SPIN_DIGITS - SPIN_PRECISION)
 
 enum { _BED = -1,
@@ -115,7 +115,7 @@ typedef struct
     #define pd ((screen_PID_data_t *)screen->pdata)
 
     #define AUTO_TN_DEFAULT_CL COLOR_WHITE
-    #define AUTO_TN_ACTIVE_CL COLOR_RED
+    #define AUTO_TN_ACTIVE_CL  COLOR_RED
 
 enum {
     TAG_QUIT = 10,
@@ -208,9 +208,9 @@ void screen_PID_init(screen_t *screen) {
     pd->autotune_temp_B = 70;
 
     _PID_ctor(&(pd->_PID_E), _EXTRUDER, &pd->autotune_temp_E);
-#if ENABLED(PIDBEDTEMP)
+    #if ENABLED(PIDBEDTEMP)
     _PID_ctor(&(pd->_PID_B), _BED, &pd->autotune_temp_B);
-#endif
+    #endif
 
     int16_t id;
     uint16_t col = 2;
@@ -535,7 +535,7 @@ screen_t screen_PID = {
     screen_PID_draw,
     screen_PID_event,
     sizeof(screen_PID_data_t), //data_size
-    0, //pdata
+    0,                         //pdata
 };
 
 const screen_t *pscreen_PID = &screen_PID;
@@ -585,22 +585,22 @@ void _PID_ctor(_PID_t *ths, int16_t id, float *autotune_temp) {
     ths->autotune_temp = autotune_temp;
 
     //stupid Marlin has bed PID defined unlike extruder
-#if ENABLED(PIDBEDTEMP)
+    #if ENABLED(PIDBEDTEMP)
     if (id >= 0)
-#endif //ENABLED(PIDBEDTEMP)
+    #endif //ENABLED(PIDBEDTEMP)
     {
         ths->p_Kp = &PID_PARAM(Kp, ths->ID);
         ths->p_Ki = &PID_PARAM(Ki, ths->ID);
         ths->p_Kd = &PID_PARAM(Kd, ths->ID);
     }
-#if ENABLED(PIDBEDTEMP)
+    #if ENABLED(PIDBEDTEMP)
     else {
         //should i use temp_bed.pid or tune_pid?
         ths->p_Kp = &Temperature::temp_bed.pid.Kp;
         ths->p_Ki = &Temperature::temp_bed.pid.Ki;
         ths->p_Kd = &Temperature::temp_bed.pid.Kd;
     }
-#endif //ENABLED(PIDBEDTEMP)
+    #endif //ENABLED(PIDBEDTEMP)
 
     ths->raw_Ki = unscalePID_i(*ths->p_Ki);
     ths->raw_Kd = unscalePID_d(*ths->p_Kd);

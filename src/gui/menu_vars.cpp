@@ -124,7 +124,6 @@ constexpr const char Z_home_gcode[] = {
     nth_char(Z_home, 7),
     nth_char(Z_home, 8)
 };
-
 }
 
 #if (PRINTER_TYPE == PRINTER_PRUSA_MK4)

@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 //stringize macros
 #define QUOTE_ME(x) #x
-#define STR(x) QUOTE_ME(x)
+#define STR(x)      QUOTE_ME(x)
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,7 +56,6 @@ extern const int32_t filament_change_full_load_length;
 extern const int32_t filament_change_slow_purge_length;
 extern const int32_t filament_change_full_purge_load_length;
 extern const float filament_unload_mini_length;
-
 
 #ifdef __cplusplus
 }

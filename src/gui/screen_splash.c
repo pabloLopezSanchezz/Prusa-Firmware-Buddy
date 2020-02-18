@@ -80,7 +80,7 @@ void screen_splash_init(screen_t *screen) {
         &(_psd->text_version));
     window_set_alignment(id, ALIGN_CENTER);
     snprintf(_psd->text_version_buffer, sizeof(_psd->text_version_buffer), "%s%s",
-          project_version, project_version_suffix_short);
+        project_version, project_version_suffix_short);
     window_set_text(id, _psd->text_version_buffer);
 }
 
@@ -101,13 +101,13 @@ int screen_splash_event(screen_t *screen, window_t *window, uint8_t event, void 
         uint8_t run_xyzcalib = eeprom_get_var(EEVAR_RUN_XYZCALIB).ui8;
         uint8_t run_firstlay = eeprom_get_var(EEVAR_RUN_FIRSTLAY).ui8;
         uint8_t run_wizard = (run_selftest && run_xyzcalib && run_firstlay) ? 1 : 0;
-		if (
-		#ifdef DISABLE_WIZARD_CHECK_STARTUP
-			0
-		#else
-		 (run_wizard || run_firstlay)
-		#endif
-		 ) {
+        if (
+    #ifdef DISABLE_WIZARD_CHECK_STARTUP
+            0
+    #else
+            (run_wizard || run_firstlay)
+    #endif
+        ) {
             if (run_wizard) {
                 screen_stack_push(pscreen_home->id);
                 wizard_run_complete();
@@ -147,7 +147,7 @@ screen_t screen_splash = {
     screen_splash_draw,
     screen_splash_event,
     sizeof(screen_splash_data_t), //data_size
-    0, //pdata
+    0,                            //pdata
 };
 
 const screen_t *pscreen_splash = &screen_splash;
