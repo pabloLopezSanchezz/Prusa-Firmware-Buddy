@@ -44,5 +44,4 @@ void Buddy::Metrics::RecordMarlinVariables() {
     metric_record_float(&pos_y, planner.get_axis_position_mm(AxisEnum::Y_AXIS));
     static metric_t pos_z = METRIC("pos_z", METRIC_VALUE_FLOAT, 11, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&pos_z, planner.get_axis_position_mm(AxisEnum::Z_AXIS));
-
 }
