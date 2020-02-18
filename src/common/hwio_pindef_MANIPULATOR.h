@@ -15,9 +15,9 @@
 
 #define PIN_TEMP_0 PC0
 
-#define PIN_X_DIR    PD0
-#define PIN_X_STEP   PD1
-#define PIN_X_ENABLE PD3
+#define PIN_X_DIR    PC8
+#define PIN_X_STEP   PC9
+#define PIN_X_ENABLE PD11
 #define PIN_X_DIAG   PE2
 
 #define PIN_Y_DIR    PD12
@@ -25,9 +25,9 @@
 #define PIN_Y_ENABLE PD14
 #define PIN_Y_DIAG   PE1
 
-#define PIN_Z_DIR    PD15
-#define PIN_Z_STEP   PD4
-#define PIN_Z_ENABLE PD2
+#define PIN_Z_DIR    PC3
+#define PIN_Z_STEP   PB10
+#define PIN_Z_ENABLE PC2
 #define PIN_Z_DIAG   PE3
 
 #define PIN_E_DIR    PD8
