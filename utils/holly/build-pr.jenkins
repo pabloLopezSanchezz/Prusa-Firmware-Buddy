@@ -48,15 +48,13 @@ pipeline {
                     // create the build stages
                     configurations.each { config ->
                         stage("Build - ${config.printer},${config.build_type},${config.bootloader}boot") {
+                            def variant_full_suffix = full_suffix
+                            def options = ""
                             if (config.containsKey('variant')) {
-                                def variant_full_suffix = "${full_suffix}.${config.variant}"
-                            } else {
-                                def variant_full_suffix = full_suffix
+                                variant_full_suffix = "${full_suffix}.${config.variant}"
                             }
                             if (config.containsKey('options')) {
-                                def options = config.options
-                            } else {
-                                def options = ""
+                                options = config.options
                             }
                             sh """
                                 python utils/build.py \
