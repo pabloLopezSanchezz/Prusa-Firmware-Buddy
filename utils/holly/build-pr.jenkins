@@ -14,17 +14,15 @@ pipeline {
                     def configurations = [
                         [printer: "mini", build_type: "release", bootloader: "no"],
                         [printer: "mini", build_type: "release", bootloader: "empty"],
-                        [printer: "mk4", build_type: "release", bootloader: "no"],
-                        [printer: "mk4", build_type: "release", bootloader: "empty"],
+                        [printer: "mk4", build_type: "release", bootloader: "no", variant: 'Buddy'],
+                        [printer: "mk4", build_type: "release", bootloader: "empty", variant: 'Buddy'],
+                        [printer: "mk4", build_type: "release", bootloader: "no", variant: 'BuddyXL', options: '-DCUSTOM_COMPILE_OPTIONS=BUDDY_XL_ELECTRONICS'],
+                        [printer: "mk4", build_type: "release", bootloader: "empty", variant: 'BuddyXL', options: '-DCUSTOM_COMPILE_OPTIONS=BUDDY_XL_ELECTRONICS'],
                         [printer: "xl", build_type: "release", bootloader: "no"],
                         [printer: "xl", build_type: "release", bootloader: "empty"],
-                        [printer: "ixl", build_type: "release", bootloader: "no"],
                         [printer: "ixl", build_type: "release", bootloader: "empty"],
-                        [printer: "manipulator", build_type: "release", bootloader: "no"],
                         [printer: "manipulator", build_type: "release", bootloader: "empty"],
-                        [printer: "picker", build_type: "release", bootloader: "no"],
                         [printer: "picker", build_type: "release", bootloader: "empty"],
-                        [printer: "extractor", build_type: "release", bootloader: "no"],
                         [printer: "extractor", build_type: "release", bootloader: "empty"],
                     ]
 
@@ -50,6 +48,16 @@ pipeline {
                     // create the build stages
                     configurations.each { config ->
                         stage("Build - ${config.printer},${config.build_type},${config.bootloader}boot") {
+                            if (config.containsKey('variant')) {
+                                def variant_full_suffix = "${full_suffix}.${config.variant}"
+                            } else {
+                                def variant_full_suffix = full_suffix
+                            }
+                            if (config.containsKey('options')) {
+                                def options = config.options
+                            } else {
+                                def options = ""
+                            }
                             sh """
                                 python utils/build.py \
                                     --printer ${config.printer} \
@@ -57,8 +65,8 @@ pipeline {
                                     --bootloader ${config.bootloader} \
                                     --generate-bbf \
                                     --no-store-output \
-                                    --version-suffix=${full_suffix} \
-                                    --version-suffix-short=${short_suffix}
+                                    --version-suffix=${variant_full_suffix} \
+                                    --version-suffix-short=${short_suffix} ${options}
                             """
                         }
                     }
