@@ -25,7 +25,7 @@ class Point:
         return isinstance(self.value, MetricError)
 
     def __repr__(self):
-        return f'Point({self.timestamp}, {self.metric_name}, {self.value})'
+        return 'Point(%s, %s, %s)' % (self.timestamp, self.metric_name, self.value)
 
 
 class TextProtocolParser:
@@ -54,6 +54,8 @@ class TextProtocolParser:
         elif flag == 's':
             return str(value), tags
         elif flag == 'e':
+            return 1, tags
+        elif flag == 'error':
             return MetricError(str(value)), tags
         else:
             print('invalid value:', value)
@@ -243,9 +245,10 @@ async def main(database, serial_port, syslog_port):
 @click.option('--serial')
 @click.option('--syslog-port', default=8514, type=int)
 def cmd(database, serial, syslog_port):
-    asyncio.run(
-        main(database=database, serial_port=serial, syslog_port=syslog_port))
-
+    loop = asyncio.get_event_loop()
+    asyncio.ensure_future(main(database=database, serial_port=serial, syslog_port=syslog_port))
+    loop.run_forever()
+    loop.close()
 
 if __name__ == '__main__':
     cmd()
