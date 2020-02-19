@@ -34,7 +34,7 @@ set(PRINTER_VALID_OPTS
     "PICKER"
     "EXTRACTOR"
     )
-set(MOTHERBOARD_VALID_OPTS "1823")
+set(MOTHERBOARD_VALID_OPTS "1823" "1850")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
 set(PRINTER
@@ -47,12 +47,11 @@ set(BOOTLOADER
     "NO"
     CACHE STRING "Selects the bootloader mode (valid values are ${BOOTLOADER_VALID_OPTS})."
     )
-set(MOTHERBOARD
-    "1823"
-    CACHE
-      STRING
-      "Select the motherboard for which you want to compile the project (valid values are ${MOTHERBOARD_VALID_OPTS})."
-    )
+if(${PRINTER} STREQUAL "MANIPULATOR")
+  set(MOTHERBOARD "1850")
+else()
+  set(MOTHERBOARD "1823")
+endif()
 set(GENERATE_BBF
     "NO"
     CACHE STRING "Whether a .bbf version should be generated."
@@ -403,7 +402,7 @@ target_sources(
           src/freertos_openocd.c
           src/usbh_diskio.c
           src/ethernetif.c
-          src/main.c
+          src/main_${PRINTER}.c
           src/usbd_desc.c
           src/fs_custom.c
           $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/system_stm32f4xx_boot.c>
@@ -577,13 +576,6 @@ set_property(
            FW_VERSION=${PROJECT_VERSION}
            FW_VERSION_SUFFIX=${PROJECT_VERSION_SUFFIX}
            FW_VERSION_SUFFIX_SHORT=${PROJECT_VERSION_SUFFIX_SHORT}
-  )
-
-set_property(
-  SOURCE src/main.c
-  APPEND
-  PROPERTY COMPILE_DEFINITIONS HAS_FILAMENT_SENSOR=$<BOOL:${FILAMENT_SENSOR}>
-           HAS_GUI=$<BOOL:${GUI}>
   )
 
 set_property(

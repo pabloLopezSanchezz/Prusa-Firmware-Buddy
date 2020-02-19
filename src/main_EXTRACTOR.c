@@ -54,7 +54,6 @@
 #include "timer_defaults.h"
 #include "lwsapi.h" // for lwsapi_init function
 #include "thread_measurement.h"
-#include "metric_handlers.h"
 
 /* USER CODE END Includes */
 
@@ -231,13 +230,6 @@ int main(void) {
     uartslave_init(&uart6slave, &uart6rxbuff, sizeof(uart6slave_line), uart6slave_line);
     putslave_init(&uart6slave);
 
-    static metric_handler_t *handlers[] = {
-        &metric_handler_uart,
-        &metric_handler_syslog,
-        NULL
-    };
-    metric_system_init(handlers);
-
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -257,30 +249,16 @@ int main(void) {
     osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 1024);
     defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-    /* definition and creation of displayTask */
-#ifndef HAS_GUI
-    #error "HAS_GUI not defined."
-#elif HAS_GUI
-    osThreadDef(displayTask, StartDisplayTask, osPriorityNormal, 0, 2048);
-    displayTaskHandle = osThreadCreate(osThread(displayTask), NULL);
-#endif
     /* definition and creation of idleTask */
     osThreadDef(idleTask, StartIdleTask, osPriorityIdle, 0, 128);
     idleTaskHandle = osThreadCreate(osThread(idleTask), NULL);
 
     /* definition and creation of webServerTask */
-    osThreadDef(webServerTask, StartWebServerTask, osPriorityNormal, 0, 512);
+    osThreadDef(webServerTask, StartWebServerTask, osPriorityNormal, 0, 4096);
     webServerTaskHandle = osThreadCreate(osThread(webServerTask), NULL);
 
     /* USER CODE BEGIN RTOS_THREADS */
-    /* add threads, ... */
-    /* definition and creation of measurementTask */
-#ifndef HAS_FILAMENT_SENSOR
-    #error "HAS_FILAMENT_SENSOR not defined."
-#elif HAS_FILAMENT_SENSOR
-    osThreadDef(measurementTask, StartMeasurementTask, osPriorityNormal, 0, 512);
-    osThreadCreate(osThread(measurementTask), NULL);
-#endif
+
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
