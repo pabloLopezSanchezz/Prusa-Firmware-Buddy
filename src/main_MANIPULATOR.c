@@ -78,7 +78,6 @@ I2C_HandleTypeDef hi2c1;
 
 IWDG_HandleTypeDef hiwdg;
 
-SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi2_tx;
 
