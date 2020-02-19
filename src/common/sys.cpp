@@ -5,6 +5,7 @@
 #include "st25dv64k.h"
 #include "new_eeprom.h"
 #include "dbg.h"
+#include "main.h"
 
 #ifndef HAS_GUI
     #error "HAS_GUI not defined."
