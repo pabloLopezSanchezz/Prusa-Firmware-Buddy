@@ -116,6 +116,7 @@ set(unused "${CMAKE_VERBOSE_MAKEFILE} ${CMAKE_RULE_MESSAGES}")
 set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI")
 set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
 set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL")
+set(WUI YES)
 
 if(${PRINTER} IN_LIST PRINTERS_WITH_FILAMENT_SENSOR_YES)
   set(FILAMENT_SENSOR YES)
@@ -228,8 +229,9 @@ target_link_libraries(FreeRTOS_Config INTERFACE STM32::CPU)
 # Configure LwIP
 #
 
-set(LWIP_HTTPD_CUSTOM_FILES "1")
-add_library(LwIP_Config ALIAS A3idesHeaders)
+add_library(LwIP_Config INTERFACE)
+target_include_directories(LwIP_Config INTERFACE src/wui src/wui/resources)
+target_link_libraries(LwIP_Config INTERFACE A3idesHeaders)
 
 #
 # Configure FatFs
@@ -366,14 +368,17 @@ elseif(SIGNING_KEY)
 endif()
 
 target_include_directories(
-  firmware PRIVATE include src/common src/gui src/gui/dialogs src/guiapi/include src/wui
+  firmware
+  PRIVATE include
+          src/common
+          src/gui
+          src/gui/dialogs
+          src/guiapi/include
+          src/wui
+          src/wui/http
   )
 
 target_compile_options(firmware PRIVATE -Wdouble-promotion)
-
-# generate datetime string (RFC1123) to be used by web ui
-rfc1123_datetime(RFC1123_DATETIME)
-target_compile_definitions(firmware PRIVATE RFC1123_DATETIME="$RFC1123_DATETIME")
 
 target_link_libraries(
   firmware
@@ -404,7 +409,6 @@ target_sources(
           src/ethernetif.c
           src/main_${PRINTER}.c
           src/usbd_desc.c
-          src/fs_custom.c
           $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/system_stm32f4xx_boot.c>
           $<$<STREQUAL:${BOOTLOADER},NO>:src/system_stm32f4xx.c>
           src/stm32f4xx_hal_msp.c
@@ -466,10 +470,6 @@ target_sources(
           src/marlin_stubs/pause/M603.cpp
           src/marlin_stubs/pause/M701_M702.cpp
           src/marlin_stubs/pause/pause.cpp
-          src/wui/http_states.c
-          src/wui/lwsapi.cpp
-          src/wui/connect.cpp
-          src/wui/connection.cpp
   )
 
 if(GUI)
@@ -565,6 +565,13 @@ if(GUI)
             src/guiapi/src/window_msgbox.c
             src/guiapi/src/window.c
     )
+endif()
+
+if(WUI)
+  target_sources(
+    firmware PRIVATE src/wui/wui.c src/wui/wui_api.c src/wui/http/fs.c src/wui/http/httpd.c
+    )
+  target_compile_definitions(firmware PRIVATE BUDDY_ENABLE_WUI)
 endif()
 
 set_property(
