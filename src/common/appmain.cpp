@@ -53,9 +53,9 @@ metric_t metric_cpu_usage = METRIC("cpu_usage", METRIC_VALUE_INTEGER, 1000, METR
 extern uartrxbuff_t uart6rxbuff; // PUT rx buffer
 extern uartslave_t uart6slave;   // PUT slave
 
-#ifdef ETHERNET
+#ifdef BUDDY_ENABLE_ETHERNET
 extern osThreadId webServerTaskHandle; // Webserver thread(used for fast boot mode)
-#endif                                 //ETHERNET
+#endif                                 //BUDDY_ENABLE_ETHERNET
 
 #ifndef _DEBUG
 extern IWDG_HandleTypeDef hiwdg; //watchdog handle
@@ -83,10 +83,10 @@ void app_idle(void) {
 void app_run(void) {
     DBG("app_run");
 
-#ifdef ETHERNET
+#ifdef BUDDY_ENABLE_ETHERNET
     if (diag_fastboot)
         osThreadResume(webServerTaskHandle);
-#endif //ETHERNET
+#endif //BUDDY_ENABLE_ETHERNET
 
     uint8_t defaults_loaded = eeprom_init();
 

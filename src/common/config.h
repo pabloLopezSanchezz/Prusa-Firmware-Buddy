@@ -60,9 +60,10 @@
 #endif
 
 //--------------------------------------
-//ETHERNET configuration
-#define ETHERNET
-
+//BUDDY_ENABLE_ETHERNET configuration
+#ifdef BUDDY_ENABLE_WUI
+    #define BUDDY_ENABLE_ETHERNET
+#endif //BUDDY_ENABLE_WUI
 //--------------------------------------
 // Disable wizard startup check on splash screen
 #define DISABLE_WIZARD_CHECK_STARTUP
@@ -72,7 +73,7 @@
 
 //defined as external
 #ifdef LCDSIM
-    #undef ETHERNET
+    #undef BUDDY_ENABLE_ETHERNET
     #define LCDSIM_COLS 20
     #define LCDSIM_ROWS 4
 #endif //LCDSIM
