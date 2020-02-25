@@ -44,7 +44,7 @@
 #include "fatfs.h"
 #ifdef BUDDY_ENABLE_WUI
     #include "wui.h"
-#endif 
+#endif
 #include "usb_device.h"
 #include "usb_host.h"
 
@@ -261,7 +261,7 @@ int main(void) {
     /* definition and creation of webServerTask */
     osThreadDef(webServerTask, StartWebServerTask, osPriorityNormal, 0, BUDDY_WEB_STACK_SIZE);
     webServerTaskHandle = osThreadCreate(osThread(webServerTask), NULL);
-#endif     
+#endif
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
