@@ -470,6 +470,7 @@ target_sources(
           src/marlin_stubs/pause/M603.cpp
           src/marlin_stubs/pause/M701_M702.cpp
           src/marlin_stubs/pause/pause.cpp
+          src/gui/filament.cpp
   )
 
 if(GUI)
@@ -533,7 +534,6 @@ if(GUI)
             src/gui/screen_filebrowser.cpp
             src/gui/screen_menu_preheat.cpp
             src/gui/status_footer.cpp
-            src/gui/filament.cpp
             src/gui/menu_vars.cpp
             src/gui/screen_printing.cpp
             src/gui/screen_menu_tune.cpp
