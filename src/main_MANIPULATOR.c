@@ -639,7 +639,6 @@ static void MX_TIM3_Init(void) {
     //HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
     //HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
     /* USER CODE END TIM3_Init 2 */
-    HAL_TIM_MspPostInit(&htim3);
 }
 
 /**
