@@ -108,7 +108,9 @@ class SyslogHandlerClient(asyncio.DatagramProtocol):
         for point in points:
             timestamp += timedelta(milliseconds=point.timestamp)
             point.timestamp = timestamp
-            point.tags = dict(**point.tags, **self.tags)
+            point.tags = dict(mac_address=printer.mac_address,
+                              **point.tags,
+                              **self.tags)
             self.handle_fn(point)
 
     def __init__(self, port, handle_fn):
