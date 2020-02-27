@@ -133,6 +133,7 @@ static inline int32_t hx711_read(void)
     #include "metric.h"
 
 metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
+metric_t metric_loadcell = METRIC("loadcell", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
 metric_t metric_fsensor_raw = METRIC("fsensor_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
 
 static inline void loadcell_cycle(void) {
@@ -146,6 +147,7 @@ static inline void loadcell_cycle(void) {
 
     // scale to grams
     load = loadcell_scale * (loadcell_value - loadcell_offset);
+    metric_record_float(&metric_loadcell, load);
     // update probe variable
     if (loadcell_probe) {
         if (load >= (loadcell_threshold + loadcell_hysteresis))
