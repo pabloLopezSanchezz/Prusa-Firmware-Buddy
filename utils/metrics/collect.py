@@ -108,7 +108,9 @@ class SyslogHandlerClient(asyncio.DatagramProtocol):
         for point in points:
             timestamp += timedelta(milliseconds=point.timestamp)
             point.timestamp = timestamp
-            point.tags = dict(**point.tags, **self.tags)
+            point.tags = dict(mac_address=printer.mac_address,
+                              **point.tags,
+                              **self.tags)
             self.handle_fn(point)
 
     def __init__(self, port, handle_fn):
@@ -217,7 +219,7 @@ class Application:
                         print('received error point', point.metric_name,
                               point.value.message)
 
-                print('writing', influx_points, 'points')
+                print('writing', len(influx_points), 'points')
                 await self.influx.write(influx_points)
             except Exception as e:
                 print('error when sending points: %s' % e)
