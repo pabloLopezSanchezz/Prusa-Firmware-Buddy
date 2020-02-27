@@ -678,7 +678,7 @@
  */
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 400, 280 } //E0 280 295
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
-    { 100, 100, 400, 317 } //E0 280 295
+    { 241.881, 100, 241.881, 317 } //E0 280 295
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 800, 800, 3200, 1120 } //E0 280 295
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 400, 1120 } //E0 280 295
 
@@ -688,7 +688,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_FEEDRATE \
-    { 180, 180, 12, 80 }
+    { 70, 180, 56, 80 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -986,16 +986,16 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 180
+#define X_BED_SIZE 4790
 #define Y_BED_SIZE 180
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-#define X_MIN_POS -2
+#define X_MIN_POS -4790
 #define Y_MIN_POS -3
 #define Z_MIN_POS 0
-#define X_MAX_POS X_BED_SIZE
+#define X_MAX_POS 0
 #define Y_MAX_POS Y_BED_SIZE
-#define Z_MAX_POS 185
+#define Z_MAX_POS 1630
 
 /**
  * Software Endstops
@@ -1266,7 +1266,7 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing when homing all axes (G28).
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-#define Z_SAFE_HOMING
+//#define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
     #define Z_SAFE_HOMING_X_POINT (147.4) // X point for Z homing when homing all axes (G28).
