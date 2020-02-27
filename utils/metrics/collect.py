@@ -219,7 +219,7 @@ class Application:
                         print('received error point', point.metric_name,
                               point.value.message)
 
-                print('writing', influx_points, 'points')
+                print('writing', len(influx_points), 'points')
                 await self.influx.write(influx_points)
             except Exception as e:
                 print('error when sending points: %s' % e)
