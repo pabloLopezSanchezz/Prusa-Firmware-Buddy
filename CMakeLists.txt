@@ -394,6 +394,8 @@ target_link_libraries(
           STM32::USBDevice
           CPU
           inih::inih
+          QR
+          CRC
   )
 
 target_sources(
@@ -460,9 +462,13 @@ target_sources(
           src/common/print_utils.cpp
           src/common/Marlin_eeprom.cpp
           src/common/base64_stream_decoder.cpp
+          src/common/support_utils.cpp
+          src/common/errors.c
+          src/common/lang.c
           src/marlin_stubs/gcode.cpp
           src/marlin_stubs/G28.cpp
           src/marlin_stubs/M330.cpp
+          src/marlin_stubs/M876.cpp
           src/marlin_stubs/gcode.cpp
           src/marlin_stubs/pause/G27.cpp
           src/marlin_stubs/pause/M125.cpp
@@ -512,6 +518,8 @@ if(GUI)
             src/gui/screen_watchdog.c
             src/gui/screen_menu_move.c
             src/gui/screen_lan_settings.c
+            src/gui/screen_qr_info.cpp
+            src/gui/screen_qr_error.cpp
             $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/gui/test/screen_test_HX711.c>
             src/gui/test/screen_test.c
             src/gui/test/screen_test_disp_mem.c
@@ -536,6 +544,7 @@ if(GUI)
             src/gui/status_footer.cpp
             src/gui/menu_vars.cpp
             src/gui/screen_printing.cpp
+            src/gui/screen_printing_serial.cpp
             src/gui/screen_menu_tune.cpp
             src/gui/screen_PID.cpp
             src/gui/screen_menu_fw_update.c
@@ -563,6 +572,7 @@ if(GUI)
             src/guiapi/src/window_spin.c
             src/guiapi/src/window_text.c
             src/guiapi/src/window_msgbox.c
+            src/guiapi/src/window_qr.c
             src/guiapi/src/window.c
     )
 endif()
