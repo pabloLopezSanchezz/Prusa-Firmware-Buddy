@@ -447,6 +447,7 @@ target_sources(
           src/common/metric_handlers.c
           src/common/uartrxbuff.c
           src/common/loadcell_hx711.c
+          src/common/loadcell_endstops.cpp
           src/common/Marlin_CardReader.cpp
           src/common/appmain.cpp
           src/common/app_metrics.cpp
