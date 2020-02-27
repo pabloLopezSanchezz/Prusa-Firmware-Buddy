@@ -1,5 +1,6 @@
 // loadcell_hx711.c
 #include "loadcell_hx711.h"
+#include "loadcell_endstops.h"
 
 #ifdef LOADCELL_HX711
 
@@ -155,6 +156,7 @@ static inline void loadcell_cycle(void) {
     } else {
         if (load <= loadcell_threshold) {
             loadcell_probe = 1;
+            endstops_poll();
     #ifdef LOADCELL_LATENCY_TEST
             gpio_set(PC13, 1);
     #endif //LOADCELL_LATENCY_TEST
