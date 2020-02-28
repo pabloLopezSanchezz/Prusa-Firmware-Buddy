@@ -848,6 +848,10 @@ int _server_set_var(char *name_val_str) {
 // this is extern from guimain.c, used in temporary fix (force_M600_notify)
 // this variable is set imediately after
 extern int gui_marlin_client_id;
+//
+// ⬆️  oh no! This terrible hack broke the project for printers without GUI.
+// ⬇️  This fixes it. It is also a terrible hack, but the one above should be fixed ASAP.
+__attribute__((weak)) int gui_marlin_client_id = -1;
 
 } // extern "C"
 
