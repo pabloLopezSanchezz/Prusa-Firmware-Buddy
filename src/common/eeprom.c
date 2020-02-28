@@ -197,11 +197,11 @@ variant8_t eeprom_var_default(uint8_t id) {
     case EEVAR_FILAMENT_COLOR:
         return variant8_ui32(0);
     case EEVAR_LOADCELL_SCALE:
-        return variant8_flt(0.0115);
+        return variant8_flt(0.0100);
     case EEVAR_LOADCELL_THRS:
-        return variant8_flt(-110);
+        return variant8_flt(-90);
     case EEVAR_LOADCELL_HYST:
-        return variant8_flt(60);
+        return variant8_flt(40);
     case EEVAR_RUN_SELFTEST:
         return variant8_ui8(1);
     case EEVAR_RUN_XYZCALIB:

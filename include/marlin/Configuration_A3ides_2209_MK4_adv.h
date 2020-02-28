@@ -1514,7 +1514,7 @@
     #endif
 
     #if AXIS_IS_TMC(E0)
-        #define E0_CURRENT 375
+        #define E0_CURRENT 350
         #define E0_MICROSTEPS 8
         #define E0_RSENSE 0.22
     #endif
