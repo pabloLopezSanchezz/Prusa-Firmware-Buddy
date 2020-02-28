@@ -692,7 +692,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
-    { 100, 100, 400, 420 } //E0 280 295
+    { 100, 100, 400, 400 } //E0 280 295 420
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -755,7 +755,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-#define S_CURVE_ACCELERATION
+//#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
