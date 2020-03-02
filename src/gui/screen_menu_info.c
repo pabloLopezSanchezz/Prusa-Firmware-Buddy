@@ -5,6 +5,8 @@
 
 extern screen_t screen_sysinfo;
 extern screen_t screen_version_info;
+extern screen_t screen_qr_info;
+extern screen_t screen_qr_error;
 
 typedef enum {
     MI_RETURN,
@@ -39,6 +41,10 @@ const menu_item_t _menu_info_items[] = {
           WI_LABEL,
       },
         &screen_version_info },
+#ifdef _DEBUG
+    { { "Send Info by QR", 0, WI_LABEL }, &screen_qr_info },
+    { { "QR test", 0, WI_LABEL }, &screen_qr_error },
+#endif //_DEBUG
 };
 
 void screen_menu_info_init(screen_t *screen) {
@@ -60,7 +66,7 @@ screen_t screen_menu_info = {
     screen_menu_draw,
     screen_menu_info_event,
     sizeof(screen_menu_data_t), //data_size
-    0, //pdata
+    0,                          //pdata
 };
 
 const screen_t *pscreen_menu_info = &screen_menu_info;

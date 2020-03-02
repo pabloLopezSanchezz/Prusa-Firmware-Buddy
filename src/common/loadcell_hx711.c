@@ -1,29 +1,29 @@
 // loadcell_hx711.c
 #include "loadcell_hx711.h"
+#include "loadcell_endstops.h"
 
 #ifdef LOADCELL_HX711
-
 
     #include "gpio.h"
     #include "dbg.h"
     #include "cmsis_os.h"
 
     #define _CH_A_GAIN_128 1
-    #define _CH_A_GAIN_64 3
-    #define _CH_B_GAIN_32 2
+    #define _CH_A_GAIN_64  3
+    #define _CH_B_GAIN_32  2
 
     #ifdef HX711_ESP_DEBUG
         // ESP debug output to scope
-        #define LOADCELL_DBG_ESPGPIO0_PIN PE6 // CLOCK Duplicate
-        #define LOADCELL_DBG_ESPRX_PIN PC6 // hx711_cycle(2); // Return data for channel A, and read filament sensor data data
-        #define LOADCELL_DBG_ESPTX_PIN PC7 // hx711_cycle(1); // Set data for channel B, and read load cell data
-        #define LOADCELL_DBG_ESPRST_PIN PC13 // hx711_cycle(0); // Set data for channel A, and read load cell data
+        #define LOADCELL_DBG_ESPGPIO0_PIN PE6  // CLOCK Duplicate
+        #define LOADCELL_DBG_ESPRX_PIN    PC6  // hx711_cycle(2); // Return data for channel A, and read filament sensor data data
+        #define LOADCELL_DBG_ESPTX_PIN    PC7  // hx711_cycle(1); // Set data for channel B, and read load cell data
+        #define LOADCELL_DBG_ESPRST_PIN   PC13 // hx711_cycle(0); // Set data for channel A, and read load cell data
     #endif
 
 // HX711 variables
 uint8_t hx711_pin_dout = 0; // DOUT pin
-uint8_t hx711_pin_sck = 0; // SCK pin
-uint8_t hx711_config = 0; // gain\channel, value 0 means not initialized
+uint8_t hx711_pin_sck = 0;  // SCK pin
+uint8_t hx711_config = 0;   // gain\channel, value 0 means not initialized
 
 // Loadcell variables
 int32_t loadcell_offset = 0;
@@ -74,11 +74,11 @@ static inline void hx711_init(void) {
 // init - gpio setup and global variables
 void loadcell_init(uint8_t pin_dout, uint8_t pin_sck) {
     hx711_pin_dout = pin_dout; // DOUT pin
-    hx711_pin_sck = pin_sck; // SCK pin
+    hx711_pin_sck = pin_sck;   // SCK pin
     hx711_init();
-    loadcell_scale = 0.0100; // default scale [g/1]
-    loadcell_threshold = -40; // default threshold [g]
-    loadcell_hysteresis = 20; // default hysteresis [g]
+    loadcell_scale = 0.0100;       // default scale [g/1]
+    loadcell_threshold = -40;      // default threshold [g]
+    loadcell_hysteresis = 20;      // default hysteresis [g]
     hx711_config = _CH_A_GAIN_128; // set config != 0, start measurement
 }
 
@@ -131,6 +131,12 @@ static inline int32_t hx711_read(void)
 }
 */
 
+    #include "metric.h"
+
+metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
+metric_t metric_loadcell = METRIC("loadcell", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
+metric_t metric_fsensor_raw = METRIC("fsensor_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
+
 static inline void loadcell_cycle(void) {
     #ifdef HX711_ESP_DEBUG
     gpio_set(LOADCELL_DBG_ESPRX_PIN, 1);
@@ -138,9 +144,11 @@ static inline void loadcell_cycle(void) {
     float load;
     // sample
     loadcell_value = hx711_read_raw();
+    metric_record_integer(&metric_loadcell_raw, loadcell_value);
 
     // scale to grams
     load = loadcell_scale * (loadcell_value - loadcell_offset);
+    metric_record_float(&metric_loadcell, load);
     // update probe variable
     if (loadcell_probe) {
         if (load >= (loadcell_threshold + loadcell_hysteresis))
@@ -148,6 +156,7 @@ static inline void loadcell_cycle(void) {
     } else {
         if (load <= loadcell_threshold) {
             loadcell_probe = 1;
+            endstops_poll();
     #ifdef LOADCELL_LATENCY_TEST
             gpio_set(PC13, 1);
     #endif //LOADCELL_LATENCY_TEST
@@ -164,24 +173,18 @@ static inline void fsensor_cycle(void) {
     gpio_set(LOADCELL_DBG_ESPTX_PIN, 1);
         #endif
     fsensor_value = hx711_read_raw();
+    metric_record_integer(&metric_fsensor_raw, fsensor_value);
     // update probe variable
-        if (fsensor_value <= (fsensor_threshold_LO))
-        {
-            fsensor_probe = HX711_has_filament;
-        }
-        else if(fsensor_value < 2000)
-        {
-        	fsensor_probe = HX711_disconnected;
-        }
-
-        else
-        {
-            fsensor_probe = HX711_no_filament;
-        }
-
-
+    if (fsensor_value <= (fsensor_threshold_LO)) {
+        fsensor_probe = HX711_has_filament;
+    } else if (fsensor_value < 2000) {
+        fsensor_probe = HX711_disconnected;
     }
 
+    else {
+        fsensor_probe = HX711_no_filament;
+    }
+}
 
 // Public function to handle masking filament sensor
 void set_fsensor_disable(uint8_t state) {
@@ -213,8 +216,8 @@ void hx711_cycle(uint8_t cycle) {
     }
 
     if (hx711_config == 0) // not configured, skip measurement
-        return; // HX711 not configured properly
-    if (hx711_ready()) // ready, do measurement
+        return;            // HX711 not configured properly
+    if (hx711_ready())     // ready, do measurement
     {
 
     #ifdef FILAMENT_SENSOR_HX711

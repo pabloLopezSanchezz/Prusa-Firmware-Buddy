@@ -13,8 +13,17 @@
     #include "Configuration_A3ides_2209_MK4_adv.h"
 #elif (PRINTER_TYPE == PRINTER_PRUSA_XL)
     #include "gui_config_xl.h"
-#elif (PRINTER_TYPE == PRINTER_PRUSA_iXL)
+#elif (PRINTER_TYPE == PRINTER_PRUSA_IXL)
     #include "gui_config_ixl.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR)
+    #include "gui_config_manipulator.h"
+    #include "Configuration_A3ides_2209_Manipulator_adv.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_PICKER)
+    #include "gui_config_picker.h"
+    #include "Configuration_A3ides_2209_Picker_adv.h"
+#elif (PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR)
+    #include "gui_config_extractor.h"
+    #include "Configuration_A3ides_2209_Extractor_adv.h"
 #else
     #error "Unknown PRINTER_TYPE."
 #endif
@@ -38,7 +47,9 @@ const float z_offset_max = Z_OFFSET_MAX;
 const float zoffset_fl_range[3] = { z_offset_min, z_offset_max, z_offset_step };
 const char *zoffset_fl_format = "%.3f";
 const int32_t nozzle_range[3] = { 0, (HEATER_0_MAXTEMP - 15) * 1000, 1000 };
-const int32_t heatbed_range[3] = { 0, BED_MAXTEMP * 1000, 1000 };
+// The MINI can heat up no more than 100C, for detection of thermal run away the bed is set 10C higher
+// Thus do not allow the user to set a higher bed temp in the UI here
+const int32_t heatbed_range[3] = { 0, (BED_MAXTEMP - BED_MAXTEMP_SAFETY_MARGIN) * 1000, 1000 };
 const int32_t printfan_range[3] = { 0, 255000, 1000 };
 const int32_t flowfact_range[3] = { 50000, 150000, 1000 };
 
@@ -115,7 +126,6 @@ constexpr const char Z_home_gcode[] = {
     nth_char(Z_home, 7),
     nth_char(Z_home, 8)
 };
-
 }
 
 #if (PRINTER_TYPE == PRINTER_PRUSA_MK4)

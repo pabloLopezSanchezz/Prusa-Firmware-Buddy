@@ -9,7 +9,7 @@
 #define DBG _dbg3 //debug level 3
 //#define DBG(...)  //disable debug
 
-#if ((BOARD == A3IDES2209_REV01) || (MOTHERBOARD == 1823))
+#if ((BOARD == A3IDES2209_REV01) || (MOTHERBOARD == 1823) || (MOTHERBOARD == 1850))
 
 extern TMC2209Stepper stepperX;
 extern TMC2209Stepper stepperY;
@@ -68,9 +68,9 @@ void tmc_sample(void) {
     //	int sgz = pStepZ->SG_RESULT();
     //	int sge = pStepE->SG_RESULT();
     //	_dbg("sg %d %d %d %d", sgx, sgy, sgz, sge);
-    sgx = sgx; //prevent warning
+    sgx = sgx;       //prevent warning
     tstepx = tstepx; //prevent warning
-    diag = diag; //prevent warning
+    diag = diag;     //prevent warning
     DBG("sg %u %u %u", sgx, diag, tstepx);
 }
 

@@ -67,7 +67,7 @@ uint16_t ili9488_y = 0; // current y coordinate (RASET)
 uint16_t ili9488_cx = 0; //
 uint16_t ili9488_cy = 0; //
 
-uint8_t ili9488_buff[ILI9488_COLS * 3 * 16]; //16 lines buffer, 3 bytes for pixel color
+uint8_t ili9488_buff[ILI9488_COLS * 3 * 8]; //16 lines buffer, 3 bytes for pixel color
 
 rect_ui16_t ili9488_clip = { 0, 0, ILI9488_COLS, ILI9488_ROWS };
 
@@ -304,6 +304,7 @@ void ili9488_init_ctl_pins(void) {
         gpio_init(ili9488_config.pinCS, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH);
         gpio_init(ili9488_config.pinRS, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH);
         gpio_init(ili9488_config.pinRST, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
+        gpio_init(ili9488_config.pinBck, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
     }
     ili9488_flg &= ~(FLG_CS | FLG_RS | FLG_RST);
     ili9488_set_rst();
@@ -315,6 +316,10 @@ void ili9488_reset(void) {
     ili9488_clr_rst();
     ili9488_delay_ms(15);
     ili9488_set_rst();
+}
+
+void ili9488_set_backlight(uint8_t bck){
+    gpio_set(ili9488_config.pinBck, bck);
 }
 
 void ili9488_init(void) {
@@ -334,6 +339,8 @@ void ili9488_init(void) {
     ili9488_cmd_colmod(ili9488_config.colmod); // memory data access control
     ili9488_cmd_dispon(); // display on
     ili9488_delay_ms(10); // 10ms wait
+    //ili9488_set_backlight(1);
+    display->set_backlight(1);
 }
 
 void ili9488_done(void) {
@@ -903,6 +910,7 @@ const display_t ili9488_display = {
     ili9488_draw_text,
     ili9488_draw_icon,
     ili9488_draw_png,
+    ili9488_set_backlight
 };
 
 ili9488_config_t ili9488_config = {
@@ -910,6 +918,7 @@ ili9488_config_t ili9488_config = {
     0, // CS pin
     0, // RS pin
     0, // RST pin
+    0, // Backlight pin
     0, // flags (DMA, MISO)
     0, // interface pixel format (5-6-5, hi-color)
     0, // memory data access control (no mirror XY)

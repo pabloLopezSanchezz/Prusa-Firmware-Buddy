@@ -21,6 +21,8 @@
  */
 #pragma once
 
+// clang-format off
+
 /**
  * Configuration.h
  *
@@ -393,7 +395,13 @@
 #define HEATER_3_MAXTEMP 275
 #define HEATER_4_MAXTEMP 275
 #define HEATER_5_MAXTEMP 275
-#define BED_MAXTEMP 125
+// Beware: this is the absolute temperature limit.
+// The MINI cannot normally reach 110C.
+// Thus all usage in the UI must be lowered by 10C to offer a valid temperature limit.
+// Those 10C are a safety margin used throughout the whole Marlin code
+// (without a proper #define though :( )
+#define BED_MAXTEMP 110
+#define BED_MAXTEMP_SAFETY_MARGIN 10
 #define CHAMBER_MAXTEMP 100
 
 //===========================================================================
@@ -675,7 +683,7 @@
  */
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 400, 280 } //E0 280 295
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
-    { 100, 100, 400, 317 } //E0 280 295
+    { 100, 100, 400, 325 } //E0 280 295
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 800, 800, 3200, 1120 } //E0 280 295
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 400, 1120 } //E0 280 295
 
@@ -711,7 +719,7 @@
 //
 // Use Junction Deviation instead of traditional Jerk Limiting
 //
-//#define JUNCTION_DEVIATION
+#define CLASSIC_JERK
 #if DISABLED(CLASSIC_JERK)
     #define JUNCTION_DEVIATION_MM 0.02 // (mm) Distance from real junction edge
 #endif

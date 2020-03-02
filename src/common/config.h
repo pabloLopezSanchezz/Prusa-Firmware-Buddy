@@ -2,23 +2,13 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-//--------------------------------------
-//printer variants
-#define PRINTER_PRUSA_MK3 1 //MK3 printer
-#define PRINTER_PRUSA_MINI 2 //MINI printer
-#define PRINTER_PRUSA_XL 3 //XL printer
-#define PRINTER_PRUSA_MK4 4 //MK3 printer with new extruder
-#define PRINTER_PRUSA_iXL 5 //iXL printer with new extruder
-
-#ifndef PRINTER_TYPE
-    #error "macro PRINTER_TYPE not defined"
-#endif
+#include "printers.h"
 
 #include <avr/pgmspace.h>
 
 //--------------------------------------
 //board revisions
-#define OLIMEX_E407 0 //Olimex STM32-E407 devboard (discontinued 1.9.2019)
+#define OLIMEX_E407      0 //Olimex STM32-E407 devboard (discontinued 1.9.2019)
 #define A3IDES2130_REV01 1 //A3ides with TMC2130 rev01 (discontinued 1.9.2019)
 #define A3IDES2209_REV01 2 //A3ides with TMC2209 rev01 (discontinued 1.9.2019)
 #define A3IDES2209_REV02 4 //A3ides with TMC2209 rev02
@@ -40,10 +30,14 @@
         #define BOARD A3IDES2209_REV01
     #elif (MOTHERBOARD == 1823)
         #define BOARD A3IDES2209_REV02
+    #elif (MOTHERBOARD == 1850)
+        #define BOARD A3IDES2209_REV02
     #endif
 #endif //MOTHERBOARD
 
 //#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
+
+#define XBUDDY_ELECTRONIC   // Define this for usage of xBuddy electronics !! YOU CAN DO BETTER TOMAS !!
 
 #ifdef BOARD
 
@@ -68,9 +62,10 @@
 #endif
 
 //--------------------------------------
-//ETHERNET configuration
-#define ETHERNET
-
+//BUDDY_ENABLE_ETHERNET configuration
+#ifdef BUDDY_ENABLE_WUI
+    #define BUDDY_ENABLE_ETHERNET
+#endif //BUDDY_ENABLE_WUI
 //--------------------------------------
 // Disable wizard startup check on splash screen
 #define DISABLE_WIZARD_CHECK_STARTUP
@@ -80,13 +75,13 @@
 
 //defined as external
 #ifdef LCDSIM
-    #undef ETHERNET
+    #undef BUDDY_ENABLE_ETHERNET
     #define LCDSIM_COLS 20
     #define LCDSIM_ROWS 4
 #endif //LCDSIM
 
 //marlin api config
-#define MARLIN_MAX_CLIENTS 3 // maximum number of clients registered in same time
+#define MARLIN_MAX_CLIENTS 3   // maximum number of clients registered in same time
 #define MARLIN_MAX_REQUEST 100 // maximum request length in chars
 
 //display PSOD instead of BSOD

@@ -46,6 +46,7 @@ extern screen_t *pscreen_test_temperature;
 extern screen_t *pscreen_home;
 extern screen_t *pscreen_filebrowser;
 extern screen_t *pscreen_printing;
+extern screen_t *pscreen_printing_serial;
 extern screen_t *pscreen_menu_preheat;
 extern screen_t *pscreen_menu_filament;
 extern screen_t *pscreen_preheating;
@@ -58,6 +59,8 @@ extern screen_t *pscreen_menu_tune;
 extern screen_t *pscreen_menu_service;
 extern screen_t *pscreen_sysinfo;
 extern screen_t *pscreen_version_info;
+extern screen_t *pscreen_qr_info;
+extern screen_t *pscreen_qr_error;
 extern screen_t *pscreen_test_disp_mem;
 extern screen_t *pscreen_messages;
     #ifdef PIDCALIBRATION
@@ -65,15 +68,13 @@ extern screen_t *pscreen_PID;
     #endif //PIDCALIBRATION
 extern screen_t *pscreen_mesh_bed_lv;
 extern screen_t *pscreen_wizard;
-#endif // LCDSIM
+#endif     // LCDSIM
 
 extern int HAL_IWDG_Reset;
 
-extern SPI_HandleTypeDef hspi2;
-
 #ifndef _DEBUG
 extern IWDG_HandleTypeDef hiwdg; //watchdog handle
-#endif //_DEBUG
+#endif                           //_DEBUG
 
 int guimain_spi_test = 0;
 
@@ -96,11 +97,11 @@ int guimain_spi_test = 0;
 
 #ifdef USE_ST7789
 const st7789v_config_t st7789v_cfg = {
-    &hspi2, // spi handle pointer
-    ST7789V_PIN_CS, // CS pin
-    ST7789V_PIN_RS, // RS pin
-    ST7789V_PIN_RST, // RST pin
-    ST7789V_FLG_DMA, // flags (DMA, MISO)
+    &hspi2,             // spi handle pointer
+    ST7789V_PIN_CS,     // CS pin
+    ST7789V_PIN_RS,     // RS pin
+    ST7789V_PIN_RST,    // RST pin
+    ST7789V_FLG_DMA,    // flags (DMA, MISO)
     ST7789V_DEF_COLMOD, // interface pixel format (5-6-5, hi-color)
     ST7789V_DEF_MADCTL, // memory data access control (no mirror XY)
 };
@@ -112,6 +113,7 @@ const ili9488_config_t ili9488_cfg = {
     ILI9488_PIN_CS, // CS pin
 	ILI9488_PIN_RS, // RS pin
 	ILI9488_PIN_RST, // RST pin
+    ILI9488_PIN_BACKLIGHT, // Backlight pin
 	ILI9488_FLG_DMA, // flags (DMA, MISO)
 	ILI9488_DEF_COLMOD, // interface pixel format (5-6-5, hi-color)
 	ILI9488_DEF_MADCTL, // memory data access control (no mirror XY)
@@ -130,27 +132,69 @@ marlin_vars_t *gui_marlin_vars = 0;
 int gui_marlin_client_id = -1;
 int8_t menu_timeout_enabled = 1; // Default: enabled
 
+extern screen_t screen_home;
+extern screen_t screen_printing;
+
+extern screen_t screen_printing_serial;
+extern screen_t screen_menu_tune;
+extern screen_t screen_wizard;
+extern screen_t screen_print_preview;
+extern screen_t screen_PID;
+
+static screen_t *const timeout_blacklist[] = {
+    &screen_home,
+    &screen_printing,
+    &screen_menu_tune,
+    &screen_wizard,
+    &screen_print_preview
+#ifdef PIDCALIBRATION
+    ,
+    &screen_PID
+#endif //PIDCALIBRATION
+};
+
+static screen_t *const m876_blacklist[] = {
+    &screen_printing_serial,
+    &screen_home
+#ifdef PIDCALIBRATION
+    ,
+    &screen_PID
+#endif //PIDCALIBRATION
+};
+
 void update_firmware_screen(void);
 
-static void _gui_loop_cb(){
-	static uint8_t m600_lock = 0;
+static void _gui_loop_cb() {
+    static uint8_t m600_lock = 0;
 
-	if (!m600_lock) {
-		m600_lock = 1;
-		if (marlin_event_clr(MARLIN_EVT_CommandBegin)) {
-			if (marlin_command() == MARLIN_CMD_M600) {
-				_dbg("M600 start");
-				gui_dlg_change();
-				_dbg("M600 end");
-			}
-		}
-		m600_lock = 0;
-	}
+    if (!m600_lock) {
+        m600_lock = 1;
+        if (marlin_event_clr(MARLIN_EVT_CommandBegin)) {
+            if (marlin_command() == MARLIN_CMD_M600) {
+                _dbg("M600 start");
+                gui_dlg_change();
+                _dbg("M600 end");
+            }
+        }
+        m600_lock = 0;
+    }
 
-	marlin_client_loop();
+    marlin_client_loop();
 }
 
+static void serial_prt_cb(int data) {
+    if (gui_get_nesting() > 1)
+        return; //todo notify octoprint
+    if (data) {
+        screen_unloop(m876_blacklist, sizeof(m876_blacklist) / sizeof(m876_blacklist[0]));
 
+        if (screen_get_curr() != pscreen_printing_serial)
+            screen_open(pscreen_printing_serial->id);
+    } else {
+        if (screen_get_curr() == pscreen_printing_serial)
+            screen_close();
+    }
+}
 
 void gui_run(void) {
     if (diag_fastboot)
@@ -166,7 +210,6 @@ void gui_run(void) {
 
     jogwheel_config = jogwheel_cfg;
     gui_init();
-
     // select jogwheel type by meassured 'reset delay'
     // original displays with 15 position encoder returns values 1-2 (short delay - no capacitor)
     // new displays with MK3 encoder returns values around 16000 (long delay - 100nF capacitor)
@@ -189,7 +232,7 @@ void gui_run(void) {
 
     gui_marlin_vars = marlin_client_init();
     gui_marlin_client_id = marlin_client_id();
-
+    marlin_client_set_dialog_cb(serial_prt_cb);
     hwio_beeper_tone2(440.0, 100, 0.0125); //start beep
 
     screen_register(pscreen_splash);
@@ -221,6 +264,7 @@ void gui_run(void) {
     screen_register(pscreen_home);
     screen_register(pscreen_filebrowser);
     screen_register(pscreen_printing);
+    screen_register(pscreen_printing_serial);
     screen_register(pscreen_menu_preheat);
     screen_register(pscreen_menu_filament);
     screen_register(pscreen_menu_calibration);
@@ -232,6 +276,8 @@ void gui_run(void) {
     screen_register(pscreen_menu_service);
     screen_register(pscreen_sysinfo);
     screen_register(pscreen_version_info);
+    screen_register(pscreen_qr_info);
+    screen_register(pscreen_qr_error);
     screen_register(pscreen_test_disp_mem);
     screen_register(pscreen_messages);
     #ifdef PIDCALIBRATION
@@ -242,7 +288,7 @@ void gui_run(void) {
     screen_register(pscreen_print_preview);
     screen_register(pscreen_lan_settings);
     screen_register(pscreen_menu_fw_update);
-#endif // LCDSIM
+#endif     // LCDSIM
 
 #ifndef _DEBUG
     if (HAL_IWDG_Reset) {
@@ -258,10 +304,10 @@ void gui_run(void) {
     while (1) {
         float vol = 0.01F;
         //simple jogwheel acoustic feedback
-        if ((jogwheel_changed & 1) && jogwheel_button_down) //button changed and pressed
+        if ((jogwheel_changed & 1) && jogwheel_button_down)       //button changed and pressed
             hwio_beeper_tone2(200.0, 50, (double)(vol * 0.125F)); //beep
-        else if (jogwheel_changed & 2) // encoder changed
-            hwio_beeper_tone2(50.0, 25, (double)(vol * 0.125F)); //short click
+        else if (jogwheel_changed & 2)                            // encoder changed
+            hwio_beeper_tone2(50.0, 25, (double)(vol * 0.125F));  //short click
         // show warning dialog on safety timer expiration
         if (marlin_event_clr(MARLIN_EVT_SafetyTimerExpired)) {
             gui_msgbox("Heating disabled due to 30 minutes of inactivity.", MSGBOX_BTN_OK | MSGBOX_ICO_WARNING);
@@ -277,20 +323,7 @@ void gui_run(void) {
         if (menu_timeout_enabled) {
             gui_timeout_id = gui_get_menu_timeout_id();
             if (gui_timer_expired(gui_timeout_id) == 1) {
-                screen_t *curr = screen_get_curr();
-                if (
-                    curr != pscreen_menu_tune && curr != pscreen_wizard && curr != pscreen_print_preview) { //timeout screen black list
-    #ifdef PIDCALIBRATION
-                    if (curr != pscreen_PID) {
-    #endif //PIDCALIBRATION
-                        while (curr != pscreen_printing && curr != pscreen_home && curr != pscreen_menu_tune) {
-                            screen_close();
-                            curr = screen_get_curr();
-                        }
-    #ifdef PIDCALIBRATION
-                    }
-    #endif //PIDCALIBRATION
-                }
+                screen_unloop(timeout_blacklist, sizeof(timeout_blacklist) / sizeof(timeout_blacklist[0]));
                 gui_timer_delete(gui_timeout_id);
             }
         }
@@ -312,6 +345,6 @@ void update_firmware_screen(void) {
         osDelay(1);
 #ifndef _DEBUG
         HAL_IWDG_Refresh(&hiwdg); //watchdog reset
-#endif //_DEBUG
+#endif                            //_DEBUG
     }
 }

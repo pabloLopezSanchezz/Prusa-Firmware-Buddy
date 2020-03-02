@@ -1,15 +1,19 @@
 // screen_menu_settings.c
 
 #include "gui.h"
+#include "config.h"
 #include "app.h"
 #include "marlin_client.h"
 #include "screen_menu.h"
 #include "cmsis_os.h"
 #include "sys.h"
 #include "eeprom.h"
-#include "screen_lan_settings.h"
+#ifdef BUDDY_ENABLE_ETHERNET
+    #include "screen_lan_settings.h"
+#endif //BUDDY_ENABLE_ETHERNET
 #include "screen_menu_fw_update.h"
 #include "filament_sensor.h"
+#include "dump.h"
 
 extern screen_t screen_menu_temperature;
 extern screen_t screen_menu_move;
@@ -38,7 +42,14 @@ typedef enum {
     MI_FW_UPDATE,
     MI_FILAMENT_SENSOR,
     MI_TIMEOUT,
+#ifdef BUDDY_ENABLE_ETHERNET
     MI_LAN_SETTINGS,
+#endif //BUDDY_ENABLE_ETHERNET
+    MI_SAVE_DUMP,
+#ifdef _DEBUG
+    MI_HF_TEST_0,
+    MI_HF_TEST_1,
+#endif //_DEBUG
 } MI_t;
 
 const menu_item_t _menu_settings_items[] = {
@@ -55,7 +66,14 @@ const menu_item_t _menu_settings_items[] = {
     { { "FW Update", 0, WI_LABEL }, &screen_menu_fw_update },
     { { "Fil. sens.", 0, WI_SWITCH, .wi_switch_select = { 0, settings_opt_enable_disable } }, SCREEN_MENU_NO_SCREEN },
     { { "Timeout", 0, WI_SWITCH, .wi_switch_select = { 0, settings_opt_enable_disable } }, SCREEN_MENU_NO_SCREEN },
+#ifdef BUDDY_ENABLE_ETHERNET
     { { "LAN Settings", 0, WI_LABEL }, &screen_lan_settings },
+#endif //BUDDY_ENABLE_ETHERNET
+    { { "Save Crash Dump", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
+#ifdef _DEBUG
+    { { "HF0 test", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
+    { { "HF1 test", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
+#endif //_DEBUG
 };
 
 void screen_menu_settings_init(screen_t *screen) {
@@ -78,6 +96,20 @@ int screen_menu_settings_event(screen_t *screen, window_t *window, uint8_t event
         return 1;
     if (event == WINDOW_EVENT_CLICK) {
         switch ((int)param) {
+        case MI_SAVE_DUMP:
+            if (dump_save_to_usb("dump.bin"))
+                gui_msgbox("A crash dump report (file dump.bin) has been saved to the USB drive.", MSGBOX_BTN_OK | MSGBOX_ICO_INFO);
+            else
+                gui_msgbox("Error saving crash dump report to the USB drive. Please reinsert the USB drive and try again.", MSGBOX_BTN_OK | MSGBOX_ICO_ERROR);
+            break;
+#ifdef _DEBUG
+        case MI_HF_TEST_0:
+            dump_hardfault_test_0();
+            break;
+        case MI_HF_TEST_1:
+            dump_hardfault_test_1();
+            break;
+#endif //_DEBUG
         case MI_DISABLE_STEP:
             marlin_gcode("M18");
             break;
@@ -133,7 +165,7 @@ screen_t screen_menu_settings = {
     screen_menu_draw,
     screen_menu_settings_event,
     sizeof(screen_menu_data_t), //data_size
-    0, //pdata
+    0,                          //pdata
 };
 
 const screen_t *pscreen_menu_settings = &screen_menu_settings;

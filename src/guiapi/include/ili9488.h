@@ -21,6 +21,7 @@ typedef struct _ili9488_config_t {
     uint8_t pinCS; // CS pin
     uint8_t pinRS; // RS pin
     uint8_t pinRST; // RST pin
+    uint8_t pinBck; // Backlight pin
     uint8_t flg; // flags (DMA, MISO)
     uint8_t colmod; // interface pixel format
     uint8_t madctl; // memory data access control
@@ -48,6 +49,7 @@ extern void ili9488_gamma_set(uint8_t gamma);
 extern uint8_t ili9488_gamma_get(void);
 
 extern void ili9488_brightness_set(uint8_t brightness);
+extern void ili9488_set_backlight(uint8_t bck);
 extern uint8_t ili9488_brightness_get(void);
 
 extern void ili9488_brightness_enable(void);

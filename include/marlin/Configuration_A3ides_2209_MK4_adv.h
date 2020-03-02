@@ -21,6 +21,8 @@
  */
 #pragma once
 
+// clang-format off
+
 /**
  * Configuration_adv.h
  *
@@ -1053,10 +1055,10 @@
 
 #if EITHER(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)
 // Override the mesh area if the automatic (max) area is too large
-//#define MESH_MIN_X MESH_INSET
-//#define MESH_MIN_Y MESH_INSET
-//#define MESH_MAX_X X_BED_SIZE - (MESH_INSET)
-//#define MESH_MAX_Y Y_BED_SIZE - (MESH_INSET)
+#define MESH_MIN_X MESH_INSET
+#define MESH_MIN_Y MESH_INSET
+#define MESH_MAX_X X_BED_SIZE - (MESH_INSET)
+#define MESH_MAX_Y Y_BED_SIZE - (MESH_INSET)
 #endif
 
 /**
@@ -1512,7 +1514,7 @@
     #endif
 
     #if AXIS_IS_TMC(E0)
-        #define E0_CURRENT 375
+        #define E0_CURRENT 350
         #define E0_MICROSTEPS 8
         #define E0_RSENSE 0.22
     #endif

@@ -1,6 +1,7 @@
 //appmain.cpp - arduino-like app start
 
 #include "app.h"
+#include "app_metrics.h"
 #include "dbg.h"
 #include "cmsis_os.h"
 #include "config.h"
@@ -10,6 +11,8 @@
 #include "hwio_a3ides.h"
 #include "sys.h"
 #include "gpio.h"
+#include "metric.h"
+#include "cpu_utils.h"
 
 #ifdef LOADCELL_HX711
     #include "loadcell_hx711.h"
@@ -41,21 +44,26 @@ extern void USBSerial_put_rx_data(uint8_t *buffer, uint32_t length);
 
 extern void reset_trinamic_drivers();
 
-
 extern "C" {
 
-extern uartrxbuff_t uart6rxbuff; // PUT rx buffer
-extern uartslave_t uart6slave; // PUT slave
+metric_t metric_app_start = METRIC("app_start", METRIC_VALUE_EVENT, 0, METRIC_HANDLER_ENABLE_ALL);
+metric_t metric_maintask_event = METRIC("maintask_loop", METRIC_VALUE_EVENT, 0, METRIC_HANDLER_DISABLE_ALL);
+metric_t metric_cpu_usage = METRIC("cpu_usage", METRIC_VALUE_INTEGER, 1000, METRIC_HANDLER_ENABLE_ALL);
 
-#ifdef ETHERNET
+extern uartrxbuff_t uart6rxbuff; // PUT rx buffer
+extern uartslave_t uart6slave;   // PUT slave
+
+#ifdef BUDDY_ENABLE_ETHERNET
 extern osThreadId webServerTaskHandle; // Webserver thread(used for fast boot mode)
-#endif //ETHERNET
+#endif                                 //BUDDY_ENABLE_ETHERNET
 
 #ifndef _DEBUG
 extern IWDG_HandleTypeDef hiwdg; //watchdog handle
-#endif //_DEBUG
+#endif                           //_DEBUG
 
 void app_setup(void) {
+    metric_record_event(&metric_app_start);
+
     setup();
 
     init_tmc();
@@ -68,16 +76,17 @@ void app_setup(void) {
 }
 
 void app_idle(void) {
+    Buddy::Metrics::RecordMarlinVariables();
     osDelay(0); // switch to other threads - without this is UI slow during printing
 }
 
 void app_run(void) {
     DBG("app_run");
 
-#ifdef ETHERNET
+#ifdef BUDDY_ENABLE_ETHERNET
     if (diag_fastboot)
         osThreadResume(webServerTaskHandle);
-#endif //ETHERNET
+#endif //BUDDY_ENABLE_ETHERNET
 
     uint8_t defaults_loaded = eeprom_init();
 
@@ -88,10 +97,10 @@ void app_run(void) {
 
 #ifdef LOADCELL_HX711
     loadcell_init(LOADCELL_PIN_DOUT, LOADCELL_PIN_SCK);
-    loadcell_scale = eeprom_get_var(EEVAR_LOADCELL_SCALE).flt; // scale (calibration value grams/raw)
-    loadcell_threshold = eeprom_get_var(EEVAR_LOADCELL_THRS).flt; // threshold for probe in grams
+    loadcell_scale = eeprom_get_var(EEVAR_LOADCELL_SCALE).flt;     // scale (calibration value grams/raw)
+    loadcell_threshold = eeprom_get_var(EEVAR_LOADCELL_THRS).flt;  // threshold for probe in grams
     loadcell_hysteresis = eeprom_get_var(EEVAR_LOADCELL_HYST).flt; // hysteresis for probe in grams
-#endif //LOADCELL_HX711
+#endif                                                             //LOADCELL_HX711
 
 #ifdef SIM_HEATER
     sim_heater_init();
@@ -112,8 +121,7 @@ void app_run(void) {
         app_setup();
     //DBG("after setup (%ld ms)", HAL_GetTick());
 
-    if (defaults_loaded && marlin_server_processing())
-    {
+    if (defaults_loaded && marlin_server_processing()) {
         settings.reset();
 #ifndef _DEBUG
         HAL_IWDG_Refresh(&hiwdg);
@@ -125,6 +133,8 @@ void app_run(void) {
     }
 
     while (1) {
+        metric_record_event(&metric_maintask_event);
+        metric_record_integer(&metric_cpu_usage, osGetCPUUsage());
         if (marlin_server_processing()) {
             loop();
         }
@@ -239,7 +249,7 @@ void adc_tick_1ms(void) {
                     gpio_set(PC13, 1);
         #endif
                     hx711_cycle(1);
-                    cnt_loadcell = 0; // Reset loadcell(HX711 update counter) We need to wait 50 ms before next measurement to let output settle after channel switch
+                    cnt_loadcell = 0;   // Reset loadcell(HX711 update counter) We need to wait 50 ms before next measurement to let output settle after channel switch
                     cnt_fsensorHX711++; // Iterate filament sensor counter
                 } else {
                     // Measurement FAIL - HX711 busy
@@ -255,7 +265,7 @@ void adc_tick_1ms(void) {
                     gpio_set(PC13, 1);
         #endif
                     hx711_cycle(2);
-                    cnt_loadcell = 0; // Reset loadcell(HX711 update counter) We need to wait 50 ms before next measurement to let output settle after channel switch
+                    cnt_loadcell = 0;     // Reset loadcell(HX711 update counter) We need to wait 50 ms before next measurement to let output settle after channel switch
                     cnt_fsensorHX711 = 0; // Reset filament sensor counter
 
                 } else {
@@ -274,11 +284,14 @@ void adc_tick_1ms(void) {
 }
 
 void app_tim14_tick(void) {
+#ifndef HAS_GUI
+    #error "HAS_GUI not defined."
+#elif HAS_GUI
     jogwheel_update_1ms();
+#endif
     hwio_update_1ms();
     adc_tick_1ms();
 }
-
 
 #include "usbh_core.h"
 extern USBH_HandleTypeDef hUsbHostHS; // UsbHost handle
@@ -289,9 +302,9 @@ extern USBH_HandleTypeDef hUsbHostHS; // UsbHost handle
 // state is checked every 100ms, timeout for re-enumeration is 500ms
 // TODO: maybe we will change condition for states, because it can hang also in different state
 void app_usbhost_reenum(void) {
-    static uint32_t timer = 0;      // static timer variable
-    uint32_t tick = HAL_GetTick();  // read tick
-    if ((tick - timer) > 100) {     // every 100ms
+    static uint32_t timer = 0;     // static timer variable
+    uint32_t tick = HAL_GetTick(); // read tick
+    if ((tick - timer) > 100) {    // every 100ms
         // timer is valid, UsbHost is in enumeration state
         if ((timer) && (hUsbHostHS.gState == HOST_ENUMERATION) && (hUsbHostHS.EnumState == ENUM_IDLE)) {
             // longer than 500ms
@@ -299,8 +312,7 @@ void app_usbhost_reenum(void) {
                 _dbg("USB host reenumerating"); // trace
                 USBH_ReEnumerate(&hUsbHostHS);  // re-enumerate UsbHost
             }
-        }
-        else // otherwise update timer
+        } else // otherwise update timer
             timer = tick;
     }
 }
