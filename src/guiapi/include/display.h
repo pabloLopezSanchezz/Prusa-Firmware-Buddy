@@ -10,8 +10,11 @@
 ///////////////////////////
 // display type selector //
 ///////////////////////////
-#define USE_ST7789
-//#define USE_ILI9488
+#ifdef XBUDDY_ELECTRONIC
+    #define USE_ILI9488
+#else
+    #define USE_ST7789
+#endif
 
 typedef struct _display_t display_t;
 
