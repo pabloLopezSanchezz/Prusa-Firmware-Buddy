@@ -37,7 +37,7 @@
 
 //#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
 
-#define XBUDDY_ELECTRONIC   // Define this for usage of xBuddy electronics !! YOU CAN DO BETTER TOMAS !!
+//#define XBUDDY_ELECTRONIC   // Define this for usage of xBuddy electronics !! YOU CAN DO BETTER TOMAS !!
 
 #ifdef BOARD
 

@@ -58,10 +58,10 @@
 #define ST7789V_PIN_RST PC8  // RESET signal pin
 
 //Graphical display ILI9488 configuration
-#define ILI9488_PIN_CS 	PD14 // CS signal pin
-#define ILI9488_PIN_RS 	PD11 // RS signal pin
-#define ILI9488_PIN_RST	PC8 // RESET signal pin
-#define ILI9488_PIN_BACKLIGHT PC9 // Backlight pin
+#define ILI9488_PIN_CS        PD14 // CS signal pin
+#define ILI9488_PIN_RS        PD11 // RS signal pin
+#define ILI9488_PIN_RST       PC8  // RESET signal pin
+#define ILI9488_PIN_BACKLIGHT PC9  // Backlight pin
 
 //--------------------------------------
 //Jogwheel configuration
@@ -97,7 +97,7 @@
 
     #endif
 
-    #ifdef BUDDY_XL_ELECTRONICS
+    #if defined BUDDY_XL_ELECTRONICS || defined XBUDDY_ELECTRONIC
         #define LOADCELL_PIN_DOUT PB5 // data signal pin
         #define LOADCELL_PIN_SCK  PE0 // clock signal pin
     #else

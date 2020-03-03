@@ -57,7 +57,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-//#define XBUDDY_ELECTRONIC
+#define XBUDDY_ELECTRONIC
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -145,69 +145,69 @@ void Error_Handler(void);
 #define Y_STEP_Pin            GPIO_PIN_13
 #define Y_STEP_GPIO_Port      GPIOD
 #ifdef XBUDDY_ELECTRONIC
-#define Y_ENA_Pin             GPIO_PIN_3
-#define Y_ENA_GPIO_Port       GPIOD
+    #define Y_ENA_Pin       GPIO_PIN_3
+    #define Y_ENA_GPIO_Port GPIOD
 #else
-#define Y_ENA_Pin             GPIO_PIN_14
-#define Y_ENA_GPIO_Port       GPIOD
+    #define Y_ENA_Pin       GPIO_PIN_14
+    #define Y_ENA_GPIO_Port GPIOD
 #endif
-#define Z_DIR_Pin             GPIO_PIN_15
-#define Z_DIR_GPIO_Port       GPIOD
-#define ESP_TX_Pin            GPIO_PIN_6
-#define ESP_TX_GPIO_Port      GPIOC
-#define ESP_RX_Pin            GPIO_PIN_7
-#define ESP_RX_GPIO_Port      GPIOC
-#define LCD_RST_Pin           GPIO_PIN_8
-#define LCD_RST_GPIO_Port     GPIOC
+#define Z_DIR_Pin         GPIO_PIN_15
+#define Z_DIR_GPIO_Port   GPIOD
+#define ESP_TX_Pin        GPIO_PIN_6
+#define ESP_TX_GPIO_Port  GPIOC
+#define ESP_RX_Pin        GPIO_PIN_7
+#define ESP_RX_GPIO_Port  GPIOC
+#define LCD_RST_Pin       GPIO_PIN_8
+#define LCD_RST_GPIO_Port GPIOC
 #ifdef XBUDDY_ELECTRONIC
-#define LCD_CS_Pin            GPIO_PIN_14
-#define LCD_CS_GPIO_Port      GPIOD
+    #define LCD_CS_Pin       GPIO_PIN_14
+    #define LCD_CS_GPIO_Port GPIOD
 #else
-#define LCD_CS_Pin            GPIO_PIN_9
-#define LCD_CS_GPIO_Port      GPIOC
+    #define LCD_CS_Pin       GPIO_PIN_9
+    #define LCD_CS_GPIO_Port GPIOC
 #endif
-#define Z_MIN_Pin             GPIO_PIN_8
-#define Z_MIN_GPIO_Port       GPIOA
-#define USB_FS_N_Pin          GPIO_PIN_11
-#define USB_FS_N_GPIO_Port    GPIOA
-#define USB_FS_P_Pin          GPIO_PIN_12
-#define USB_FS_P_GPIO_Port    GPIOA
-#define SWDIO_Pin             GPIO_PIN_13
-#define SWDIO_GPIO_Port       GPIOA
-#define SWCLK_Pin             GPIO_PIN_14
-#define SWCLK_GPIO_Port       GPIOA
-#define E_DIAG_Pin            GPIO_PIN_15
-#define E_DIAG_GPIO_Port      GPIOA
-#define FLASH_SCK_Pin         GPIO_PIN_10
-#define FLASH_SCK_GPIO_Port   GPIOC
-#define FLASH_MISO_Pin        GPIO_PIN_11
-#define FLASH_MISO_GPIO_Port  GPIOC
-#define FLASH_MOSI_Pin        GPIO_PIN_12
-#define FLASH_MOSI_GPIO_Port  GPIOC
-#define X_DIR_Pin             GPIO_PIN_0
-#define X_DIR_GPIO_Port       GPIOD
-#define X_STEP_Pin            GPIO_PIN_1
-#define X_STEP_GPIO_Port      GPIOD
-#define Z_ENA_Pin             GPIO_PIN_2
-#define Z_ENA_GPIO_Port       GPIOD
-#define X_ENA_Pin             GPIO_PIN_3
-#define X_ENA_GPIO_Port       GPIOD
-#define Z_STEP_Pin            GPIO_PIN_4
-#define Z_STEP_GPIO_Port      GPIOD
-#define FLASH_CSN_Pin         GPIO_PIN_7
-#define FLASH_CSN_GPIO_Port   GPIOD
-#define FIL_SENSOR_Pin        GPIO_PIN_4
-#define FIL_SENSOR_GPIO_Port  GPIOB
-#define WP2_Pin               GPIO_PIN_5
-#define WP2_GPIO_Port         GPIOB
-#define TX1_Pin               GPIO_PIN_6
-#define TX1_GPIO_Port         GPIOB
-#define RX1_Pin               GPIO_PIN_7
-#define RX1_GPIO_Port         GPIOB
-#define WP1_Pin               GPIO_PIN_0
-#define WP1_GPIO_Port         GPIOE
-#define Z_DIAGE1_Pin          GPIO_PIN_1
-#define Z_DIAGE1_GPIO_Port    GPIOE
+#define Z_MIN_Pin            GPIO_PIN_8
+#define Z_MIN_GPIO_Port      GPIOA
+#define USB_FS_N_Pin         GPIO_PIN_11
+#define USB_FS_N_GPIO_Port   GPIOA
+#define USB_FS_P_Pin         GPIO_PIN_12
+#define USB_FS_P_GPIO_Port   GPIOA
+#define SWDIO_Pin            GPIO_PIN_13
+#define SWDIO_GPIO_Port      GPIOA
+#define SWCLK_Pin            GPIO_PIN_14
+#define SWCLK_GPIO_Port      GPIOA
+#define E_DIAG_Pin           GPIO_PIN_15
+#define E_DIAG_GPIO_Port     GPIOA
+#define FLASH_SCK_Pin        GPIO_PIN_10
+#define FLASH_SCK_GPIO_Port  GPIOC
+#define FLASH_MISO_Pin       GPIO_PIN_11
+#define FLASH_MISO_GPIO_Port GPIOC
+#define FLASH_MOSI_Pin       GPIO_PIN_12
+#define FLASH_MOSI_GPIO_Port GPIOC
+#define X_DIR_Pin            GPIO_PIN_0
+#define X_DIR_GPIO_Port      GPIOD
+#define X_STEP_Pin           GPIO_PIN_1
+#define X_STEP_GPIO_Port     GPIOD
+#define Z_ENA_Pin            GPIO_PIN_2
+#define Z_ENA_GPIO_Port      GPIOD
+#define X_ENA_Pin            GPIO_PIN_3
+#define X_ENA_GPIO_Port      GPIOD
+#define Z_STEP_Pin           GPIO_PIN_4
+#define Z_STEP_GPIO_Port     GPIOD
+#define FLASH_CSN_Pin        GPIO_PIN_7
+#define FLASH_CSN_GPIO_Port  GPIOD
+#define FIL_SENSOR_Pin       GPIO_PIN_4
+#define FIL_SENSOR_GPIO_Port GPIOB
+#define WP2_Pin              GPIO_PIN_5
+#define WP2_GPIO_Port        GPIOB
+#define TX1_Pin              GPIO_PIN_6
+#define TX1_GPIO_Port        GPIOB
+#define RX1_Pin              GPIO_PIN_7
+#define RX1_GPIO_Port        GPIOB
+#define WP1_Pin              GPIO_PIN_0
+#define WP1_GPIO_Port        GPIOE
+#define Z_DIAGE1_Pin         GPIO_PIN_1
+#define Z_DIAGE1_GPIO_Port   GPIOE
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
