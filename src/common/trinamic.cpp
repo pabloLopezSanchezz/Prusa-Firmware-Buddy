@@ -44,7 +44,7 @@ void init_tmc(void) {
     pStepY->TCOOLTHRS(400);
     pStepZ->TCOOLTHRS(400);
     pStepE->TCOOLTHRS(400); //400
-    #if (PRINTER_TYPE == PRINTER_PRUSA_XL)
+    #if ((PRINTER_TYPE == PRINTER_PRUSA_XL) || (PRINTER_TYPE == PRINTER_PRUSA_IXL))
     pStepX->SGTHRS(115);
     pStepY->SGTHRS(115);
     #else
