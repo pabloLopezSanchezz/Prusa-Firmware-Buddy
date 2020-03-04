@@ -466,7 +466,8 @@ target_sources(
           src/common/support_utils.cpp
           src/common/errors.c
           src/common/lang.c
-          src/marlin_stubs/gcode.cpp
+          $<$<STREQUAL:${PRINTER},MINI>:src/common/minda_broken_cable_detection.c>
+          $<$<STREQUAL:${PRINTER},MINI>:src/common/MindaRedscreen.c>
           src/marlin_stubs/G28.cpp
           src/marlin_stubs/M330.cpp
           src/marlin_stubs/M876.cpp
