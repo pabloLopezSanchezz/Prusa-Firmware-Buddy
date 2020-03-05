@@ -135,9 +135,18 @@ static inline uint16_t color_to_565(color_t clr) {
     return swap_ui16(((clr >> 19) & 0x001f) | ((clr >> 5) & 0x07e0) | ((clr << 8) & 0xf800));
 }
 
+static inline uint32_t color_to_666(color_t clr) {
+    return ((clr >> 16) & 0x00FC) | (clr & 0xFC00) | ((clr << 16) & 0xFC0000);
+}
+
+
 static inline color_t color_from_565(uint16_t clr565) {
     //TODO
     return 0;
+}
+
+static inline color_t color_from_666(uint32_t clr666) {
+    return ((clr666 >> 16) & 0x00FC) | (clr666 & 0xFC00) | ((clr666 << 16) & 0xFC0000);
 }
 
 static inline color_t color_alpha(color_t clr0, color_t clr1, uint8_t alpha) {

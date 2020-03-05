@@ -9,8 +9,16 @@
 #include "config.h"
 #include "window_logo.h"
 #include "stm32f4xx_hal.h"
+#include "display.h"
 
+#ifdef USE_ST7789
 #include "st7789v.h"
+#endif
+
+#ifdef USE_ILI9488
+#include "ili9488.h"
+#endif
+
 #include "sys.h"
 #include <assert.h>
 
@@ -221,7 +229,15 @@ void screen_test_disp_mem_init(screen_t *screen) {
     id = window_create_ptr(WINDOW_CLS_SPIN, id0, rect_ui16(col_1, row2draw, col_2_w, row_h), &(pd->spinGamma));
     window_set_format(id, "%1.0f");
     window_set_min_max_step(id, 0.0F, 3.0F, 1.0F);
+
+#ifdef USE_ST7789
     window_set_value(id, (float)st7789v_gamma_get());
+#endif
+
+#ifdef USE_ILI9488
+    window_set_value(id, (float)ili9488_gamma_get());
+#endif
+
 
     //INVERSION
     id = window_create_ptr(WINDOW_CLS_LIST, id0, rect_ui16(col_1 + col_2_w, row2draw, col_1_w - col_2_w, row_h), &(pd->spinInversion));
@@ -238,7 +254,15 @@ void screen_test_disp_mem_init(screen_t *screen) {
     id = window_create_ptr(WINDOW_CLS_SPIN, id0, rect_ui16(col_1, row2draw, col_2_w, row_h), &(pd->spinBrightness));
     window_set_format(id, "%1.0f");
     window_set_min_max_step(id, 0.0F, 255.0F, 5.0F);
+
+#ifdef USE_ST7789
     window_set_value(id, (float)st7789v_brightness_get());
+#endif
+
+#ifdef USE_ILI9488
+    window_set_value(id, (float)ili9488_brightness_get());
+#endif
+
     window_set_tag(id, TAG_BRIGHTNESS);
 
     //Brightness enabled
@@ -361,21 +385,42 @@ void screen_test_disp_mem_init(screen_t *screen) {
 
 //draw line in Y direction
 void drawCol(size_t col, size_t row, size_t len, uint16_t directColor) {
-    for (size_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i)
+    {
+#ifdef USE_ST7789
         st7789v_set_pixel_directColor(point_ui16(col, row + i), directColor);
+#endif
+
+#ifdef USE_ILI9488
+        ili9488_set_pixel_directColor(point_ui16(col, row + i), directColor);
+#endif
     }
 }
 //draw line in Y direction from buffer
 void drawCol_buff(size_t col, size_t row, size_t len, uint16_t *directColorBuff) {
-    for (size_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i)
+    {
+#ifdef USE_ST7789
         st7789v_set_pixel_directColor(point_ui16(col, row + i), directColorBuff[i]);
+#endif
+
+#ifdef USE_ILI9488
+        ili9488_set_pixel_directColor(point_ui16(col, row + i), directColorBuff[i]);
+#endif
     }
 }
 
 //read line in Y direction
 void readCol(size_t col, size_t row, size_t len, uint16_t *directColorBuff) {
-    for (size_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i)
+    {
+#ifdef USE_ST7789
         directColorBuff[i] = st7789v_get_pixel_directColor(point_ui16(col, row + i));
+#endif
+
+#ifdef USE_ILI9488
+        directColorBuff[i] = ili9488_get_pixel_directColor(point_ui16(col, row + i));
+#endif
     }
 }
 //draw line in Y direction, read it and draw it under first line
@@ -564,6 +609,7 @@ int screen_test_disp_mem_event(screen_t *screen, window_t *window, uint8_t event
         isBrightness_ena_actual = window_get_item_index(pd->spinBrigt_ena.win.id);
         brightness_actual = window_get_value(pd->spinBrightness.window.win.id);
 
+#ifdef USE_ST7789
         if ((isBrightness_ena_actual != isBrightness_ena_last) || (brightness_actual != brightness_last)) {
             st7789v_brightness_set(brightness_actual);
             brightness_last = brightness_actual;
@@ -574,6 +620,20 @@ int screen_test_disp_mem_event(screen_t *screen, window_t *window, uint8_t event
                 st7789v_brightness_disable();
             isBrightness_ena_last = isBrightness_ena_actual;
         }
+#endif
+
+#ifdef USE_ILI9488
+        if ((isBrightness_ena_actual != isBrightness_ena_last) || (brightness_actual != brightness_last)) {
+            ili9488_brightness_set(brightness_actual);
+            brightness_last = brightness_actual;
+
+            if (isBrightness_ena_actual)
+                ili9488_brightness_enable();
+            else
+                ili9488_brightness_disable();
+            isBrightness_ena_last = isBrightness_ena_actual;
+        }
+#endif
 
         mode = window_get_item_index(pd->spinMode.win.id);
 
@@ -586,6 +646,7 @@ int screen_test_disp_mem_event(screen_t *screen, window_t *window, uint8_t event
         clrG = (window_get_item_index(pd->spinStrG0.window.win.id) << 4) | window_get_item_index(pd->spinStrG1.window.win.id);
         clrB = (window_get_item_index(pd->spinStrB0.window.win.id) << 4) | window_get_item_index(pd->spinStrB1.window.win.id);
 
+#ifdef USE_ST7789
         gamma_actual = window_get_item_index(pd->spinGamma.window.win.id);
         if (gamma_actual != gamma_last) {
             st7789v_gamma_set(gamma_actual);
@@ -600,6 +661,25 @@ int screen_test_disp_mem_event(screen_t *screen, window_t *window, uint8_t event
                 st7789v_inversion_off();
             isInverted_last = isInverted_actual;
         }
+#endif
+
+#ifdef USE_ILI9488
+        gamma_actual = window_get_item_index(pd->spinGamma.window.win.id);
+        if (gamma_actual != gamma_last) {
+            ili9488_gamma_set(gamma_actual);
+            gamma_last = gamma_actual;
+        }
+
+        isInverted_actual = window_get_item_index(pd->spinInversion.win.id);
+        if (isInverted_actual != isInverted_last) {
+            if (isInverted_actual)
+                ili9488_inversion_on();
+            else
+                ili9488_inversion_off();
+            isInverted_last = isInverted_actual;
+        }
+#endif
+
 
         //check if spin changed
         spinSpiClkVal_actual = window_get_item_index(pd->spinSpiClk.win.id);
