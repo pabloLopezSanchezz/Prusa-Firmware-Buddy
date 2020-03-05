@@ -12,11 +12,11 @@
 #include "display.h"
 
 #ifdef USE_ST7789
-#include "st7789v.h"
+    #include "st7789v.h"
 #endif
 
 #ifdef USE_ILI9488
-#include "ili9488.h"
+    #include "ili9488.h"
 #endif
 
 #include "sys.h"
@@ -238,7 +238,6 @@ void screen_test_disp_mem_init(screen_t *screen) {
     window_set_value(id, (float)ili9488_gamma_get());
 #endif
 
-
     //INVERSION
     id = window_create_ptr(WINDOW_CLS_LIST, id0, rect_ui16(col_1 + col_2_w, row2draw, col_1_w - col_2_w, row_h), &(pd->spinInversion));
     window_set_item_count(id, inversions_sz);
@@ -385,8 +384,7 @@ void screen_test_disp_mem_init(screen_t *screen) {
 
 //draw line in Y direction
 void drawCol(size_t col, size_t row, size_t len, uint16_t directColor) {
-    for (size_t i = 0; i < len; ++i)
-    {
+    for (size_t i = 0; i < len; ++i) {
 #ifdef USE_ST7789
         st7789v_set_pixel_directColor(point_ui16(col, row + i), directColor);
 #endif
@@ -398,8 +396,7 @@ void drawCol(size_t col, size_t row, size_t len, uint16_t directColor) {
 }
 //draw line in Y direction from buffer
 void drawCol_buff(size_t col, size_t row, size_t len, uint16_t *directColorBuff) {
-    for (size_t i = 0; i < len; ++i)
-    {
+    for (size_t i = 0; i < len; ++i) {
 #ifdef USE_ST7789
         st7789v_set_pixel_directColor(point_ui16(col, row + i), directColorBuff[i]);
 #endif
@@ -412,8 +409,7 @@ void drawCol_buff(size_t col, size_t row, size_t len, uint16_t *directColorBuff)
 
 //read line in Y direction
 void readCol(size_t col, size_t row, size_t len, uint16_t *directColorBuff) {
-    for (size_t i = 0; i < len; ++i)
-    {
+    for (size_t i = 0; i < len; ++i) {
 #ifdef USE_ST7789
         directColorBuff[i] = st7789v_get_pixel_directColor(point_ui16(col, row + i));
 #endif
@@ -679,7 +675,6 @@ int screen_test_disp_mem_event(screen_t *screen, window_t *window, uint8_t event
             isInverted_last = isInverted_actual;
         }
 #endif
-
 
         //check if spin changed
         spinSpiClkVal_actual = window_get_item_index(pd->spinSpiClk.win.id);

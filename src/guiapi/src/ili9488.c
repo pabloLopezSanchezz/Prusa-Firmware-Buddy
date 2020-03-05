@@ -15,22 +15,22 @@
 #define ILI9488_ROWS 320 //
 
 //ili9488 commands
-#define CMD_SLPIN 0x10
-#define CMD_SLPOUT 0x11
-#define CMD_INVOFF 0x20 //Display Inversion Off
-#define CMD_INVON 0x21 //Display Inversion On
+#define CMD_SLPIN     0x10
+#define CMD_SLPOUT    0x11
+#define CMD_INVOFF    0x20 //Display Inversion Off
+#define CMD_INVON     0x21 //Display Inversion On
 #define CMD_GAMMA_SET 0x26 //gamma set
-#define CMD_DISPOFF 0x28
-#define CMD_DISPON 0x29
-#define CMD_CASET 0x2A
-#define CMD_RASET 0x2B
-#define CMD_RAMWR 0x2C
-#define CMD_RAMRD 0x2E
-#define CMD_MADCTL 0x36
+#define CMD_DISPOFF   0x28
+#define CMD_DISPON    0x29
+#define CMD_CASET     0x2A
+#define CMD_RASET     0x2B
+#define CMD_RAMWR     0x2C
+#define CMD_RAMRD     0x2E
+#define CMD_MADCTL    0x36
 //#define CMD_IDMOFF 		0x38//Idle Mode Off
 //#define CMD_IDMON 		0x38//Idle Mode On
-#define CMD_COLMOD 0x3A
-#define CMD_RAMWRC 0x3C
+#define CMD_COLMOD  0x3A
+#define CMD_RAMWRC  0x3C
 #define CMD_WRDISBV 0x51 //Write Display Brightness
 #define CMD_RDDISBV 0x52 //Read Display Brightness Value
 #define CMD_WRCTRLD 0x53 // Write CTRL Display
@@ -47,8 +47,8 @@
 
 //ili9488 CTRL Display
 #define MASK_CTRLD_BCTRL (0x01 << 5) //Brightness Control Block
-#define MASK_CTRLD_DD (0x01 << 3) //Display Dimming
-#define MASK_CTRLD_BL (0x01 << 2) //Backlight Control
+#define MASK_CTRLD_DD    (0x01 << 3) //Display Dimming
+#define MASK_CTRLD_BL    (0x01 << 2) //Backlight Control
 
 //color conversion
 #define _COLOR_666(clr) color_to_666(clr)
@@ -56,14 +56,14 @@
 #define _666_COLOR(clr) color_from_666(clr)
 
 //private flags (pin states)
-#define FLG_CS 0x01 // current CS pin state
-#define FLG_RS 0x02 // current RS pin state
+#define FLG_CS  0x01 // current CS pin state
+#define FLG_RS  0x02 // current RS pin state
 #define FLG_RST 0x04 // current RST pin state
 
 uint8_t ili9488_flg = 0; // flags
 
-uint16_t ili9488_x = 0; // current x coordinate (CASET)
-uint16_t ili9488_y = 0; // current y coordinate (RASET)
+uint16_t ili9488_x = 0;  // current x coordinate (CASET)
+uint16_t ili9488_y = 0;  // current y coordinate (RASET)
 uint16_t ili9488_cx = 0; //
 uint16_t ili9488_cy = 0; //
 
@@ -128,15 +128,13 @@ static inline void ili9488_fill_ui16(uint16_t *p, uint16_t v, uint16_t c) {
 }
 
 static void ili9488_fill_ui24(uint8_t *p, uint32_t v, int c) {
-    while (c--)
-    {
-       p[0] = 0xFF & v;
-       p[1] = 0xFF & (v >> 8);
-       p[2] = 0xFF & (v >> 16);
-       p += 3;
+    while (c--) {
+        p[0] = 0xFF & v;
+        p[1] = 0xFF & (v >> 8);
+        p[2] = 0xFF & (v >> 16);
+        p += 3;
     }
 }
-
 
 static inline int is_interrupt(void) {
     return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
@@ -172,7 +170,7 @@ void ili9488_spi_wr_bytes(uint8_t *pb, uint16_t size) {
         HAL_SPI_Transmit_DMA(ili9488_config.phspi, pb, size);
 #ifdef ILI9488_USE_RTOS
         osSignalWait(ILI9488_SIG_SPI_TX, osWaitForever);
-#else //ILI9488_USE_RTOS
+#else  //ILI9488_USE_RTOS
 //TODO:
 #endif //ILI9488_USE_RTOS
     } else
@@ -182,23 +180,22 @@ void ili9488_spi_wr_bytes(uint8_t *pb, uint16_t size) {
 void ili9488_spi_rd_bytes(uint8_t *pb, uint16_t size) {
     HAL_StatusTypeDef ret;
 #if 1
-//#ifdef ILI9488_DMA
-	if (size <= 4)
-		ret = HAL_SPI_Receive(ili9488_config.phspi, pb, size, HAL_MAX_DELAY);
-	else
-	{
+    //#ifdef ILI9488_DMA
+    if (size <= 4)
+        ret = HAL_SPI_Receive(ili9488_config.phspi, pb, size, HAL_MAX_DELAY);
+    else {
     #ifdef ILI9488_USE_RTOS
-		osSignalSet(0, ILI9488_SIG_SPI_TX);
-		osSignalWait(ILI9488_SIG_SPI_TX, osWaitForever);
+        osSignalSet(0, ILI9488_SIG_SPI_TX);
+        osSignalWait(ILI9488_SIG_SPI_TX, osWaitForever);
     #endif //ILI9488_USE_RTOS
-		ret = HAL_SPI_Receive_DMA(ili9488_config.phspi, pb, size);
+        ret = HAL_SPI_Receive_DMA(ili9488_config.phspi, pb, size);
     #ifdef ILI9488_USE_RTOS
-		osSignalWait(ILI9488_SIG_SPI_TX, osWaitForever);
+        osSignalWait(ILI9488_SIG_SPI_TX, osWaitForever);
     #endif //ILI9488_USE_RTOS
-	}
-#else //ILI9488_DMA
+    }
+#else          //ILI9488_DMA
     ret = HAL_SPI_Receive(ili9488_config.phspi, pb, size, HAL_MAX_DELAY);
-#endif //ILI9488_DMA
+#endif         //ILI9488_DMA
     ret = ret; //prevent warning
 }
 
@@ -207,10 +204,10 @@ void ili9488_cmd(uint8_t cmd, uint8_t *pdata, uint16_t size) {
     if (ili9488_flg & FLG_CS)
         ili9488_clr_cs(); // CS = L
     if (ili9488_flg & FLG_RS)
-        ili9488_clr_rs(); // RS = L
+        ili9488_clr_rs();     // RS = L
     ili9488_spi_wr_byte(cmd); // write command byte
     if (pdata && size) {
-        ili9488_set_rs(); // RS = H
+        ili9488_set_rs();                  // RS = H
         ili9488_spi_wr_bytes(pdata, size); // write data bytes
     }
     if (tmp_flg & FLG_CS)
@@ -219,12 +216,12 @@ void ili9488_cmd(uint8_t cmd, uint8_t *pdata, uint16_t size) {
 
 void ili9488_wr(uint8_t *pdata, uint16_t size) {
     if (!(pdata && size))
-        return; // null or empty data - return
+        return;                     // null or empty data - return
     uint16_t tmp_flg = ili9488_flg; // save flags
     if (ili9488_flg & FLG_CS)
         ili9488_clr_cs(); // CS = L
     if (!(ili9488_flg & FLG_RS))
-        ili9488_set_rs(); // RS = H
+        ili9488_set_rs();              // RS = H
     ili9488_spi_wr_bytes(pdata, size); // write data bytes
     if (tmp_flg & FLG_CS)
         ili9488_set_cs(); // CS = H
@@ -232,19 +229,19 @@ void ili9488_wr(uint8_t *pdata, uint16_t size) {
 
 void ili9488_rd(uint8_t *pdata, uint16_t size) {
     if (!(pdata && size))
-        return; // null or empty data - return
+        return;                     // null or empty data - return
     uint16_t tmp_flg = ili9488_flg; // save flags
 
     if (ili9488_flg & FLG_CS)
         ili9488_clr_cs(); // CS = L
     if (ili9488_flg & FLG_RS)
-        ili9488_clr_rs(); // RS = L
+        ili9488_clr_rs();           // RS = L
     ili9488_spi_wr_byte(CMD_RAMRD); // write command byte
-    ili9488_spi_wr_byte(0);   		// write dummy byte, datasheet p.122
+    ili9488_spi_wr_byte(0);         // write dummy byte, datasheet p.122
 
     ili9488_spi_rd_bytes(pdata, size); // read data bytes
     if (tmp_flg & FLG_CS)
-    	ili9488_set_cs(); // CS = H
+        ili9488_set_cs(); // CS = H
 }
 
 void ili9488_cmd_slpout(void) {
@@ -264,12 +261,12 @@ void ili9488_cmd_dispon(void) {
 }
 
 void ili9488_cmd_caset(uint16_t x, uint16_t cx) {
-    uint8_t data[4] = { x >> 8, x & 0xff, (cx) >> 8, (cx) & 0xff };
+    uint8_t data[4] = { x >> 8, x & 0xff, (cx) >> 8, (cx)&0xff };
     ili9488_cmd(CMD_CASET, data, 4);
 }
 
 void ili9488_cmd_raset(uint16_t y, uint16_t cy) {
-    uint8_t data[4] = { y >> 8, y & 0xff, (cy) >> 8, (cy) & 0xff };
+    uint8_t data[4] = { y >> 8, y & 0xff, (cy) >> 8, (cy)&0xff };
     ili9488_cmd(CMD_RASET, data, 4);
 }
 
@@ -318,7 +315,7 @@ void ili9488_reset(void) {
     ili9488_set_rst();
 }
 
-void ili9488_set_backlight(uint8_t bck){
+void ili9488_set_backlight(uint8_t bck) {
     gpio_set(ili9488_config.pinBck, bck);
 }
 
@@ -330,15 +327,15 @@ void ili9488_init(void) {
         ili9488_flg &= ~ILI9488_FLG_DMA;
     else
         ili9488_flg = ili9488_config.flg;
-    ili9488_init_ctl_pins(); // CS=H, RS=H, RST=H
-    ili9488_reset(); // 15ms reset pulse
-    ili9488_delay_ms(120); // 120ms wait
-    ili9488_cmd_slpout(); // wakeup
-    ili9488_delay_ms(120); // 120ms wait
+    ili9488_init_ctl_pins();                   // CS=H, RS=H, RST=H
+    ili9488_reset();                           // 15ms reset pulse
+    ili9488_delay_ms(120);                     // 120ms wait
+    ili9488_cmd_slpout();                      // wakeup
+    ili9488_delay_ms(120);                     // 120ms wait
     ili9488_cmd_madctl(ili9488_config.madctl); // interface pixel format
     ili9488_cmd_colmod(ili9488_config.colmod); // memory data access control
-    ili9488_cmd_dispon(); // display on
-    ili9488_delay_ms(10); // 10ms wait
+    ili9488_cmd_dispon();                      // display on
+    ili9488_delay_ms(10);                      // 10ms wait
     //ili9488_set_backlight(1);
     display->set_backlight(1);
 }
@@ -351,10 +348,9 @@ void ili9488_clear(color_t clr) {
     uint32_t clr666 = _COLOR_666(clr);
     uint8_t *p_byte = (uint8_t *)ili9488_buff;
 
-    for (i = 0; i < ILI9488_COLS * 16; i++)
-    {
-       	*((uint32_t *)p_byte) = clr666;
-    	p_byte += 3;						// increase the address by 3 because the color has 3 bytes
+    for (i = 0; i < ILI9488_COLS * 16; i++) {
+        *((uint32_t *)p_byte) = clr666;
+        p_byte += 3; // increase the address by 3 because the color has 3 bytes
     }
 
     ili9488_clr_cs();
@@ -371,8 +367,8 @@ void ili9488_set_pixel(point_ui16_t pt, color_t clr) {
     if (!point_in_rect_ui16(pt, ili9488_clip))
         return;
     uint32_t clr666 = _COLOR_666(clr);
-    ili9488_cmd_caset(pt.x, pt.x+1);
-    ili9488_cmd_raset(pt.y, pt.y+1);
+    ili9488_cmd_caset(pt.x, pt.x + 1);
+    ili9488_cmd_raset(pt.y, pt.y + 1);
     ili9488_cmd_ramwr((uint8_t *)(&clr666), 3);
 }
 
@@ -380,8 +376,8 @@ color_t ili9488_get_pixel(point_ui16_t pt) {
     if (!point_in_rect_ui16(pt, ili9488_clip))
         return 0;
     uint32_t clr666;
-    ili9488_cmd_caset(pt.x, pt.x+1);
-    ili9488_cmd_raset(pt.y, pt.y+1);
+    ili9488_cmd_caset(pt.x, pt.x + 1);
+    ili9488_cmd_raset(pt.y, pt.y + 1);
     ili9488_cmd_ramrd((uint8_t *)(&clr666), 3);
     return _666_COLOR(clr666);
 }
@@ -389,8 +385,8 @@ color_t ili9488_get_pixel(point_ui16_t pt) {
 void ili9488_set_pixel_directColor(point_ui16_t pt, uint32_t directColor) {
     if (!point_in_rect_ui16(pt, ili9488_clip))
         return;
-    ili9488_cmd_caset(pt.x, pt.x+1);
-    ili9488_cmd_raset(pt.y, pt.y+1);
+    ili9488_cmd_caset(pt.x, pt.x + 1);
+    ili9488_cmd_raset(pt.y, pt.y + 1);
     ili9488_cmd_ramwr((uint8_t *)(&directColor), 3);
 }
 
@@ -430,8 +426,8 @@ uint32_t ili9488_get_pixel_directColor(point_ui16_t pt) {
         return 0;
     enum { buff_sz = 5 };
     uint8_t buff[buff_sz];
-    ili9488_cmd_caset(pt.x, pt.x+1);
-    ili9488_cmd_raset(pt.y, pt.y+1);
+    ili9488_cmd_caset(pt.x, pt.x + 1);
+    ili9488_cmd_raset(pt.y, pt.y + 1);
     ili9488_cmd_ramrd(buff, buff_sz);
     uint32_t ret = ((buff[0] << 16) & 0xFC0000) + ((buff[1] << 8) & 0x00FC00) + (buff[2] & 0xFC);
     return ret; //directColor;
@@ -443,20 +439,20 @@ void ili9488_clip_rect(rect_ui16_t rc) {
 
 void ili9488_draw_line(point_ui16_t pt, point_ui16_t pt1, color_t clr) {
     int n;
-    int dx = pt1.x - pt.x; // X-axis dimension
-    int dy = pt1.y - pt.y; // Y-axis dimension
-    int sx = (dx >= 0) ? 1 : -1; // X-axis direction, positive when left-to-right
-    int sy = (dy >= 0) ? 1 : -1; // Y-axis direction, positive when bottom-to-top
+    int dx = pt1.x - pt.x;        // X-axis dimension
+    int dy = pt1.y - pt.y;        // Y-axis dimension
+    int sx = (dx >= 0) ? 1 : -1;  // X-axis direction, positive when left-to-right
+    int sy = (dy >= 0) ? 1 : -1;  // Y-axis direction, positive when bottom-to-top
     int cx = (sx > 0) ? dx : -dx; //
     int cy = (sy > 0) ? dy : -dy; //
     dx = cx;
     dy = cy;
     if ((dx == 0) || (dy == 0)) { // orthogonal line
-        if (dx) // dy == 0
-        	//                            X                       Y    W   H
+        if (dx)                   // dy == 0
+                                  //                            X                       Y    W   H
             ili9488_fill_rect(rect_ui16((sx > 0) ? pt.x : pt1.x, pt.y, dx, 1), clr);
         else // dx == 0
-        	//             				  X             Y		       W   H
+             //             				  X             Y		       W   H
             ili9488_fill_rect(rect_ui16(pt.x, (sy > 0) ? pt.y : pt1.y, 1, dy), clr);
     } else if (dx > dy)
         for (n = dx; n > 0; n--) {
@@ -487,8 +483,8 @@ void ili9488_draw_line(point_ui16_t pt, point_ui16_t pt1, color_t clr) {
 void ili9488_draw_rect(rect_ui16_t rc, color_t clr) {
     point_ui16_t pt = { rc.x, rc.y };
     point_ui16_t pt1 = { rc.x + rc.w - 1, rc.y };
-    point_ui16_t pt2 = { rc.x + rc.w - 1, rc.y + rc.h}; // was rc.y + rc.h - 1
-    point_ui16_t pt3 = { rc.x, rc.y + rc.h }; // was rc.y + rc.h - 1
+    point_ui16_t pt2 = { rc.x + rc.w - 1, rc.y + rc.h }; // was rc.y + rc.h - 1
+    point_ui16_t pt3 = { rc.x, rc.y + rc.h };            // was rc.y + rc.h - 1
     ili9488_draw_line(pt, pt1, clr);
     ili9488_draw_line(pt1, pt2, clr);
     ili9488_draw_line(pt2, pt3, clr);
@@ -522,15 +518,15 @@ void ili9488_fill_rect(rect_ui16_t rc, color_t clr) {
 void ili9488_draw_char(point_ui16_t pt, char chr, font_t *pf, color_t clr0, color_t clr1) {
     int i;
     int j;
-    uint8_t *pch; //character data pointer
-    uint8_t crd = 0; //current row byte data
-    uint8_t rb; //row byte
-    uint16_t w = pf->w; //cache width
-    uint16_t h = pf->h; //..
-    uint8_t bpr = pf->bpr; //bytes per row
-    uint16_t bpc = bpr * h; //bytes per char
-    uint8_t bpp = 8 * bpr / w; //bits per pixel
-    uint8_t ppb = 8 / bpp; //pixels per byte
+    uint8_t *pch;                 //character data pointer
+    uint8_t crd = 0;              //current row byte data
+    uint8_t rb;                   //row byte
+    uint16_t w = pf->w;           //cache width
+    uint16_t h = pf->h;           //..
+    uint8_t bpr = pf->bpr;        //bytes per row
+    uint16_t bpc = bpr * h;       //bytes per char
+    uint8_t bpp = 8 * bpr / w;    //bits per pixel
+    uint8_t ppb = 8 / bpp;        //pixels per byte
     uint8_t pms = (1 << bpp) - 1; //pixel mask
     uint8_t *p = (uint8_t *)ili9488_buff;
     uint8_t *pc;
@@ -771,7 +767,7 @@ void ili9488_draw_png_ex(point_ui16_t pt, FILE *pf, color_t clr0, uint8_t rop) {
         else if (pixsize == 4) //RGBA
         {
             for (j = 0; j < w; j++) {
-                uint8_t *ppx666 = (uint8_t *)(ili9488_buff + j * 3);	// ZMENA uint16_t *ppx565 = (uint16_t *)(ili9488_buff + j * 2);
+                uint8_t *ppx666 = (uint8_t *)(ili9488_buff + j * 3); // ZMENA uint16_t *ppx565 = (uint16_t *)(ili9488_buff + j * 2);
                 uint8_t *ppx888 = (uint8_t *)(ili9488_buff + j * pixsize);
                 *((color_t *)ppx888) = color_alpha(clr0, color_rgb(ppx888[0], ppx888[1], ppx888[2]), ppx888[3]);
                 switch (rop) {
@@ -789,7 +785,7 @@ void ili9488_draw_png_ex(point_ui16_t pt, FILE *pf, color_t clr0, uint8_t rop) {
                 *(uint32_t *)ppx666 = _COLOR_666(color_rgb(ppx888[0], ppx888[1], ppx888[2]));
             }
         }
-        ili9488_wr(ili9488_buff, 3 * w);	// ZMENA 2 * w
+        ili9488_wr(ili9488_buff, 3 * w); // ZMENA 2 * w
     }
 _e_2:
     ili9488_set_cs();
@@ -914,18 +910,18 @@ const display_t ili9488_display = {
 };
 
 ili9488_config_t ili9488_config = {
-    0, // spi handle pointer
-    0, // CS pin
-    0, // RS pin
-    0, // RST pin
-    0, // Backlight pin
-    0, // flags (DMA, MISO)
-    0, // interface pixel format (5-6-5, hi-color)
-    0, // memory data access control (no mirror XY)
+    0,            // spi handle pointer
+    0,            // CS pin
+    0,            // RS pin
+    0,            // RST pin
+    0,            // Backlight pin
+    0,            // flags (DMA, MISO)
+    0,            // interface pixel format (5-6-5, hi-color)
+    0,            // memory data access control (no mirror XY)
     GAMMA_CURVE0, // gamma curve
-    0, // brightness
-    0, // inverted
-    0, // default control reg value
+    0,            // brightness
+    0,            // inverted
+    0,            // default control reg value
 };
 
 //! @brief enable safe mode (direct acces + safe delay)

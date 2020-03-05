@@ -937,7 +937,6 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 }
 #endif
 
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart == &huart1)
         uartrxbuff_rxcplt_cb(&uart1rxbuff);

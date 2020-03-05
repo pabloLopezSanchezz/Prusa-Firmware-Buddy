@@ -2,11 +2,11 @@
 
 #include "display.h"
 #ifdef USE_ST7789
-#include "st7789v.h"
+    #include "st7789v.h"
 #endif
 
 #ifdef USE_ILI9488
-#include "ili9488.h"
+    #include "ili9488.h"
 #endif
 
 #ifdef USE_ST7789

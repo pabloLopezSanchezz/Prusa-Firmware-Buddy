@@ -139,7 +139,6 @@ static inline uint32_t color_to_666(color_t clr) {
     return ((clr >> 16) & 0x00FC) | (clr & 0xFC00) | ((clr << 16) & 0xFC0000);
 }
 
-
 static inline color_t color_from_565(uint16_t clr565) {
     //TODO
     return 0;

@@ -81,11 +81,11 @@ int guimain_spi_test = 0;
 #include "gpio.h"
 
 #ifdef USE_ST7789
-#include "st7789v.h"
+    #include "st7789v.h"
 #endif
 
 #ifdef USE_ILI9488
-#include "ili9488.h"
+    #include "ili9488.h"
 #endif
 
 #include "jogwheel.h"
@@ -109,17 +109,16 @@ const st7789v_config_t st7789v_cfg = {
 
 #ifdef USE_ILI9488
 const ili9488_config_t ili9488_cfg = {
-    &hspi2, // spi handle pointer
-    ILI9488_PIN_CS, // CS pin
-	ILI9488_PIN_RS, // RS pin
-	ILI9488_PIN_RST, // RST pin
+    &hspi2,                // spi handle pointer
+    ILI9488_PIN_CS,        // CS pin
+    ILI9488_PIN_RS,        // RS pin
+    ILI9488_PIN_RST,       // RST pin
     ILI9488_PIN_BACKLIGHT, // Backlight pin
-	ILI9488_FLG_DMA, // flags (DMA, MISO)
-	ILI9488_DEF_COLMOD, // interface pixel format (5-6-5, hi-color)
-	ILI9488_DEF_MADCTL, // memory data access control (no mirror XY)
+    ILI9488_FLG_DMA,       // flags (DMA, MISO)
+    ILI9488_DEF_COLMOD,    // interface pixel format (5-6-5, hi-color)
+    ILI9488_DEF_MADCTL,    // memory data access control (no mirror XY)
 };
 #endif
-
 
 const jogwheel_config_t jogwheel_cfg = {
     JOGWHEEL_PIN_EN1, // encoder phase1

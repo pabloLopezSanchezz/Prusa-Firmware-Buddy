@@ -13,11 +13,11 @@
     #include "term.h"
 
     #ifdef USE_ST7789
-    #include "st7789v.h"
+        #include "st7789v.h"
     #endif
 
     #ifdef USE_ILI9488
-    #include "ili9488.h"
+        #include "ili9488.h"
     #endif
 
     #include "window_term.h"
@@ -132,13 +132,13 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 static void stop_common(void) {
     hwio_safe_state();
 
-#ifdef USE_ST7789
+    #ifdef USE_ST7789
     st7789v_enable_safe_mode();
-#endif
+    #endif
 
-#ifdef USE_ILI9488
+    #ifdef USE_ILI9488
     ili9488_enable_safe_mode();
-#endif
+    #endif
 
     hwio_beeper_set_pwm(0, 0);
     display->init();

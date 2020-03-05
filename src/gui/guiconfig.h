@@ -23,16 +23,15 @@
 #define MENU_TIMEOUT_MS 30000
 //--------------------------------------
 #ifdef USE_ST7789
-//ST7789v configuration
-#define ST7789V_USE_RTOS
-#define ST7789V_PNG_SUPPORT
+    //ST7789v configuration
+    #define ST7789V_USE_RTOS
+    #define ST7789V_PNG_SUPPORT
 #endif
 
 #ifdef USE_ILI9488
-//ILI9488 configuration
-#define ILI9488_USE_RTOS
-#define ILI9488_PNG_SUPPORT
+    //ILI9488 configuration
+    #define ILI9488_USE_RTOS
+    #define ILI9488_PNG_SUPPORT
 #endif
-
 
 #endif //_GUICONFIG_H
