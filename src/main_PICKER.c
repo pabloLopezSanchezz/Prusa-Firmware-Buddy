@@ -257,6 +257,10 @@ int main(void) {
     osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 1024);
     defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
+    /* definition and creation of displayTask */
+    osThreadDef(displayTask, StartDisplayTask, osPriorityNormal, 0, 2048);
+    displayTaskHandle = osThreadCreate(osThread(displayTask), NULL);
+
     /* definition and creation of idleTask */
     osThreadDef(idleTask, StartIdleTask, osPriorityIdle, 0, 128);
     idleTaskHandle = osThreadCreate(osThread(idleTask), NULL);
@@ -268,6 +272,10 @@ int main(void) {
 #endif
 
     /* USER CODE BEGIN RTOS_THREADS */
+    /* add threads, ... */
+    /* definition and creation of measurementTask */
+    osThreadDef(measurementTask, StartMeasurementTask, osPriorityNormal, 0, 512);
+    osThreadCreate(osThread(measurementTask), NULL);
 
     /* USER CODE END RTOS_THREADS */
 
