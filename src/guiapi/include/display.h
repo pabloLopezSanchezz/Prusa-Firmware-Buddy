@@ -10,8 +10,8 @@
 ///////////////////////////
 // display type selector //
 ///////////////////////////
-//#define XBUDDY_ELECTRONIC
-#ifdef XBUDDY_ELECTRONIC
+//#define XBUDDY_ELECTRONICS
+#ifdef XBUDDY_ELECTRONICS
     #define USE_ILI9488
 #else
     #define USE_ST7789

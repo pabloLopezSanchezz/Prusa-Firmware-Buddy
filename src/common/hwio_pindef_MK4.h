@@ -26,9 +26,9 @@
 #define PIN_Y_DIAG   PE1
 
 //#define BUDDY_XL_ELECTRONICS
-//#define XBUDDY_ELECTRONIC
+//#define XBUDDY_ELECTRONICS
 
-#if defined BUDDY_XL_ELECTRONICS || defined XBUDDY_ELECTRONIC
+#if defined BUDDY_XL_ELECTRONICS || defined XBUDDY_ELECTRONICS
 
     #define PIN_Z_DIR    PD8
     #define PIN_Z_STEP   PD9
@@ -56,7 +56,7 @@
 
 #define PIN_FAN1 PE9
 #define PIN_FAN  PE11
-#ifdef XBUDDY_ELECTRONIC
+#ifdef XBUDDY_ELECTRONICS
     #define PIN_BTN_EN1 PE15
     #define PIN_BTN_EN2 PE13
 #else

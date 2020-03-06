@@ -17,7 +17,7 @@
 //show filament sensor status in header
 //#define DEBUG_FSENSOR_IN_HEADER
 
-//#define XBUDDY_ELECTRONIC
+//#define XBUDDY_ELECTRONICS
 //--------------------------------------
 //ADC configuration
 //channels:
@@ -66,7 +66,7 @@
 
 //--------------------------------------
 //Jogwheel configuration
-#ifdef XBUDDY_ELECTRONIC
+#ifdef XBUDDY_ELECTRONICS
     #define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
     #define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
 #else
@@ -104,7 +104,7 @@
 
     #endif
 
-    #if defined BUDDY_XL_ELECTRONICS || defined XBUDDY_ELECTRONIC
+    #if defined BUDDY_XL_ELECTRONICS || defined XBUDDY_ELECTRONICS
         #define LOADCELL_PIN_DOUT PB5 // data signal pin
         #define LOADCELL_PIN_SCK  PE0 // clock signal pin
     #else

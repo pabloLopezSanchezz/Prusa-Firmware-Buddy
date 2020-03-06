@@ -57,7 +57,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-//#define XBUDDY_ELECTRONIC
+//#define XBUDDY_ELECTRONICS
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -144,7 +144,7 @@ void Error_Handler(void);
 #define Y_DIR_GPIO_Port       GPIOD
 #define Y_STEP_Pin            GPIO_PIN_13
 #define Y_STEP_GPIO_Port      GPIOD
-#ifdef XBUDDY_ELECTRONIC
+#ifdef XBUDDY_ELECTRONICS
     #define Y_ENA_Pin       GPIO_PIN_3
     #define Y_ENA_GPIO_Port GPIOD
 #else
@@ -159,7 +159,7 @@ void Error_Handler(void);
 #define ESP_RX_GPIO_Port  GPIOC
 #define LCD_RST_Pin       GPIO_PIN_8
 #define LCD_RST_GPIO_Port GPIOC
-#ifdef XBUDDY_ELECTRONIC
+#ifdef XBUDDY_ELECTRONICS
     #define LCD_CS_Pin       GPIO_PIN_14
     #define LCD_CS_GPIO_Port GPIOD
 #else
