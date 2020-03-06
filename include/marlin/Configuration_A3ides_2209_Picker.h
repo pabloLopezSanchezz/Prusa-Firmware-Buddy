@@ -676,11 +676,8 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 400, 280 } //E0 280 295
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
-    { 100, 100, 400, 317 } //E0 280 295
-//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 800, 800, 3200, 1120 } //E0 280 295
-//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 400, 1120 } //E0 280 295
+    { 100, 100, 200, 317 }
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -866,31 +863,30 @@
  *      O-- FRONT --+
  *    (0,0)
  */
-#define NOZZLE_TO_PROBE_OFFSET \
-    { -29, -3, 0 }
+//#define NOZZLE_TO_PROBE_OFFSET  { -29, -3, 0 }
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 0
+//#define MIN_PROBE_EDGE 0
 
 // X and Y axis travel speed (mm/m) between probes
-#define XY_PROBE_SPEED 5000
+//#define XY_PROBE_SPEED 5000
 
 // Feedrate (mm/m) for the first approach when double-probing (MULTIPLE_PROBING == 2)
-#define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
+//#define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
 
 // Feedrate (mm/m) for the "accurate" probe of each point
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 3)
+//#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 3)
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
-#define MULTIPLE_PROBING 2
+//#define MULTIPLE_PROBING 2
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
-#define EXTRA_PROBING 1
-#define EXTRA_PROBING_TOL 0.1 // If the measured Z value is larger than this value, remove it and remeasure
-#define EXTRA_PROBING_RAIL 1.2 // Maximum value of Z measurement
-#define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
+//#define EXTRA_PROBING 1
+//#define EXTRA_PROBING_TOL 0.1 // If the measured Z value is larger than this value, remove it and remeasure
+//#define EXTRA_PROBING_RAIL 1.2 // Maximum value of Z measurement
+//#define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
 
 /**
  * Z probes require clearance when deploying, stowing, and moving between
@@ -906,16 +902,16 @@
  * Example: `M851 Z-5` with a CLEARANCE of 4  =>  9mm from bed to nozzle.
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
-#define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points
-#define Z_CLEARANCE_MULTI_PROBE 0.5 // Z Clearance between multiple probes
-#define Z_AFTER_PROBING 2 // Z position after probing is done
+//#define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
+//#define Z_CLEARANCE_BETWEEN_PROBES 0 // Z Clearance between probe points
+//#define Z_CLEARANCE_MULTI_PROBE 0 // Z Clearance between multiple probes
+//#define Z_AFTER_PROBING 0 // Z position after probing is done
 
-#define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
+//#define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
 
 // For M851 give a range for adjusting the Z probe offset
-#define Z_PROBE_OFFSET_RANGE_MIN -20
-#define Z_PROBE_OFFSET_RANGE_MAX 20
+//#define Z_PROBE_OFFSET_RANGE_MIN -20
+//#define Z_PROBE_OFFSET_RANGE_MAX 20
 
 // Enable the M48 repeatability test to test probe accuracy
 //#define Z_MIN_PROBE_REPEATABILITY_TEST
@@ -964,7 +960,7 @@
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #define INVERT_X_DIR false //true
 #define INVERT_Y_DIR false
-#define INVERT_Z_DIR true
+#define INVERT_Z_DIR false
 
 // @section extruder
 
@@ -982,28 +978,28 @@
 
 //#define UNKNOWN_Z_NO_RAISE // Don't raise Z (lower the bed) if Z is "unknown." For beds that fall when Z is powered off.
 
-#define Z_HOMING_HEIGHT 4 // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
+//#define Z_HOMING_HEIGHT 4 // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
 // Be sure you have this distance over your Z_MAX_POS in case.
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
 #define X_HOME_DIR 1
 #define Y_HOME_DIR 1
-#define Z_HOME_DIR -1
+#define Z_HOME_DIR 1
 
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 180
-#define Y_BED_SIZE 180
+#define X_BED_SIZE 110
+#define Y_BED_SIZE 284
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
-#define Z_MIN_POS 0
+#define Z_MIN_POS -26
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
-#define Z_MAX_POS 13
+#define Z_MAX_POS 0
 
 /**
  * Software Endstops
@@ -1282,8 +1278,8 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY (3000)
-#define HOMING_FEEDRATE_Z (6 * 60)
+#define HOMING_FEEDRATE_XY (100 * 60)
+#define HOMING_FEEDRATE_Z (12 * 60)
 
 // Validate that endstops are triggered on homing moves
 //#define VALIDATE_HOMING_ENDSTOPS
