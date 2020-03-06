@@ -9,7 +9,9 @@
 extern metric_t metric_probe_z;
 
 void Buddy::Metrics::RecordMarlinVariables() {
+#if HAS_BED_PROBE
     metric_register(&metric_probe_z);
+#endif
 
 #if HAS_TEMP_HEATBREAK
     static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
