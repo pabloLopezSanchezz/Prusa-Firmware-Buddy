@@ -152,6 +152,8 @@ char uart6slave_line[32];
 volatile uint32_t Tacho_FAN0;
 volatile uint32_t Tacho_FAN1;
 
+int M335_FAN_SPEED; // -- global temporary print fan speed
+
 /* USER CODE END 0 */
 
 /**

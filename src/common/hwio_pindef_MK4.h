@@ -54,11 +54,16 @@
 
 #endif
 
-#define PIN_FAN1    PE9
-#define PIN_FAN     PE11
+#define PIN_FAN1 PE9
+#define PIN_FAN  PE11
+#ifdef XBUDDY_ELECTRONIC
+    #define PIN_BTN_EN1 PE15
+    #define PIN_BTN_EN2 PE13
+#else
+    #define PIN_BTN_EN1 PE13
+    #define PIN_BTN_EN2 PE15
+#endif
 #define PIN_BTN_ENC PE12
-#define PIN_BTN_EN1 PE13
-#define PIN_BTN_EN2 PE15
 
 #define PIN_FSENSOR PB4
 

@@ -17,6 +17,7 @@
 //show filament sensor status in header
 //#define DEBUG_FSENSOR_IN_HEADER
 
+//#define XBUDDY_ELECTRONIC
 //--------------------------------------
 //ADC configuration
 //channels:
@@ -65,8 +66,14 @@
 
 //--------------------------------------
 //Jogwheel configuration
-#define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin
-#define JOGWHEEL_PIN_EN2 PE13 // encoder signal 2 pin
+#ifdef XBUDDY_ELECTRONIC
+    #define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
+    #define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
+#else
+    #define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin
+    #define JOGWHEEL_PIN_EN2 PE13 // encoder signal 2 pin
+#endif
+
 #define JOGWHEEL_PIN_ENC PE12 // button pin
 
 //--------------------------------------

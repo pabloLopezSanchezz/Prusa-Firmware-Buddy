@@ -57,7 +57,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-#define XBUDDY_ELECTRONIC
+//#define XBUDDY_ELECTRONIC
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

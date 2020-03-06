@@ -155,6 +155,8 @@ volatile uint32_t Tacho_FAN1;
 
 static volatile uint32_t minda_falling_edges = 0;
 uint32_t get_Z_probe_endstop_hits() { return minda_falling_edges; }
+
+int M335_FAN_SPEED; // -- global temporary print fan speed
 /* USER CODE END 0 */
 
 /**
