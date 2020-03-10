@@ -17,7 +17,6 @@
 //show filament sensor status in header
 //#define DEBUG_FSENSOR_IN_HEADER
 
-//#define XBUDDY_ELECTRONICS
 //--------------------------------------
 //ADC configuration
 //channels:
