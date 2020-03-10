@@ -21,8 +21,8 @@ extern int loadcell_count;        // cycle counter
 #ifdef FILAMENT_SENSOR_HX711
 
 typedef enum {
-    HX711_has_filament,
     HX711_no_filament,
+    HX711_has_filament,
     HX711_disconnected
 } HX711_t;
 

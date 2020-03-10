@@ -89,8 +89,8 @@
     #ifdef FILAMENT_SENSOR_HX711
 
         // TODO:  Filament sensor LOW and HIGH levels, this is highly experimental, needs to be tweaked and made automatic
-        #define FILAMENT_SENSOR_HX711_LOW  1950000 // LOW level threshold
-        #define FILAMENT_SENSOR_HX711_HIGH 1900000 // HIGH level threshold
+        #define FILAMENT_SENSOR_HX711_LOW  5100000 // LOW level threshold
+        #define FILAMENT_SENSOR_HX711_HIGH 7400000 // HIGH level threshold
 
         #define FILAMENT_SENSOR_HX711_INVERT 0 // Output level Inverting (Not yet implemented)
 

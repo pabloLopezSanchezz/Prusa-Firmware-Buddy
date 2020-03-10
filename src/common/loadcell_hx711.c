@@ -176,13 +176,13 @@ static inline void fsensor_cycle(void) {
     metric_record_integer(&metric_fsensor_raw, fsensor_value);
     // update probe variable
     if (fsensor_value <= (fsensor_threshold_LO)) {
-        fsensor_probe = HX711_has_filament;
+        fsensor_probe = HX711_no_filament;
     } else if (fsensor_value < 2000) {
         fsensor_probe = HX711_disconnected;
     }
 
     else {
-        fsensor_probe = HX711_no_filament;
+        fsensor_probe = HX711_has_filament;
     }
 }
 
