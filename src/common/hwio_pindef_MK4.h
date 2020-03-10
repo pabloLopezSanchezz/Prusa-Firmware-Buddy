@@ -25,41 +25,20 @@
 #define PIN_Y_ENABLE PD14
 #define PIN_Y_DIAG   PE1
 
-#if defined XBUDDY_ELECTRONICS
+#define PIN_Z_DIR    PD8
+#define PIN_Z_STEP   PD9
+#define PIN_Z_ENABLE PD10
+#define PIN_Z_DIAG   PA15
 
-    #define PIN_Z_DIR    PD8
-    #define PIN_Z_STEP   PD9
-    #define PIN_Z_ENABLE PD10
-    #define PIN_Z_DIAG   PA15
+#define PIN_E_DIR    PD15
+#define PIN_E_STEP   PD4
+#define PIN_E_ENABLE PD2
+#define PIN_E_DIAG   PE3
 
-    #define PIN_E_DIR    PD15
-    #define PIN_E_STEP   PD4
-    #define PIN_E_ENABLE PD2
-    #define PIN_E_DIAG   PE3
-
-#else
-
-    #define PIN_Z_DIR    PD15
-    #define PIN_Z_STEP   PD4
-    #define PIN_Z_ENABLE PD2
-    #define PIN_Z_DIAG   PE3
-
-    #define PIN_E_DIR    PD8
-    #define PIN_E_STEP   PD9
-    #define PIN_E_ENABLE PD10
-    #define PIN_E_DIAG   PA15
-
-#endif
-
-#define PIN_FAN1 PE9
-#define PIN_FAN  PE11
-#ifdef XBUDDY_ELECTRONICS
-    #define PIN_BTN_EN1 PE15
-    #define PIN_BTN_EN2 PE13
-#else
-    #define PIN_BTN_EN1 PE13
-    #define PIN_BTN_EN2 PE15
-#endif
+#define PIN_FAN1    PE9
+#define PIN_FAN     PE11
+#define PIN_BTN_EN1 PE15
+#define PIN_BTN_EN2 PE13
 #define PIN_BTN_ENC PE12
 
 #define PIN_FSENSOR PB4

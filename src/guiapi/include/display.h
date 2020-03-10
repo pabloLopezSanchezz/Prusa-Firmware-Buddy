@@ -10,8 +10,7 @@
 ///////////////////////////
 // display type selector //
 ///////////////////////////
-//#define XBUDDY_ELECTRONICS
-#ifdef XBUDDY_ELECTRONICS
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     #define USE_ILI9488
 #else
     #define USE_ST7789

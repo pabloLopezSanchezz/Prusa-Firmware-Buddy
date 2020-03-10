@@ -65,13 +65,8 @@
 
 //--------------------------------------
 //Jogwheel configuration
-#ifdef XBUDDY_ELECTRONICS
-    #define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
-    #define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
-#else
-    #define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin
-    #define JOGWHEEL_PIN_EN2 PE13 // encoder signal 2 pin
-#endif
+#define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
+#define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
 
 #define JOGWHEEL_PIN_ENC PE12 // button pin
 
@@ -103,13 +98,8 @@
 
     #endif
 
-    #if defined XBUDDY_ELECTRONICS
-        #define LOADCELL_PIN_DOUT PB5 // data signal pin
-        #define LOADCELL_PIN_SCK  PE0 // clock signal pin
-    #else
-        #define LOADCELL_PIN_DOUT PE0 // data signal pin
-        #define LOADCELL_PIN_SCK  PB5 // clock signal pin
-    #endif
+    #define LOADCELL_PIN_DOUT PB5 // data signal pin
+    #define LOADCELL_PIN_SCK  PE0 // clock signal pin
 
 // loadcell latency test - pulse to PC13
 //#define LOADCELL_LATENCY_TEST

@@ -28,12 +28,8 @@
 #define _DO_Y_DIR    8 // PD12
 #define _DO_Y_STEP   9 // PD13
 
-#ifdef XBUDDY_ELECTRONICS
-    #define _DO_Y_ENABLE 3 // PD14
-#else
-    #define _DO_Y_ENABLE 10 // PD14
-#endif
-#define _DO_Z_DIR 11 // PD15
+#define _DO_Y_ENABLE 3  // PD14
+#define _DO_Z_DIR    11 // PD15
 
 //a3ides analog inputs
 #define _ADC_HW_IDENTIFY    0 // PA3 - chan 3

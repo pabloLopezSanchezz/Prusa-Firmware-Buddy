@@ -35,8 +35,6 @@
     #endif
 #endif //MOTHERBOARD
 
-//#define XBUDDY_ELECTRONICS   // Define this for usage of xBuddy electronics !! YOU CAN DO BETTER TOMAS !!
-
 #ifdef BOARD
 
     #if (BOARD == A3IDES2209_SIM)
