@@ -104,7 +104,7 @@
 
     #endif
 
-    #if defined BUDDY_XL_ELECTRONICS || defined XBUDDY_ELECTRONICS
+    #if defined XBUDDY_ELECTRONICS
         #define LOADCELL_PIN_DOUT PB5 // data signal pin
         #define LOADCELL_PIN_SCK  PE0 // clock signal pin
     #else

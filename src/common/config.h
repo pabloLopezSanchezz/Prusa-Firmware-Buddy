@@ -35,8 +35,6 @@
     #endif
 #endif //MOTHERBOARD
 
-//#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
-
 //#define XBUDDY_ELECTRONICS   // Define this for usage of xBuddy electronics !! YOU CAN DO BETTER TOMAS !!
 
 #ifdef BOARD
