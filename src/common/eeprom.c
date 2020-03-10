@@ -199,9 +199,9 @@ variant8_t eeprom_var_default(uint8_t id) {
     case EEVAR_LOADCELL_SCALE:
         return variant8_flt(0.0100);
     case EEVAR_LOADCELL_THRS:
-        return variant8_flt(-90);
+        return variant8_flt(-125);
     case EEVAR_LOADCELL_HYST:
-        return variant8_flt(40);
+        return variant8_flt(50);
     case EEVAR_RUN_SELFTEST:
         return variant8_ui8(1);
     case EEVAR_RUN_XYZCALIB:
