@@ -2,7 +2,7 @@
 #include "bsod.h"
 #include "FreeRTOS.h"
 #include "task.h"
-//ili9488_buff
+
 #ifndef HAS_GUI
     #error "HAS_GUI not defined"
 #elif HAS_GUI

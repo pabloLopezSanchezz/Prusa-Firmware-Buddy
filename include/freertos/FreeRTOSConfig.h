@@ -109,12 +109,9 @@ extern uint32_t SystemCoreClock;
 #define configTICK_RATE_HZ               ((TickType_t)1000)
 #define configMAX_PRIORITIES             (7)
 #define configMINIMAL_STACK_SIZE         ((uint16_t)128)
-<<<<<<< HEAD
-#define configTOTAL_HEAP_SIZE((size_t)40960)
-=======
-#define configTOTAL_HEAP_SIZE((size_t)32768) //32768 49152
->>>>>>> parent of cc780fa... Change FreeRTOS heap to 32Kb, add control for heatbreak fan
-                                                #define configMAX_TASK_NAME_LEN(16)
+#define configTOTAL_HEAP_SIZE            ((size_t)40960)
+
+#define configMAX_TASK_NAME_LEN                 (16)
 #define configUSE_16_BIT_TICKS                  0
 #define configUSE_MUTEXES                       1
 #define configQUEUE_REGISTRY_SIZE               8

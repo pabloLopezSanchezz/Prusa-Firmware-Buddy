@@ -57,11 +57,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-<<<<<<< HEAD
-//#define XBUDDY_ELECTRONICS
-=======
-#define XBUDDY_ELECTRONIC
->>>>>>> parent of cc780fa... Change FreeRTOS heap to 32Kb, add control for heatbreak fan
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

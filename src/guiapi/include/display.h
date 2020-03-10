@@ -7,21 +7,17 @@
 
 #include "guitypes.h"
 
-    ///////////////////////////
-    // display type selector //
-    ///////////////////////////
-<<<<<<< HEAD
-    //#define XBUDDY_ELECTRONICS
-    #ifdef XBUDDY_ELECTRONICS
-=======
-#ifdef XBUDDY_ELECTRONIC
->>>>>>> parent of cc780fa... Change FreeRTOS heap to 32Kb, add control for heatbreak fan
-#define USE_ILI9488
+///////////////////////////
+// display type selector //
+///////////////////////////
+//#define XBUDDY_ELECTRONICS
+#ifdef XBUDDY_ELECTRONICS
+    #define USE_ILI9488
 #else
     #define USE_ST7789
 #endif
 
-    typedef struct _display_t display_t;
+typedef struct _display_t display_t;
 
 typedef void(display_init_t)(void);
 typedef void(display_done_t)(void);
