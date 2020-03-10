@@ -67,7 +67,7 @@ uint16_t ili9488_y = 0;  // current y coordinate (RASET)
 uint16_t ili9488_cx = 0; //
 uint16_t ili9488_cy = 0; //
 
-uint8_t ili9488_buff[ILI9488_COLS * 3 * 16]; //16 lines buffer, 3 bytes for pixel color
+uint8_t ili9488_buff[ILI9488_COLS * 3 * 8]; //16 lines buffer, 3 bytes for pixel color
 
 rect_ui16_t ili9488_clip = { 0, 0, ILI9488_COLS, ILI9488_ROWS };
 
