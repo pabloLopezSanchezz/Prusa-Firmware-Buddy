@@ -53,16 +53,23 @@
 
 #endif
 
+<<<<<<< HEAD
+#define PIN_FAN1    PE9
+    #define PIN_FAN PE11
+    #ifdef XBUDDY_ELECTRONICS
+        #define PIN_BTN_EN1 PE15
+        #define PIN_BTN_EN2 PE13
+    #else
+        #define PIN_BTN_EN1 PE13
+        #define PIN_BTN_EN2 PE15
+    #endif
+=======
 #define PIN_FAN1 PE9
-#define PIN_FAN  PE11
-#ifdef XBUDDY_ELECTRONICS
-    #define PIN_BTN_EN1 PE15
-    #define PIN_BTN_EN2 PE13
-#else
-    #define PIN_BTN_EN1 PE13
-    #define PIN_BTN_EN2 PE15
-#endif
-#define PIN_BTN_ENC PE12
+    #define PIN_FAN     PE11
+>>>>>>> parent of cc780fa... Change FreeRTOS heap to 32Kb, add control for heatbreak fan
+    #define PIN_BTN_ENC PE12
+#define PIN_BTN_EN1     PE13
+#define PIN_BTN_EN2     PE15
 
 #define PIN_FSENSOR PB4
 

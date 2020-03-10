@@ -17,7 +17,10 @@
 //show filament sensor status in header
 //#define DEBUG_FSENSOR_IN_HEADER
 
+<<<<<<< HEAD
 //#define XBUDDY_ELECTRONICS
+=======
+>>>>>>> parent of cc780fa... Change FreeRTOS heap to 32Kb, add control for heatbreak fan
 //--------------------------------------
 //ADC configuration
 //channels:
@@ -66,6 +69,7 @@
 
 //--------------------------------------
 //Jogwheel configuration
+<<<<<<< HEAD
 #ifdef XBUDDY_ELECTRONICS
     #define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
     #define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
@@ -74,43 +78,47 @@
     #define JOGWHEEL_PIN_EN2 PE13 // encoder signal 2 pin
 #endif
 
-#define JOGWHEEL_PIN_ENC PE12 // button pin
+=======
+#define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin
+#define JOGWHEEL_PIN_EN2     PE13 // encoder signal 2 pin
+>>>>>>> parent of cc780fa... Change FreeRTOS heap to 32Kb, add control for heatbreak fan
+    #define JOGWHEEL_PIN_ENC PE12 // button pin
 
 //--------------------------------------
 //Loadcell HX711 configuration
 #if ((PRINTER_TYPE == PRINTER_PRUSA_MK4) || (PRINTER_TYPE == PRINTER_PRUSA_XL) || (PRINTER_TYPE == PRINTER_PRUSA_IXL))
 
-    #define LOADCELL_HX711
+#define LOADCELL_HX711
 
-    //#define HX711_ESP_DEBUG	// Debug state output to ESP header (ESP_RX-LoadCellUpdate; ESP_TX-FsensorUpdate; ESP_RST-DataPacketSent; ESP_GPIO0-FS-disabled)
+//#define HX711_ESP_DEBUG	// Debug state output to ESP header (ESP_RX-LoadCellUpdate; ESP_TX-FsensorUpdate; ESP_RST-DataPacketSent; ESP_GPIO0-FS-disabled)
 
-    #define FILAMENT_SENSOR_HX711 // Enable hall-effect filament sensor using HX711 channel B
+#define FILAMENT_SENSOR_HX711 // Enable hall-effect filament sensor using HX711 channel B
 
-    #ifdef FILAMENT_SENSOR_HX711
+#ifdef FILAMENT_SENSOR_HX711
 
-        // TODO:  Filament sensor LOW and HIGH levels, this is highly experimental, needs to be tweaked and made automatic
-        #define FILAMENT_SENSOR_HX711_LOW  5100000 // LOW level threshold
-        #define FILAMENT_SENSOR_HX711_HIGH 7400000 // HIGH level threshold
+    // TODO:  Filament sensor LOW and HIGH levels, this is highly experimental, needs to be tweaked and made automatic
+    #define FILAMENT_SENSOR_HX711_LOW  5100000 // LOW level threshold
+    #define FILAMENT_SENSOR_HX711_HIGH 7400000 // HIGH level threshold
 
-        #define FILAMENT_SENSOR_HX711_INVERT 0 // Output level Inverting (Not yet implemented)
+    #define FILAMENT_SENSOR_HX711_INVERT 0 // Output level Inverting (Not yet implemented)
 
-        // Pooling interval for filament sensor (every Nth measurement of load cell, the filament sensor gets updated)
-        // With default value of 60, filament sensor value is refreshed every 768 ms
-        // Please keep in mind that every filament sensor measurement takes approximately 115 ms (around 50 ms each channel change + 13 ms for reading the value)
-        // During filament sensor measurement, the loadcell value is NOT updated.
-        // This feature can be disabled on demand using set_fsensor_disable, or loadcell.FSdisable
-        // Also keep in mind that we have 12 mm maximum from trigger point to drive gear
-        #define FILAMENT_SENSOR_HX711_POOL_INT 60
+    // Pooling interval for filament sensor (every Nth measurement of load cell, the filament sensor gets updated)
+    // With default value of 60, filament sensor value is refreshed every 768 ms
+    // Please keep in mind that every filament sensor measurement takes approximately 115 ms (around 50 ms each channel change + 13 ms for reading the value)
+    // During filament sensor measurement, the loadcell value is NOT updated.
+    // This feature can be disabled on demand using set_fsensor_disable, or loadcell.FSdisable
+    // Also keep in mind that we have 12 mm maximum from trigger point to drive gear
+    #define FILAMENT_SENSOR_HX711_POOL_INT 60
 
-    #endif
+#endif
 
-    #if defined XBUDDY_ELECTRONICS
-        #define LOADCELL_PIN_DOUT PB5 // data signal pin
-        #define LOADCELL_PIN_SCK  PE0 // clock signal pin
-    #else
-        #define LOADCELL_PIN_DOUT PE0 // data signal pin
-        #define LOADCELL_PIN_SCK  PB5 // clock signal pin
-    #endif
+#if defined XBUDDY_ELECTRONICS
+    #define LOADCELL_PIN_DOUT PB5 // data signal pin
+    #define LOADCELL_PIN_SCK  PE0 // clock signal pin
+#else
+    #define LOADCELL_PIN_DOUT PE0 // data signal pin
+    #define LOADCELL_PIN_SCK  PB5 // clock signal pin
+#endif
 
 // loadcell latency test - pulse to PC13
 //#define LOADCELL_LATENCY_TEST
@@ -123,10 +131,10 @@
 //#define SIM_MOTION
 
 #ifdef SIM_HEATER
-    #define ADC_SIM_MSK           0x0012 //simulated logical AD channels bit mask (1,4)
-    #define SIM_HEATER_NOZZLE_ADC 4      //
-    #define SIM_HEATER_BED_ADC    1      //
-#endif                                   //SIM_HEATER
+#define ADC_SIM_MSK           0x0012 //simulated logical AD channels bit mask (1,4)
+#define SIM_HEATER_NOZZLE_ADC 4      //
+#define SIM_HEATER_BED_ADC    1      //
+#endif                               //SIM_HEATER
 
 #ifdef SIM_MOTION
 //#define SIM_MOTION_TRACE_X

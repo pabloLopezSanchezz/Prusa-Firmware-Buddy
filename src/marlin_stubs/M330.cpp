@@ -5,11 +5,8 @@
 #include "metric.h"
 #include "metric_handlers.h"
 #include <stdint.h>
-#include "hwio.h"
-#include "hwio_a3ides.h"
 
 static metric_handler_t *selected_handler = NULL;
-extern int M335_FAN_SPEED;
 
 void PrusaGcodeSuite::M330() {
     bool handler_found = false;
@@ -100,21 +97,5 @@ void PrusaGcodeSuite::M334() {
         }
     } else {
         SERIAL_ECHOLN("selected handler does not support configuration");
-    }
-}
-
-void PrusaGcodeSuite::M335() {
-    if (parser.seen('S')) {
-        uint16_t val = parser.ushortval('S');
-        NOMORE(val, 255U);
-        M335_FAN_SPEED = (int)val;
-        if (val > -1) {
-            hwio_fan_set_pwm((int)0, (int)val);
-            SERIAL_ECHOLN("heatbreak fan configured");
-        } else {
-            SERIAL_ECHOLN("No value was given");
-        }
-    } else {
-        SERIAL_ECHOLN("No valid params");
     }
 }
