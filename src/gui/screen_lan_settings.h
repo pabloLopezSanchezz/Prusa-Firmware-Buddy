@@ -46,6 +46,8 @@ typedef struct {
     ip4_addr_t lan_ip4_msk;
     ip4_addr_t lan_ip4_gw;
     uint8_t set_flag;
+    ip4_addr_t dns1_ip4;
+    ip4_addr_t dns2_ip4;
 } networkconfig_t;
 
 extern screen_t screen_lan_settings;
