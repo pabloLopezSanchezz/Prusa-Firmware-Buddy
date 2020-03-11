@@ -99,6 +99,8 @@
 #include "res/cc/png_arrow_up.c"   //IDR_PNG_arrow_up
 #include "res/cc/png_arrow_down.c" //IDR_PNG_arrow_down
 
+#include "res/cc/png_serial_printing.c" //IDR_PNG_serial_printing
+
 RESOURCE_TABLE_BEGIN
 RESOURCE_ENTRY_NUL() //IDR_NULL
 //fonts
@@ -168,4 +170,6 @@ RESOURCE_ENTRY_PNG(png_arrow_up)
 RESOURCE_ENTRY_PNG(png_arrow_down)
 
 RESOURCE_ENTRY_PNG(png_menu_icon_back)
+
+RESOURCE_ENTRY_PNG(png_serial_printing)
 RESOURCE_TABLE_END

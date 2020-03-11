@@ -7,11 +7,13 @@
 
 /// This metric is defined in Marlin/src/module/probe.cpp, thus no interface
 extern metric_t metric_probe_z;
+extern metric_t metric_probe_z_raw;
 
 void Buddy::Metrics::RecordMarlinVariables() {
 #if HAS_BED_PROBE
     metric_register(&metric_probe_z);
 #endif
+    metric_register(&metric_probe_z_raw);
 
 #if HAS_TEMP_HEATBREAK
     static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);

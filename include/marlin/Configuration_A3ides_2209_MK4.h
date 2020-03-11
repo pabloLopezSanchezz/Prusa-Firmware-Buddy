@@ -692,7 +692,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
-    { 100, 100, 400, 420 } //E0 280 295
+    { 100, 100, 400, 400 } //E0 280 295 420
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -726,7 +726,7 @@
 //
 // Use Junction Deviation instead of traditional Jerk Limiting
 //
-//#define JUNCTION_DEVIATION
+#define CLASSIC_JERK
 #if DISABLED(CLASSIC_JERK)
     #define JUNCTION_DEVIATION_MM 0.02 // (mm) Distance from real junction edge
 #endif
@@ -755,7 +755,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-#define S_CURVE_ACCELERATION
+//#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -893,7 +893,7 @@
 #define Z_PROBE_SPEED_FAST 6 * 100
 
 // Feedrate (mm/m) for the "accurate" probe of each point
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 5)
+#define Z_PROBE_SPEED_SLOW 70
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
