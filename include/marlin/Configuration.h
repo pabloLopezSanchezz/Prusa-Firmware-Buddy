@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-#if ((MOTHERBOARD == 1821) || (MOTHERBOARD == 1823) || (MOTHERBOARD == 1850))
+#if ((MOTHERBOARD == 1821) || (MOTHERBOARD == 1823) || (MOTHERBOARD == 1850) || (MOTHERBOARD == 1851))
     #if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
         #include "Configuration_A3ides_2209_MINI.h"
     #elif (PRINTER_TYPE == PRINTER_PRUSA_MK3)
