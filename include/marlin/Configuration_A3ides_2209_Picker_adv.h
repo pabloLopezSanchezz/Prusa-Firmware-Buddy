@@ -1465,7 +1465,7 @@
  */
 #if HAS_TRINAMIC
 
-    #define HOLD_MULTIPLIER 0.7  // Scales down the holding current from run current
+    constexpr float HOLD_MULTIPLIER[4] = {1, 0.7, 0.7, 0.7};  // Scales down the holding current from run current
     #define INTERPOLATE true // Interpolate X/Y/Z_MICROSTEPS to 256
 
     #if AXIS_IS_TMC(X)
