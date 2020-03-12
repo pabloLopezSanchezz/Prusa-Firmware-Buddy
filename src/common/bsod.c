@@ -11,7 +11,15 @@
     #include "config.h"
     #include "gui.h"
     #include "term.h"
-    #include "st7789v.h"
+
+    #ifdef USE_ST7789
+        #include "st7789v.h"
+    #endif
+
+    #ifdef USE_ILI9488
+        #include "ili9488.h"
+    #endif
+
     #include "window_term.h"
     #include <stdio.h>
     #include <stdarg.h>
@@ -123,7 +131,15 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 //! @brief Put HW into safe state, activate display safe mode and initialize it twice
 static void stop_common(void) {
     hwio_safe_state();
+
+    #ifdef USE_ST7789
     st7789v_enable_safe_mode();
+    #endif
+
+    #ifdef USE_ILI9488
+    ili9488_enable_safe_mode();
+    #endif
+
     hwio_beeper_set_pwm(0, 0);
     display->init();
     display->init();

@@ -57,10 +57,17 @@
 #define ST7789V_PIN_RS  PD11 // RS signal pin
 #define ST7789V_PIN_RST PC8  // RESET signal pin
 
+//Graphical display ILI9488 configuration
+#define ILI9488_PIN_CS        PD14 // CS signal pin
+#define ILI9488_PIN_RS        PD11 // RS signal pin
+#define ILI9488_PIN_RST       PC8  // RESET signal pin
+#define ILI9488_PIN_BACKLIGHT PC9  // Backlight pin
+
 //--------------------------------------
 //Jogwheel configuration
-#define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin
-#define JOGWHEEL_PIN_EN2 PE13 // encoder signal 2 pin
+#define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
+#define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
+
 #define JOGWHEEL_PIN_ENC PE12 // button pin
 
 //--------------------------------------
@@ -76,8 +83,8 @@
     #ifdef FILAMENT_SENSOR_HX711
 
         // TODO:  Filament sensor LOW and HIGH levels, this is highly experimental, needs to be tweaked and made automatic
-        #define FILAMENT_SENSOR_HX711_LOW  1950000 // LOW level threshold
-        #define FILAMENT_SENSOR_HX711_HIGH 1900000 // HIGH level threshold
+        #define FILAMENT_SENSOR_HX711_LOW  5100000 // LOW level threshold
+        #define FILAMENT_SENSOR_HX711_HIGH 7400000 // HIGH level threshold
 
         #define FILAMENT_SENSOR_HX711_INVERT 0 // Output level Inverting (Not yet implemented)
 
@@ -91,13 +98,8 @@
 
     #endif
 
-    #ifdef BUDDY_XL_ELECTRONICS
-        #define LOADCELL_PIN_DOUT PB5 // data signal pin
-        #define LOADCELL_PIN_SCK  PE0 // clock signal pin
-    #else
-        #define LOADCELL_PIN_DOUT PE0 // data signal pin
-        #define LOADCELL_PIN_SCK  PB5 // clock signal pin
-    #endif
+    #define LOADCELL_PIN_DOUT PB5 // data signal pin
+    #define LOADCELL_PIN_SCK  PE0 // clock signal pin
 
 // loadcell latency test - pulse to PC13
 //#define LOADCELL_LATENCY_TEST

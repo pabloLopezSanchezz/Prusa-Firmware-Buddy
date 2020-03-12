@@ -439,9 +439,9 @@
     //#define  DEFAULT_Kd 56.23
 
     // RING
-    #define DEFAULT_Kp 17.60
-    #define DEFAULT_Ki 1.34
-    #define DEFAULT_Kd 57.67
+    #define DEFAULT_Kp 13.93
+    #define DEFAULT_Ki 0.81
+    #define DEFAULT_Kd 59.62
 
 // MakerGear
 //#define DEFAULT_Kp 7.0
@@ -726,7 +726,7 @@
 //
 // Use Junction Deviation instead of traditional Jerk Limiting
 //
-#define CLASSIC_JERK
+//#define CLASSIC_JERK
 #if DISABLED(CLASSIC_JERK)
     #define JUNCTION_DEVIATION_MM 0.02 // (mm) Distance from real junction edge
 #endif

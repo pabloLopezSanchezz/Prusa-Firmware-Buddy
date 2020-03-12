@@ -47,6 +47,7 @@
 #endif
 #include "usb_device.h"
 #include "usb_host.h"
+#include "display.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -924,10 +925,19 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+#ifdef USE_ST7789
 extern void st7789v_spi_tx_complete(void);
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
     st7789v_spi_tx_complete();
 }
+#endif
+
+#ifdef USE_ILI9488
+extern void ili9488_spi_tx_complete(void);
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+    ili9488_spi_tx_complete();
+}
+#endif
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart == &huart1)
