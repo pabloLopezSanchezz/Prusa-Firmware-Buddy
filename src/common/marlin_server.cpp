@@ -421,10 +421,12 @@ void marlin_server_print_resume(void) {
 
 void marlin_server_park_head(void) {
     //homed check
+#if ENABLED(NOZZLE_PARK_FEATURE)
     if (all_axes_homed() && all_axes_known()) {
         xyz_pos_t park_point = NOZZLE_PARK_POINT;
         nozzle.park(2, park_point);
     }
+#endif //NOZZLE_PARK_FEATURE
 }
 
 int marlin_all_axes_homed(void) {

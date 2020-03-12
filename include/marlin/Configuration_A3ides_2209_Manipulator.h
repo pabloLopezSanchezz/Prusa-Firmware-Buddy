@@ -759,7 +759,7 @@
  *
  * Enable this option for a probe connected to the Z Min endstop pin.
  */
-#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+//#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 /**
  * Z_MIN_PROBE_PIN
@@ -798,7 +798,7 @@
  * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
  *   (e.g., an inductive probe or a nozzle-based probe-switch.)
  */
-#define FIX_MOUNTED_PROBE
+//#define FIX_MOUNTED_PROBE
 
 /**
  * Z Servo Probe, such as an endstop switch on a rotating arm.
@@ -858,31 +858,30 @@
  *      O-- FRONT --+
  *    (0,0)
  */
-#define NOZZLE_TO_PROBE_OFFSET \
-    { -29, -3, 0 }
+//#define NOZZLE_TO_PROBE_OFFSET { -29, -3, 0 }
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 0
+//#define MIN_PROBE_EDGE 0
 
 // X and Y axis travel speed (mm/m) between probes
-#define XY_PROBE_SPEED 5000
+//#define XY_PROBE_SPEED 5000
 
 // Feedrate (mm/m) for the first approach when double-probing (MULTIPLE_PROBING == 2)
-#define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
+//#define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
 
 // Feedrate (mm/m) for the "accurate" probe of each point
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 3)
+//#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 3)
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
-#define MULTIPLE_PROBING 2
+//#define MULTIPLE_PROBING 2
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
-#define EXTRA_PROBING 1
-#define EXTRA_PROBING_TOL 0.1 // If the measured Z value is larger than this value, remove it and remeasure
-#define EXTRA_PROBING_RAIL 1.2 // Maximum value of Z measurement
-#define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
+//#define EXTRA_PROBING 1
+//#define EXTRA_PROBING_TOL 0.1 // If the measured Z value is larger than this value, remove it and remeasure
+//#define EXTRA_PROBING_RAIL 1.2 // Maximum value of Z measurement
+//#define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
 
 /**
  * Z probes require clearance when deploying, stowing, and moving between
@@ -898,16 +897,16 @@
  * Example: `M851 Z-5` with a CLEARANCE of 4  =>  9mm from bed to nozzle.
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
-#define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points
-#define Z_CLEARANCE_MULTI_PROBE 0.5 // Z Clearance between multiple probes
-#define Z_AFTER_PROBING 2 // Z position after probing is done
+//#define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
+//#define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points
+//#define Z_CLEARANCE_MULTI_PROBE 0.5 // Z Clearance between multiple probes
+//#define Z_AFTER_PROBING 2 // Z position after probing is done
 
-#define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
+//#define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
 
 // For M851 give a range for adjusting the Z probe offset
-#define Z_PROBE_OFFSET_RANGE_MIN -20
-#define Z_PROBE_OFFSET_RANGE_MAX 20
+//#define Z_PROBE_OFFSET_RANGE_MIN -20
+//#define Z_PROBE_OFFSET_RANGE_MAX 20
 
 // Enable the M48 repeatability test to test probe accuracy
 //#define Z_MIN_PROBE_REPEATABILITY_TEST
@@ -974,14 +973,14 @@
 
 //#define UNKNOWN_Z_NO_RAISE // Don't raise Z (lower the bed) if Z is "unknown." For beds that fall when Z is powered off.
 
-#define Z_HOMING_HEIGHT 4 // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
+//#define Z_HOMING_HEIGHT 4 // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
 // Be sure you have this distance over your Z_MAX_POS in case.
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
 #define X_HOME_DIR 1
 #define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
+#define Z_HOME_DIR 1
 
 // @section machine
 
@@ -1098,7 +1097,7 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-#define AUTO_BED_LEVELING_BILINEAR
+//#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
 
@@ -1274,13 +1273,13 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY (3000)
-#define HOMING_FEEDRATE_Z (6 * 60)
+#define HOMING_FEEDRATE_XY (20 * 60)
+#define HOMING_FEEDRATE_Z (20 * 60)
 
 // Validate that endstops are triggered on homing moves
 //#define VALIDATE_HOMING_ENDSTOPS
 
-// @section calibrate
+// @60section calibrate
 
 /**
  * Bed Skew Compensation
@@ -1351,7 +1350,7 @@
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //
-#define EEPROM_SETTINGS // Enable for M500 and M501 commands
+//#define EEPROM_SETTINGS // Enable for M500 and M501 commands
 //#define DISABLE_M503    // Saves ~2700 bytes of PROGMEM. Disable for release!
 //#define EEPROM_CHITCHAT   // Give feedback on EEPROM commands. Disable to save PROGMEM.
 
@@ -1409,7 +1408,7 @@
  *    P1  Raise the nozzle always to Z-park height.
  *    P2  Raise the nozzle by Z-park amount, limited to Z_MAX_POS.
  */
-#define NOZZLE_PARK_FEATURE
+//#define NOZZLE_PARK_FEATURE
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
     // Specify a park position as { X, Y, Z }
