@@ -23,13 +23,6 @@
 template <class T, size_t N>
 constexpr int num_elements(T (&)[N]) { return N; }
 
-//a3ides analog inputs
-#define _ADC_HW_IDENTIFY    0 // PA3 - chan 3
-#define _ADC_TEMP_BED       1 // PA4 - chan 4
-#define _ADC_TEMP_2         2 // PA5 - chan 5
-#define _ADC_TEMP_HEATBREAK 3 // PA6 - chan 6
-#define _ADC_TEMP_0         4 // PC0 - chan 10
-
 //a3ides fan control
 #define _FAN  0 //
 #define _FAN1 1 //
@@ -92,7 +85,7 @@ const uint32_t _adc_pin32[] = {
 // a3ides analog input maximum values
 const int _adc_max[] = { 4095, 4095, 4095, 4095, 4095 };
 //sampled analog inputs
-int _adc_val[] = { 0, 0, 0, 0, 0 };
+int _adc_val[ONE_BEHIND_LAST_ADC] = { 0, 0, 0, 0, 0 };
 
 // a3ides analog output pins
 const uint32_t _dac_pin32[] = {};
@@ -203,8 +196,9 @@ int is_pwm_id_valid(int i_pwm);
 int hwio_adc_get_max(int i_adc) //analog input maximum value
 { return _adc_max[i_adc]; }
 
-int hwio_adc_get_val(int i_adc) //read analog input
+int hwio_adc_get_val(Adc adc) //read analog input
 {
+    int i_adc = static_cast<int>(adc);
     if ((i_adc >= 0) && (i_adc < num_elements(_adc_val)))
         return _adc_val[i_adc];
     //else //TODO: check
@@ -748,11 +742,11 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
     if (HAL_ADC_Initialized) {
         switch (ulPin) {
         case PIN_TEMP_BED:
-            return hwio_adc_get_val(_ADC_TEMP_BED);
+            return hwio_adc_get_val(Adc::ADC_TEMP_BED);
         case PIN_TEMP_0:
-            return hwio_adc_get_val(_ADC_TEMP_0);
+            return hwio_adc_get_val(Adc::ADC_TEMP_0);
         case PIN_TEMP_HEATBREAK:
-            return hwio_adc_get_val(_ADC_TEMP_HEATBREAK);
+            return hwio_adc_get_val(Adc::ADC_TEMP_HEATBREAK);
         default:
             hwio_arduino_error(HwioErr::UNDEF_ANA_RD, ulPin); //error: undefined pin analog read
         }
