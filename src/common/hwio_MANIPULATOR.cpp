@@ -20,6 +20,9 @@
 #include "bsod.h"
 #include "main.h"
 
+template <class T, size_t N>
+constexpr int num_elements(T (&)[N]) { return N; }
+
 //a3ides digital inputs
 #define _DI_Z_MIN   0 // PA8
 #define _DI_E_DIAG  1 // PA15
@@ -86,7 +89,6 @@ const uint32_t _di_pin32[] = {
     PIN_BTN_EN1, // PE13
     PIN_BTN_EN2, // PE15
 };
-#define _DI_CNT (sizeof(_di_pin32) / sizeof(uint32_t))
 
 // a3ides digital output pins
 const uint32_t _do_pin32[] = {
@@ -103,7 +105,6 @@ const uint32_t _do_pin32[] = {
     PIN_Y_ENABLE,
     PIN_Z_DIR,
 };
-#define _DO_CNT (sizeof(_do_pin32) / sizeof(uint32_t))
 
 // a3ides analog input pins
 const uint32_t _adc_pin32[] = {
@@ -115,7 +116,6 @@ const uint32_t _adc_pin32[] = {
 };
 // a3ides analog input maximum values
 const int _adc_max[] = { 4095, 4095, 4095, 4095, 4095 };
-#define _ADC_CNT (sizeof(_adc_pin32) / sizeof(uint32_t))
 //sampled analog inputs
 int _adc_val[] = { 0, 0, 0, 0, 0 };
 
@@ -123,7 +123,6 @@ int _adc_val[] = { 0, 0, 0, 0, 0 };
 const uint32_t _dac_pin32[] = {};
 // a3ides analog output maximum values
 const int _dac_max[] = { 0 };
-#define _DAC_CNT (sizeof(_dac_pin32) / sizeof(uint32_t))
 
 #define _FAN_ID_MIN HWIO_PWM_FAN1
 #define _FAN_ID_MAX HWIO_PWM_FAN
@@ -168,7 +167,7 @@ int *const _pwm_period_us[] = {
 
 // a3ides pwm output maximum values
 const int _pwm_max[] = { TIM3_default_Period, TIM3_default_Period, TIM1_default_Period, TIM1_default_Period }; //{42000, 42000, 42000, 42000};
-#define _PWM_CNT (sizeof(_pwm_pin32) / sizeof(uint32_t))
+constexpr int _PWM_CNT = (sizeof(_pwm_pin32) / sizeof(_pwm_pin32[0]));
 
 const TIM_OC_InitTypeDef sConfigOC_default = {
     TIM_OCMODE_PWM1,       //OCMode
@@ -219,19 +218,16 @@ uint32_t hwio_beeper_del = 0;
 void __pwm_set_val(TIM_HandleTypeDef *htim, uint32_t chan, int val);
 void _hwio_pwm_analogWrite_set_val(int i_pwm, int val);
 void _hwio_pwm_set_val(int i_pwm, int val);
-uint32_t _pwm_get_chan(int i_pwm);
+int _pwm_get_chan(int i_pwm);
 TIM_HandleTypeDef *_pwm_get_htim(int i_pwm);
 int is_pwm_id_valid(int i_pwm);
 
 //--------------------------------------
 //digital input functions
 
-int hwio_di_get_cnt(void) //number of digital inputs
-{ return _DI_CNT; }
-
 int hwio_di_get_val(int i_di) //read digital input state
 {
-    if ((i_di >= 0) && (i_di < _DI_CNT))
+    if ((i_di >= 0) && (i_di < num_elements(_di_pin32)))
         return gpio_get(_di_pin32[i_di]);
     /*	{
 		uint32_t pin32 = ;
@@ -246,19 +242,16 @@ int hwio_di_get_val(int i_di) //read digital input state
 //--------------------------------------
 //digital output functions
 
-int hwio_do_get_cnt(void) //number of digital outputs
-{ return _DO_CNT; }
-
 int hwio_do_get_val(int i_do) //read digital output state
 {
-    if ((i_do >= 0) && (i_do < _DO_CNT))
+    if ((i_do >= 0) && (i_do < num_elements(_do_pin32)))
         return gpio_get(_do_pin32[i_do]);
     return INT32_MAX; // undefined state
 }
 
 void hwio_do_set_val(int i_do, int val) //set digital output state
 {
-    if ((i_do >= 0) && (i_do < _DO_CNT))
+    if ((i_do >= 0) && (i_do < num_elements(_do_pin32)))
         gpio_set(_do_pin32[i_do], val);
     /*	{
 		uint32_t pin32 = _do_pin32[i_do];
@@ -272,15 +265,12 @@ void hwio_do_set_val(int i_do, int val) //set digital output state
 //--------------------------------------
 //analog input functions
 
-int hwio_adc_get_cnt(void) //number of analog inputs
-{ return _ADC_CNT; }
-
 int hwio_adc_get_max(int i_adc) //analog input maximum value
 { return _adc_max[i_adc]; }
 
 int hwio_adc_get_val(int i_adc) //read analog input
 {
-    if ((i_adc >= 0) && (i_adc < _ADC_CNT))
+    if ((i_adc >= 0) && (i_adc < num_elements(_adc_val)))
         return _adc_val[i_adc];
     //else //TODO: check
     return 0;
@@ -288,9 +278,6 @@ int hwio_adc_get_val(int i_adc) //read analog input
 
 //--------------------------------------
 //analog output functions
-
-int hwio_dac_get_cnt(void) //number of analog outputs
-{ return _DAC_CNT; }
 
 int hwio_dac_get_max(int i_dac) //analog output maximum value
 { return _dac_max[i_dac]; }
@@ -396,7 +383,7 @@ int hwio_pwm_get_prescaler_log2(int i_pwm) {
     return index - 1;
 }
 
-uint32_t _pwm_get_chan(int i_pwm) {
+int _pwm_get_chan(int i_pwm) {
     if (!is_pwm_id_valid(i_pwm))
         return -1;
     return _pwm_chan[i_pwm];
@@ -409,7 +396,7 @@ TIM_HandleTypeDef *_pwm_get_htim(int i_pwm) {
     return _pwm_p_htim[i_pwm];
 }
 
-void hwio_pwm_set_val(int i_pwm, int val) //write pwm output and actualize _pwm_analogWrite_val
+void hwio_pwm_set_val(int i_pwm, uint32_t val) //write pwm output and actualize _pwm_analogWrite_val
 {
     if (!is_pwm_id_valid(i_pwm))
         return;
@@ -432,7 +419,7 @@ void hwio_pwm_set_val(int i_pwm, int val) //write pwm output and actualize _pwm_
 
 void _hwio_pwm_set_val(int i_pwm, int val) //write pwm output
 {
-    uint32_t chan = _pwm_get_chan(i_pwm);
+    int chan = _pwm_get_chan(i_pwm);
     TIM_HandleTypeDef *htim = _pwm_get_htim(i_pwm);
     if ((chan == -1) || htim->Instance == 0) {
         return;
