@@ -695,7 +695,7 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
             //hwio_fan_set_pwm(_FAN1, ulVal?255:0);
             //_hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
 #ifdef PRINTER_PRUSA_MK4
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 200 : 0);
+            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 120 : 0);
 #else
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 100 : 0);
 #endif
