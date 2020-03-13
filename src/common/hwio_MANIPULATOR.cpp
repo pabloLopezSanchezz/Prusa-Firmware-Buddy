@@ -143,7 +143,7 @@ static int is_pwm_id_valid(int i_pwm);
 //--------------------------------------
 //analog input functions
 
-int hwio_adc_get_val(Adc adc) //read analog input
+int hwio_adc_get_val(ADC_t adc) //read analog input
 {
     int i_adc = static_cast<int>(adc);
     if ((i_adc >= 0) && (i_adc < num_elements(_adc_val)))
@@ -534,11 +534,11 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
     if (HAL_ADC_Initialized) {
         switch (ulPin) {
         case PIN_TEMP_BED:
-            return hwio_adc_get_val(Adc::ADC_TEMP_BED);
+            return hwio_adc_get_val(ADC_t::ADC_TEMP_BED);
         case PIN_TEMP_0:
-            return hwio_adc_get_val(Adc::ADC_TEMP_0);
+            return hwio_adc_get_val(ADC_t::ADC_TEMP_0);
         case PIN_TEMP_HEATBREAK:
-            return hwio_adc_get_val(Adc::ADC_TEMP_HEATBREAK);
+            return hwio_adc_get_val(ADC_t::ADC_TEMP_HEATBREAK);
         default:
             hwio_arduino_error(HwioErr::UNDEF_ANA_RD, ulPin); //error: undefined pin analog read
         }
