@@ -440,7 +440,6 @@ target_sources(
           src/common/sim_bed.c
           src/common/sys.cpp
           src/common/sim_nozzle.c
-          src/common/hwio_a3ides_2209_02.c
           src/common/putslave.c
           src/common/safe_state.c
           src/common/variant8.c
@@ -488,6 +487,12 @@ target_sources(
           src/marlin_stubs/pause/pause.cpp
           src/gui/filament.cpp
   )
+
+if(PRINTER STREQUAL "MANIPULATOR")
+  target_sources(firmware PRIVATE src/common/hwio_MANIPULATOR.cpp)
+else()
+  target_sources(firmware PRIVATE src/common/hwio_a3ides_2209_02.c)
+endif()
 
 if(GUI)
   target_sources(
