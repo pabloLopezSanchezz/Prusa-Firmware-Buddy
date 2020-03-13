@@ -30,12 +30,6 @@ constexpr int num_elements(T (&)[N]) { return N; }
 #define _ADC_TEMP_HEATBREAK 3 // PA6 - chan 6
 #define _ADC_TEMP_0         4 // PC0 - chan 10
 
-//a3ides pwm outputs
-#define _PWM_HEATER_BED 0 //
-#define _PWM_HEATER_0   1 //
-#define _PWM_FAN1       2 //
-#define _PWM_FAN        3 //
-
 //a3ides fan control
 #define _FAN  0 //
 #define _FAN1 1 //
