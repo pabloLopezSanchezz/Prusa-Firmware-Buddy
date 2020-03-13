@@ -23,20 +23,6 @@
 template <class T, size_t N>
 constexpr int num_elements(T (&)[N]) { return N; }
 
-//a3ides digital outputs
-#define _DO_X_DIR    0  // PD0
-#define _DO_X_STEP   1  // PD1
-#define _DO_Z_ENABLE 2  // PD2
-#define _DO_X_ENABLE 3  // PD3
-#define _DO_Z_STEP   4  // PD4
-#define _DO_E_DIR    5  // PD8
-#define _DO_E_STEP   6  // PD9
-#define _DO_E_ENABLE 7  // PD10
-#define _DO_Y_DIR    8  // PD12
-#define _DO_Y_STEP   9  // PD13
-#define _DO_Y_ENABLE 10 // PD14
-#define _DO_Z_DIR    11 // PD15
-
 //a3ides analog inputs
 #define _ADC_HW_IDENTIFY    0 // PA3 - chan 3
 #define _ADC_TEMP_BED       1 // PA4 - chan 4
@@ -59,15 +45,18 @@ constexpr int num_elements(T (&)[N]) { return N; }
 #define _HEATER_BED 1 //
 
 //hwio arduino wrapper errors
-#define HWIO_ERR_UNINI_DIG_RD 0x01
-#define HWIO_ERR_UNINI_DIG_WR 0x02
-#define HWIO_ERR_UNINI_ANA_RD 0x03
-#define HWIO_ERR_UNINI_ANA_WR 0x04
-#define HWIO_ERR_UNDEF_DIG_RD 0x05
-#define HWIO_ERR_UNDEF_DIG_WR 0x06
-#define HWIO_ERR_UNDEF_ANA_RD 0x07
-#define HWIO_ERR_UNDEF_ANA_WR 0x08
+enum HwioErr {
+    HWIO_ERR_UNINI_DIG_RD,
+    HWIO_ERR_UNINI_DIG_WR,
+    HWIO_ERR_UNINI_ANA_RD,
+    HWIO_ERR_UNINI_ANA_WR,
+    HWIO_ERR_UNDEF_DIG_RD,
+    HWIO_ERR_UNDEF_DIG_WR,
+    HWIO_ERR_UNDEF_ANA_RD,
+    HWIO_ERR_UNDEF_ANA_WR,
+};
 
+namespace {
 // a3ides digital input pins
 enum digIn {
     ePIN_Z_MIN = PIN_Z_MIN,
@@ -81,20 +70,22 @@ enum digIn {
 };
 
 // a3ides digital output pins
-const uint32_t _do_pin32[] = {
-    PIN_X_DIR,
-    PIN_X_STEP,
-    PIN_Z_ENABLE,
-    PIN_X_ENABLE,
-    PIN_Z_STEP,
-    PIN_E_DIR,
-    PIN_E_STEP,
-    PIN_E_ENABLE,
-    PIN_Y_DIR,
-    PIN_Y_STEP,
-    PIN_Y_ENABLE,
-    PIN_Z_DIR,
+enum digOut {
+    ePIN_X_DIR = PIN_X_DIR,
+    ePIN_X_STEP = PIN_X_STEP,
+    ePIN_Z_ENABLE = PIN_Z_ENABLE,
+    ePIN_X_ENABLE = PIN_X_ENABLE,
+    ePIN_Z_STEP = PIN_Z_STEP,
+    ePIN_E_DIR = PIN_E_DIR,
+    ePIN_E_STEP = PIN_E_STEP,
+    ePIN_E_ENABLE = PIN_E_ENABLE,
+    ePIN_Y_DIR = PIN_Y_DIR,
+    ePIN_Y_STEP = PIN_Y_STEP,
+    ePIN_Y_ENABLE = PIN_Y_ENABLE,
+    ePIN_Z_DIR = PIN_Z_DIR,
 };
+
+} //end anonymous namespace
 
 // a3ides analog input pins
 const uint32_t _adc_pin32[] = {
@@ -211,29 +202,6 @@ void _hwio_pwm_set_val(int i_pwm, int val);
 int _pwm_get_chan(int i_pwm);
 TIM_HandleTypeDef *_pwm_get_htim(int i_pwm);
 int is_pwm_id_valid(int i_pwm);
-
-//--------------------------------------
-//digital output functions
-
-int hwio_do_get_val(int i_do) //read digital output state
-{
-    if ((i_do >= 0) && (i_do < num_elements(_do_pin32)))
-        return gpio_get(_do_pin32[i_do]);
-    return INT32_MAX; // undefined state
-}
-
-void hwio_do_set_val(int i_do, int val) //set digital output state
-{
-    if ((i_do >= 0) && (i_do < num_elements(_do_pin32)))
-        gpio_set(_do_pin32[i_do], val);
-    /*	{
-		uint32_t pin32 = _do_pin32[i_do];
-		GPIO_TypeDef* gpio = (GPIO_TypeDef*)_gpio[pin32 >> 4];
-		uint16_t msk = (1 << (pin32 & 0x0f));
-		HAL_GPIO_WritePin(gpio, msk, val?GPIO_PIN_SET:GPIO_PIN_RESET);
-	}*/
-    //else //TODO: check
-}
 
 //--------------------------------------
 //analog input functions
@@ -734,40 +702,40 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
             return;
 #else  //SIM_MOTION
         case PIN_X_DIR:
-            hwio_do_set_val(_DO_X_DIR, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_X_DIR, ulVal ? 1 : 0);
             return;
         case PIN_X_STEP:
-            hwio_do_set_val(_DO_X_STEP, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_X_STEP, ulVal ? 1 : 0);
             return;
         case PIN_Z_ENABLE:
-            hwio_do_set_val(_DO_Z_ENABLE, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_Z_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_X_ENABLE:
-            hwio_do_set_val(_DO_X_ENABLE, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_X_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_Z_STEP:
-            hwio_do_set_val(_DO_Z_STEP, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_Z_STEP, ulVal ? 1 : 0);
             return;
         case PIN_E_DIR:
-            hwio_do_set_val(_DO_E_DIR, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_E_DIR, ulVal ? 1 : 0);
             return;
         case PIN_E_STEP:
-            hwio_do_set_val(_DO_E_STEP, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_E_STEP, ulVal ? 1 : 0);
             return;
         case PIN_E_ENABLE:
-            hwio_do_set_val(_DO_E_ENABLE, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_E_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_Y_DIR:
-            hwio_do_set_val(_DO_Y_DIR, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_Y_DIR, ulVal ? 1 : 0);
             return;
         case PIN_Y_STEP:
-            hwio_do_set_val(_DO_Y_STEP, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_Y_STEP, ulVal ? 1 : 0);
             return;
         case PIN_Y_ENABLE:
-            hwio_do_set_val(_DO_Y_ENABLE, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_Y_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_Z_DIR:
-            hwio_do_set_val(_DO_Z_DIR, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_Z_DIR, ulVal ? 1 : 0);
             return;
 #endif //SIM_MOTION
         default:
