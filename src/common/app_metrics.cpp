@@ -17,6 +17,9 @@ void Buddy::Metrics::RecordMarlinVariables() {
     static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 60 * 1000, METRIC_HANDLER_ENABLE_ALL);
     metric_record_string(&fw_version, "%s", project_version_full);
 
+    static metric_t is_printing = METRIC("is_printing", METRIC_VALUE_INTEGER, 5000, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_integer(&is_printing, printingIsActive() ? 1 : 0);
+
 #if HAS_TEMP_HEATBREAK
     static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&heatbreak, thermalManager.degHeatbreak());
