@@ -1,5 +1,6 @@
 #include "app_metrics.h"
 #include "metric.h"
+#include "version.h"
 
 #include "../Marlin/src/module/temperature.h"
 #include "../Marlin/src/module/planner.h"
@@ -12,6 +13,9 @@ extern metric_t metric_probe_z_raw;
 void Buddy::Metrics::RecordMarlinVariables() {
     metric_register(&metric_probe_z);
     metric_register(&metric_probe_z_raw);
+
+    static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 60 * 1000, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_string(&fw_version, "%s", project_version_full);
 
 #if HAS_TEMP_HEATBREAK
     static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
