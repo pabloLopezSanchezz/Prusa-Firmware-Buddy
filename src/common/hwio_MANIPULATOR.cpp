@@ -45,15 +45,15 @@ constexpr int num_elements(T (&)[N]) { return N; }
 #define _HEATER_BED 1 //
 
 //hwio arduino wrapper errors
-enum HwioErr {
-    HWIO_ERR_UNINI_DIG_RD,
-    HWIO_ERR_UNINI_DIG_WR,
-    HWIO_ERR_UNINI_ANA_RD,
-    HWIO_ERR_UNINI_ANA_WR,
-    HWIO_ERR_UNDEF_DIG_RD,
-    HWIO_ERR_UNDEF_DIG_WR,
-    HWIO_ERR_UNDEF_ANA_RD,
-    HWIO_ERR_UNDEF_ANA_WR,
+enum class HwioErr : uint_least8_t {
+    UNINI_DIG_RD,
+    UNINI_DIG_WR,
+    UNINI_ANA_RD,
+    UNINI_ANA_WR,
+    UNDEF_DIG_RD,
+    UNDEF_DIG_WR,
+    UNDEF_ANA_RD,
+    UNDEF_ANA_WR,
 };
 
 namespace {
@@ -526,51 +526,51 @@ uint8_t adc_seq2idx(uint8_t seq) {
 //--------------------------------------
 // Arduino digital/analog read/write error handler
 
-void hwio_arduino_error(int err, uint32_t pin32) {
+void hwio_arduino_error(HwioErr err, uint32_t pin32) {
     char text[64];
-    if ((err == HWIO_ERR_UNINI_DIG_WR) && (pin32 == PIN_BEEPER))
+    if ((err == HwioErr::UNINI_DIG_WR) && (pin32 == PIN_BEEPER))
         return; //ignore BEEPER write
     strcat(text, "HWIO error\n");
     switch (err) {
-    case HWIO_ERR_UNINI_DIG_RD:
-    case HWIO_ERR_UNINI_DIG_WR:
-    case HWIO_ERR_UNINI_ANA_RD:
-    case HWIO_ERR_UNINI_ANA_WR:
+    case HwioErr::UNINI_DIG_RD:
+    case HwioErr::UNINI_DIG_WR:
+    case HwioErr::UNINI_ANA_RD:
+    case HwioErr::UNINI_ANA_WR:
         strcat(text, "uninitialized\n");
         break;
-    case HWIO_ERR_UNDEF_DIG_RD:
-    case HWIO_ERR_UNDEF_DIG_WR:
-    case HWIO_ERR_UNDEF_ANA_RD:
-    case HWIO_ERR_UNDEF_ANA_WR:
+    case HwioErr::UNDEF_DIG_RD:
+    case HwioErr::UNDEF_DIG_WR:
+    case HwioErr::UNDEF_ANA_RD:
+    case HwioErr::UNDEF_ANA_WR:
         strcat(text, "undefined\n");
         break;
     }
     sprintf(text + strlen(text), "pin #%u (0x%02x)\n", (int)pin32, (uint8_t)pin32);
     switch (err) {
-    case HWIO_ERR_UNINI_DIG_RD:
-    case HWIO_ERR_UNINI_DIG_WR:
-    case HWIO_ERR_UNDEF_DIG_RD:
-    case HWIO_ERR_UNDEF_DIG_WR:
+    case HwioErr::UNINI_DIG_RD:
+    case HwioErr::UNINI_DIG_WR:
+    case HwioErr::UNDEF_DIG_RD:
+    case HwioErr::UNDEF_DIG_WR:
         strcat(text, "digital ");
         break;
-    case HWIO_ERR_UNINI_ANA_RD:
-    case HWIO_ERR_UNINI_ANA_WR:
-    case HWIO_ERR_UNDEF_ANA_RD:
-    case HWIO_ERR_UNDEF_ANA_WR:
+    case HwioErr::UNINI_ANA_RD:
+    case HwioErr::UNINI_ANA_WR:
+    case HwioErr::UNDEF_ANA_RD:
+    case HwioErr::UNDEF_ANA_WR:
         strcat(text, "analog ");
         break;
     }
     switch (err) {
-    case HWIO_ERR_UNINI_DIG_RD:
-    case HWIO_ERR_UNDEF_DIG_RD:
-    case HWIO_ERR_UNINI_ANA_RD:
-    case HWIO_ERR_UNDEF_ANA_RD:
+    case HwioErr::UNINI_DIG_RD:
+    case HwioErr::UNDEF_DIG_RD:
+    case HwioErr::UNINI_ANA_RD:
+    case HwioErr::UNDEF_ANA_RD:
         strcat(text, "read");
         break;
-    case HWIO_ERR_UNINI_DIG_WR:
-    case HWIO_ERR_UNDEF_DIG_WR:
-    case HWIO_ERR_UNINI_ANA_WR:
-    case HWIO_ERR_UNDEF_ANA_WR:
+    case HwioErr::UNINI_DIG_WR:
+    case HwioErr::UNDEF_DIG_WR:
+    case HwioErr::UNINI_ANA_WR:
+    case HwioErr::UNDEF_ANA_WR:
         strcat(text, "write");
         break;
     }
@@ -621,10 +621,10 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
         case PIN_BTN_EN2:
             return gpio_get(digIn::ePIN_BTN_EN2) || !hwio_jogwheel_enabled;
         default:
-            hwio_arduino_error(HWIO_ERR_UNDEF_DIG_RD, ulPin); //error: undefined pin digital read
+            hwio_arduino_error(HwioErr::UNDEF_DIG_RD, ulPin); //error: undefined pin digital read
         }
     } else
-        hwio_arduino_error(HWIO_ERR_UNINI_DIG_RD, ulPin); //error: uninitialized digital read
+        hwio_arduino_error(HwioErr::UNINI_DIG_RD, ulPin); //error: uninitialized digital read
     return 0;
 }
 
@@ -739,10 +739,10 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
             return;
 #endif //SIM_MOTION
         default:
-            hwio_arduino_error(HWIO_ERR_UNDEF_DIG_WR, ulPin); //error: undefined pin digital write
+            hwio_arduino_error(HwioErr::UNDEF_DIG_WR, ulPin); //error: undefined pin digital write
         }
     } else
-        hwio_arduino_error(HWIO_ERR_UNINI_DIG_WR, ulPin); //error: uninitialized digital write
+        hwio_arduino_error(HwioErr::UNINI_DIG_WR, ulPin); //error: uninitialized digital write
 }
 
 void hwio_arduino_digitalToggle(uint32_t ulPin) {
@@ -760,10 +760,10 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
         case PIN_TEMP_HEATBREAK:
             return hwio_adc_get_val(_ADC_TEMP_HEATBREAK);
         default:
-            hwio_arduino_error(HWIO_ERR_UNDEF_ANA_RD, ulPin); //error: undefined pin analog read
+            hwio_arduino_error(HwioErr::UNDEF_ANA_RD, ulPin); //error: undefined pin analog read
         }
     } else
-        hwio_arduino_error(HWIO_ERR_UNINI_ANA_RD, ulPin); //error: uninitialized analog read
+        hwio_arduino_error(HwioErr::UNINI_ANA_RD, ulPin); //error: uninitialized analog read
     return 0;
 }
 
@@ -785,10 +785,10 @@ void hwio_arduino_analogWrite(uint32_t ulPin, uint32_t ulValue) {
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_0, ulValue);
             return;
         default:
-            hwio_arduino_error(HWIO_ERR_UNDEF_ANA_WR, ulPin); //error: undefined pin analog write
+            hwio_arduino_error(HwioErr::UNDEF_ANA_WR, ulPin); //error: undefined pin analog write
         }
     } else
-        hwio_arduino_error(HWIO_ERR_UNINI_ANA_WR, ulPin); //error: uninitialized analog write
+        hwio_arduino_error(HwioErr::UNINI_ANA_WR, ulPin); //error: uninitialized analog write
 }
 
 void hwio_arduino_pinMode(uint32_t ulPin, uint32_t ulMode) {
