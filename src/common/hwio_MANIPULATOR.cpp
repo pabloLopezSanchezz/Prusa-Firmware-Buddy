@@ -23,16 +23,6 @@
 template <class T, size_t N>
 constexpr int num_elements(T (&)[N]) { return N; }
 
-//a3ides digital inputs
-#define _DI_Z_MIN   0 // PA8
-#define _DI_E_DIAG  1 // PA15
-#define _DI_Y_DIAG  2 // PE1
-#define _DI_X_DIAG  3 // PE2
-#define _DI_Z_DIAG  4 // PE3
-#define _DI_BTN_ENC 5 // PE12
-#define _DI_BTN_EN1 6 // PE13
-#define _DI_BTN_EN2 7 // PE15
-
 //a3ides digital outputs
 #define _DO_X_DIR    0  // PD0
 #define _DO_X_STEP   1  // PD1
@@ -79,15 +69,15 @@ constexpr int num_elements(T (&)[N]) { return N; }
 #define HWIO_ERR_UNDEF_ANA_WR 0x08
 
 // a3ides digital input pins
-const uint32_t _di_pin32[] = {
-    PIN_Z_MIN,   // PA8
-    PIN_E_DIAG,  // PA15
-    PIN_Y_DIAG,  // PE1
-    PIN_X_DIAG,  // PE2
-    PIN_Z_DIAG,  // PE3
-    PIN_BTN_ENC, // PE12
-    PIN_BTN_EN1, // PE13
-    PIN_BTN_EN2, // PE15
+enum digIn {
+    ePIN_Z_MIN = PIN_Z_MIN,
+    ePIN_E_DIAG = PIN_E_DIAG,
+    ePIN_Y_DIAG = PIN_Y_DIAG,
+    ePIN_X_DIAG = PIN_X_DIAG,
+    ePIN_Z_DIAG = PIN_Z_DIAG,
+    ePIN_BTN_ENC = PIN_BTN_ENC,
+    ePIN_BTN_EN1 = PIN_BTN_ENC,
+    ePIN_BTN_EN2 = PIN_BTN_ENC,
 };
 
 // a3ides digital output pins
@@ -221,23 +211,6 @@ void _hwio_pwm_set_val(int i_pwm, int val);
 int _pwm_get_chan(int i_pwm);
 TIM_HandleTypeDef *_pwm_get_htim(int i_pwm);
 int is_pwm_id_valid(int i_pwm);
-
-//--------------------------------------
-//digital input functions
-
-int hwio_di_get_val(int i_di) //read digital input state
-{
-    if ((i_di >= 0) && (i_di < num_elements(_di_pin32)))
-        return gpio_get(_di_pin32[i_di]);
-    /*	{
-		uint32_t pin32 = ;
-		GPIO_TypeDef* gpio = (GPIO_TypeDef*)_gpio[pin32 >> 4];
-		uint16_t msk = (1 << (pin32 & 0x0f));
-		return HAL_GPIO_ReadPin(gpio, msk)?1:0;
-	}*/
-    //else //TODO: check
-    return 0;
-}
 
 //--------------------------------------
 //digital output functions
@@ -662,25 +635,23 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
         #endif //LOADCELL_LATENCY_TEST
             return loadcell_probe;
     #else      //LOADCELL_HX711
-            return hwio_di_get_val(_DI_Z_MIN);
+            return gpio_get(digIn::ePIN_Z_MIN);
     #endif     //LOADCELL_HX711
         case PIN_E_DIAG:
-            return hwio_di_get_val(_DI_E_DIAG);
+            return gpio_get(digIn::ePIN_E_DIAG);
         case PIN_Y_DIAG:
-            return hwio_di_get_val(_DI_Y_DIAG);
+            return gpio_get(digIn::ePIN_Y_DIAG);
         case PIN_X_DIAG:
-            return hwio_di_get_val(_DI_X_DIAG);
+            return gpio_get(digIn::ePIN_X_DIAG);
         case PIN_Z_DIAG:
-            return hwio_di_get_val(_DI_Z_DIAG);
+            return gpio_get(digIn::ePIN_Z_DIAG);
 #endif         //SIM_MOTION
         case PIN_BTN_ENC:
-            return hwio_di_get_val(_DI_BTN_ENC) || !hwio_jogwheel_enabled;
+            return gpio_get(digIn::ePIN_BTN_ENC) || !hwio_jogwheel_enabled;
         case PIN_BTN_EN1:
-            return hwio_di_get_val(_DI_BTN_EN1) || !hwio_jogwheel_enabled;
+            return gpio_get(digIn::ePIN_BTN_EN1) || !hwio_jogwheel_enabled;
         case PIN_BTN_EN2:
-            return hwio_di_get_val(_DI_BTN_EN2) || !hwio_jogwheel_enabled;
-        case PIN_Z_DIR:
-            return hwio_do_get_val(_DO_Z_DIR);
+            return gpio_get(digIn::ePIN_BTN_EN2) || !hwio_jogwheel_enabled;
         default:
             hwio_arduino_error(HWIO_ERR_UNDEF_DIG_RD, ulPin); //error: undefined pin digital read
         }
