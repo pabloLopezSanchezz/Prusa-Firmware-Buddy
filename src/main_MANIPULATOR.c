@@ -860,10 +860,10 @@ static void MX_GPIO_Init(void) {
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     /*Configure GPIO pin : Z_MIN_Pin */
-    GPIO_InitStruct.Pin = Z_MIN_Pin;
+    GPIO_InitStruct.Pin = Z_MAX_Pin | X_MAX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(Z_MIN_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /*Configure GPIO pin : E_DIAG_Pin */
     GPIO_InitStruct.Pin = E_DIAG_Pin;

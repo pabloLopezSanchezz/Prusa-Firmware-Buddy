@@ -38,7 +38,8 @@ enum class HwioErr : uint_least8_t {
 namespace {
 // a3ides digital input pins
 enum digIn {
-    ePIN_Z_MIN = PIN_Z_MIN,
+    ePIN_Z_MAX = PIN_Z_MAX,
+    ePIN_X_MAX = PIN_X_MAX,
     ePIN_E_DIAG = PIN_E_DIAG,
     ePIN_Y_DIAG = PIN_Y_DIAG,
     ePIN_X_DIAG = PIN_X_DIAG,
@@ -382,17 +383,11 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return sim_motion_get_diag(0);
         case PIN_Z_DIAG:
             return sim_motion_get_diag(2);
-#else //SIM_MOTION
-        case PIN_Z_MIN:
-    #ifdef LOADCELL_HX711
-        #ifdef LOADCELL_LATENCY_TEST
-            if (loadcell_probe)
-                gpio_set(PC13, 0);
-        #endif //LOADCELL_LATENCY_TEST
-            return loadcell_probe;
-    #else      //LOADCELL_HX711
-            return gpio_get(digIn::ePIN_Z_MIN);
-    #endif     //LOADCELL_HX711
+#else  //SIM_MOTION
+        case PIN_Z_MAX:
+            return gpio_get(digIn::ePIN_Z_MAX);
+        case PIN_X_MAX:
+            return gpio_get(digIn::ePIN_X_MAX);
         case PIN_E_DIAG:
             return gpio_get(digIn::ePIN_E_DIAG);
         case PIN_Y_DIAG:
@@ -401,7 +396,7 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return gpio_get(digIn::ePIN_X_DIAG);
         case PIN_Z_DIAG:
             return gpio_get(digIn::ePIN_Z_DIAG);
-#endif         //SIM_MOTION
+#endif //SIM_MOTION
         case PIN_BTN_ENC:
             return gpio_get(digIn::ePIN_BTN_ENC);
         case PIN_BTN_EN1:
