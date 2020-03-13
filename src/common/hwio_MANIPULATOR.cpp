@@ -23,14 +23,6 @@
 template <class T, size_t N>
 constexpr int num_elements(T (&)[N]) { return N; }
 
-//a3ides fan control
-#define _FAN  0 //
-#define _FAN1 1 //
-
-//a3ides heater control
-#define _HEATER_0   0 //
-#define _HEATER_BED 1 //
-
 //hwio arduino wrapper errors
 enum class HwioErr : uint_least8_t {
     UNINI_DIG_RD,
@@ -622,7 +614,6 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
         case PIN_BEEPER:
             return;
         case PIN_HEATER_BED:
-            //hwio_heater_set_pwm(_HEATER_BED, ulVal?255:0);
 #ifdef SIM_HEATER_BED_ADC
             if (adc_sim_msk & (1 << SIM_HEATER_BED_ADC))
                 sim_bed_set_power(ulVal ? 100 : 0);
@@ -631,7 +622,6 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_BED, ulVal ? _pwm_analogWrite_max[HWIO_PWM_HEATER_BED] : 0);
             return;
         case PIN_HEATER_0:
-            //hwio_heater_set_pwm(_HEATER_0, ulVal?255:0);
 #ifdef SIM_HEATER_NOZZLE_ADC
             if (adc_sim_msk & (1 << SIM_HEATER_NOZZLE_ADC))
                 sim_nozzle_set_power(ulVal ? 40 : 0);
@@ -640,7 +630,6 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_0, ulVal ? _pwm_analogWrite_max[HWIO_PWM_HEATER_0] : 0);
             return;
         case PIN_FAN1:
-            //hwio_fan_set_pwm(_FAN1, ulVal?255:0);
             //_hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
 #ifdef PRINTER_PRUSA_MK4
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 200 : 0);
@@ -763,7 +752,6 @@ void hwio_arduino_analogWrite(uint32_t ulPin, uint32_t ulValue) {
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulValue);
             return;
         case PIN_FAN:
-            //hwio_fan_set_pwm(_FAN, ulValue);
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulValue);
             return;
         case PIN_HEATER_BED:
