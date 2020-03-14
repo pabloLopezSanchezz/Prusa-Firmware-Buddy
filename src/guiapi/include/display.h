@@ -7,6 +7,15 @@
 
 #include "guitypes.h"
 
+///////////////////////////
+// display type selector //
+///////////////////////////
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+    #define USE_ILI9488
+#else
+    #define USE_ST7789
+#endif
+
 typedef struct _display_t display_t;
 
 typedef void(display_init_t)(void);
@@ -20,6 +29,7 @@ typedef void(display_draw_char_t)(point_ui16_t pt, char chr, font_t *pf, color_t
 typedef void(display_draw_text_t)(rect_ui16_t rc, const char *str, font_t *pf, color_t clr0, color_t clr1);
 typedef void(display_draw_icon_t)(point_ui16_t pt, uint16_t id_res, color_t clr0, uint8_t rop);
 typedef void(display_draw_png_t)(point_ui16_t pt, FILE *pf);
+typedef void(display_backlight_t)(uint8_t bck);
 
 typedef struct _display_t {
     uint16_t w;
@@ -35,6 +45,7 @@ typedef struct _display_t {
     display_draw_text_t *draw_text;
     display_draw_icon_t *draw_icon;
     display_draw_png_t *draw_png;
+    display_backlight_t *set_backlight;
 } display_t;
 
 #ifdef __cplusplus

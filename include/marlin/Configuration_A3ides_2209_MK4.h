@@ -439,9 +439,9 @@
     //#define  DEFAULT_Kd 56.23
 
     // RING
-    #define DEFAULT_Kp 17.60
-    #define DEFAULT_Ki 1.34
-    #define DEFAULT_Kd 57.67
+    #define DEFAULT_Kp 13.93
+    #define DEFAULT_Ki 0.81
+    #define DEFAULT_Kd 59.62
 
 // MakerGear
 //#define DEFAULT_Kp 7.0
@@ -726,7 +726,7 @@
 //
 // Use Junction Deviation instead of traditional Jerk Limiting
 //
-#define CLASSIC_JERK
+//#define CLASSIC_JERK
 #if DISABLED(CLASSIC_JERK)
     #define JUNCTION_DEVIATION_MM 0.02 // (mm) Distance from real junction edge
 #endif
@@ -924,7 +924,7 @@
 #define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
 #define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points 1
 #define Z_CLEARANCE_MULTI_PROBE 0.7 // Z Clearance between multiple probes
-#define Z_AFTER_PROBING 1 // Z position after probing is done 2
+#define Z_AFTER_PROBING 2 // Z position after probing is done 2
 
 #define Z_PROBE_LOW_POINT -1 // Farthest distance below the trigger-point to go before stopping
 

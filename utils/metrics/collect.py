@@ -234,8 +234,11 @@ class Application:
         await asyncio.gather(*tasks)
 
 
-async def main(database, serial_port, syslog_port):
-    async with aioinflux.InfluxDBClient(db=database) as influx:
+async def main(database, serial_port, syslog_port, influxdb_host,
+               influxdb_port):
+    async with aioinflux.InfluxDBClient(db=database,
+                                        port=influxdb_port,
+                                        host=influxdb_host) as influx:
         await influx.create_database(db=database)
         app = Application(influx,
                           serial_port=serial_port,
@@ -247,10 +250,16 @@ async def main(database, serial_port, syslog_port):
 @click.option('--database', default='buddy')
 @click.option('--serial')
 @click.option('--syslog-port', default=8514, type=int)
-def cmd(database, serial, syslog_port):
+@click.option('--influxdb-port', default=8086)
+@click.option('--influxdb-host', default='localhost')
+def cmd(database, serial, syslog_port, influxdb_port, influxdb_host):
     loop = asyncio.get_event_loop()
     asyncio.ensure_future(
-        main(database=database, serial_port=serial, syslog_port=syslog_port))
+        main(database=database,
+             serial_port=serial,
+             syslog_port=syslog_port,
+             influxdb_port=influxdb_port,
+             influxdb_host=influxdb_host))
     loop.run_forever()
     loop.close()
 

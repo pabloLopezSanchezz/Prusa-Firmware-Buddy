@@ -144,7 +144,7 @@ void Error_Handler(void);
 #define Y_DIR_GPIO_Port       GPIOD
 #define Y_STEP_Pin            GPIO_PIN_13
 #define Y_STEP_GPIO_Port      GPIOD
-#define Y_ENA_Pin             GPIO_PIN_14
+#define Y_ENA_Pin             GPIO_PIN_3
 #define Y_ENA_GPIO_Port       GPIOD
 #define Z_DIR_Pin             GPIO_PIN_15
 #define Z_DIR_GPIO_Port       GPIOD
@@ -154,8 +154,8 @@ void Error_Handler(void);
 #define ESP_RX_GPIO_Port      GPIOC
 #define LCD_RST_Pin           GPIO_PIN_8
 #define LCD_RST_GPIO_Port     GPIOC
-#define LCD_CS_Pin            GPIO_PIN_9
-#define LCD_CS_GPIO_Port      GPIOC
+#define LCD_CS_Pin            GPIO_PIN_14
+#define LCD_CS_GPIO_Port      GPIOD
 #define Z_MIN_Pin             GPIO_PIN_8
 #define Z_MIN_GPIO_Port       GPIOA
 #define USB_FS_N_Pin          GPIO_PIN_11

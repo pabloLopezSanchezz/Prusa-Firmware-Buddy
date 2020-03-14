@@ -5,6 +5,7 @@
 #include "gui.h"
 #include "config.h"
 #include "marlin_client.h"
+#include "display.h"
 
 #include "window_logo.h"
 
@@ -78,7 +79,15 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 int guimain_spi_test = 0;
 
 #include "gpio.h"
-#include "st7789v.h"
+
+#ifdef USE_ST7789
+    #include "st7789v.h"
+#endif
+
+#ifdef USE_ILI9488
+    #include "ili9488.h"
+#endif
+
 #include "jogwheel.h"
 #include "hwio_a3ides.h"
 #include "diag.h"
@@ -86,6 +95,7 @@ int guimain_spi_test = 0;
 #include "dbg.h"
 #include "marlin_host.h"
 
+#ifdef USE_ST7789
 const st7789v_config_t st7789v_cfg = {
     &hspi2,             // spi handle pointer
     ST7789V_PIN_CS,     // CS pin
@@ -95,6 +105,20 @@ const st7789v_config_t st7789v_cfg = {
     ST7789V_DEF_COLMOD, // interface pixel format (5-6-5, hi-color)
     ST7789V_DEF_MADCTL, // memory data access control (no mirror XY)
 };
+#endif
+
+#ifdef USE_ILI9488
+const ili9488_config_t ili9488_cfg = {
+    &hspi2,                // spi handle pointer
+    ILI9488_PIN_CS,        // CS pin
+    ILI9488_PIN_RS,        // RS pin
+    ILI9488_PIN_RST,       // RST pin
+    ILI9488_PIN_BACKLIGHT, // Backlight pin
+    ILI9488_FLG_DMA,       // flags (DMA, MISO)
+    ILI9488_DEF_COLMOD,    // interface pixel format (5-6-5, hi-color)
+    ILI9488_DEF_MADCTL,    // memory data access control (no mirror XY)
+};
+#endif
 
 const jogwheel_config_t jogwheel_cfg = {
     JOGWHEEL_PIN_EN1, // encoder phase1
@@ -181,15 +205,23 @@ void gui_run(void) {
     if (diag_fastboot)
         return;
 
+#ifdef USE_ST7789
     st7789v_config = st7789v_cfg;
+#endif
+
+#ifdef USE_ILI9488
+    ili9488_config = ili9488_cfg;
+#endif
+
     jogwheel_config = jogwheel_cfg;
     gui_init();
-
     // select jogwheel type by meassured 'reset delay'
     // original displays with 15 position encoder returns values 1-2 (short delay - no capacitor)
     // new displays with MK3 encoder returns values around 16000 (long delay - 100nF capacitor)
+#ifdef USE_ST7789
     if (st7789v_reset_delay > 1000) // threshold value is 1000
         jogwheel_config.flg = JOGWHEEL_FLG_INV_DIR | JOGWHEEL_FLG_INV_ENC;
+#endif
     //_dbg("delay=%u", st7789v_reset_delay);
 
     gui_defaults.font = resource_font(IDR_FNT_NORMAL);

@@ -4,6 +4,7 @@
 #define _HWIO_A3IDES_H
 
 #include "hwio.h"
+#include "config.h"
 
 //a3ides digital inputs
 #define _DI_Z_MIN   0 // PA8
@@ -16,17 +17,18 @@
 #define _DI_BTN_EN2 7 // PE15
 
 //a3ides digital outputs
-#define _DO_X_DIR    0  // PD0
-#define _DO_X_STEP   1  // PD1
-#define _DO_Z_ENABLE 2  // PD2
-#define _DO_X_ENABLE 3  // PD3
-#define _DO_Z_STEP   4  // PD4
-#define _DO_E_DIR    5  // PD8
-#define _DO_E_STEP   6  // PD9
-#define _DO_E_ENABLE 7  // PD10
-#define _DO_Y_DIR    8  // PD12
-#define _DO_Y_STEP   9  // PD13
-#define _DO_Y_ENABLE 10 // PD14
+#define _DO_X_DIR    0 // PD0
+#define _DO_X_STEP   1 // PD1
+#define _DO_Z_ENABLE 2 // PD2
+#define _DO_X_ENABLE 3 // PD3
+#define _DO_Z_STEP   4 // PD4
+#define _DO_E_DIR    5 // PD8
+#define _DO_E_STEP   6 // PD9
+#define _DO_E_ENABLE 7 // PD10
+#define _DO_Y_DIR    8 // PD12
+#define _DO_Y_STEP   9 // PD13
+
+#define _DO_Y_ENABLE 3  // PD14
 #define _DO_Z_DIR    11 // PD15
 
 //a3ides analog inputs

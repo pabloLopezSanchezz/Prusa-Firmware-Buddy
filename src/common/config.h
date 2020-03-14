@@ -37,8 +37,6 @@
     #endif
 #endif //MOTHERBOARD
 
-//#define BUDDY_XL_ELECTRONICS // Define this for usage of Buddy XL electronics !! YOU CAN DO BETTER MICHAL !!
-
 #ifdef BOARD
 
     #if (BOARD == A3IDES2209_SIM)

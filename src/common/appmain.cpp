@@ -66,7 +66,9 @@ void app_setup(void) {
 
     setup();
 
-    init_tmc();
+    if (HAS_MARLIN_ONLY_DRIVER == 0) {
+        init_tmc();
+    }
     //DBG("after init_tmc (%ld ms)", HAL_GetTick());
 
 #ifdef LOADCELL_HX711
@@ -116,7 +118,9 @@ void app_run(void) {
                 hwio_fan_set_pwm(i, 0); // disable fans
         }
         reset_trinamic_drivers();
-        init_tmc();
+        if (HAS_MARLIN_ONLY_DRIVER == 0) {
+            init_tmc();
+        }
     } else
         app_setup();
     //DBG("after setup (%ld ms)", HAL_GetTick());

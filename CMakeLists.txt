@@ -109,6 +109,7 @@ message(
   )
 message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}.")
 message(STATUS "Bootloader: ${BOOTLOADER}")
+message(STATUS "Printer: ${PRINTER}")
 
 # eclipse sets those variables, so lets just use them so we don't get a warning about unused
 # variables
@@ -118,6 +119,7 @@ set(unused "${CMAKE_VERBOSE_MAKEFILE} ${CMAKE_RULE_MESSAGES}")
 set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI" "PICKER")
 set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
 set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL" "PICKER")
+set(PRINTERS_WITH_MARLIN_ONLY_DRIVER "XL" "IXL" "MANIPULATOR" "PICKER" "EXTRACTOR")
 set(WUI YES)
 
 if(${PRINTER} IN_LIST PRINTERS_WITH_FILAMENT_SENSOR_YES)
@@ -132,6 +134,12 @@ if(${PRINTER} IN_LIST PRINTERS_WITH_GUI)
   set(GUI YES)
 else()
   set(GUI NO)
+endif()
+
+if(${PRINTER} IN_LIST PRINTERS_WITH_MARLIN_ONLY_DRIVER)
+  set(MARLIN_ONLY_DRIVER YES)
+else()
+  set(MARLIN_ONLY_DRIVER NO)
 endif()
 
 # append custom C/C++ flags
@@ -457,8 +465,7 @@ target_sources(
           src/common/marlin_server.cpp
           src/common/sim_motion.cpp
           src/common/st25dv64k.c
-          src/common/trinamic.cpp
-          src/common/trinamic.h
+          $<$<STREQUAL:${MARLIN_ONLY_DRIVER},NO>:src/common/trinamic.cpp>
           src/common/w25x.c
           src/common/gcode_file.cpp
           src/common/gcode_thumb_decoder.cpp
@@ -571,6 +578,7 @@ if(GUI)
             src/guiapi/src/jogwheel.c
             src/guiapi/src/window_numb.c
             src/guiapi/src/st7789v.c
+            src/guiapi/src/ili9488.c
             src/guiapi/src/window_icon.c
             src/guiapi/src/window_spin.c
             src/guiapi/src/window_text.c
@@ -602,4 +610,10 @@ set_property(
   SOURCE src/common/bsod.c src/common/appmain.cpp src/common/sys.cpp src/common/putslave.c
   APPEND
   PROPERTY COMPILE_DEFINITIONS HAS_GUI=$<BOOL:${GUI}>
+  )
+
+set_property(
+  SOURCE src/common/appmain.cpp src/common/putslave.c
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS HAS_MARLIN_ONLY_DRIVER=$<BOOL:${MARLIN_ONLY_DRIVER}>
   )
