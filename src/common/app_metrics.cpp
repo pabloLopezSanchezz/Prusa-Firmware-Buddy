@@ -7,15 +7,16 @@
 #include "../Marlin/src/module/stepper.h"
 
 /// This metric is defined in Marlin/src/module/probe.cpp, thus no interface
+#if HAS_BED_PROBE
 extern metric_t metric_probe_z;
 extern metric_t metric_probe_z_raw;
+#endif
 
 void Buddy::Metrics::RecordMarlinVariables() {
 #if HAS_BED_PROBE
     metric_register(&metric_probe_z);
-#endif
     metric_register(&metric_probe_z_raw);
-
+#endif
     static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 60 * 1000, METRIC_HANDLER_ENABLE_ALL);
     metric_record_string(&fw_version, "%s", project_version_full);
 
