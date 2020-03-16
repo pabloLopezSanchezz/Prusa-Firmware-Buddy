@@ -30,7 +30,7 @@
 #define MARLIN_VAR_SD_PDONE 0x16 // R:  uint8, card.percentDone()
 #define MARLIN_VAR_DURATION 0x17 // R:  uint32, print_job_timer.duration()
 #define MARLIN_VAR_DEVICE_STATE    0x18 // R:  uint8_t device_state
-#define MARLIN_VAR_MAX      MARLIN_VAR_STATE
+#define MARLIN_VAR_MAX      MARLIN_VAR_DEVICE_STATE
 
 // variable masks
 #define MARLIN_VAR_MSK(v_id) ((uint64_t)1 << (v_id))
@@ -134,6 +134,14 @@ typedef union _marlin_changes_t {
         uint64_t var_reserved : 41;
     };
 } marlin_changes_t;
+
+typedef enum {
+    DEVICE_STATE_IDLE,
+    DEVICE_STATE_PRINTING,
+    DEVICE_STATE_PAUSED,
+    DEVICE_STATE_FINISHED,
+    DEVICE_STATE_ERROR,
+}DEVICE_STATES_t;
 
 #pragma pack(pop)
 

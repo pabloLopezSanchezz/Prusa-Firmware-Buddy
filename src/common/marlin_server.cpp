@@ -389,6 +389,7 @@ void marlin_server_manage_heater(void) {
 }
 
 void marlin_server_quick_stop(void) {
+    marlin_server.vars.device_state = DEVICE_STATE_IDLE;
     planner.quick_stop();
 }
 
@@ -397,6 +398,9 @@ void marlin_server_print_abort(void) {
     card.flag.abort_sd_printing = true;
     print_job_timer.stop();
     queue.clear();
+    if(marlin_server.vars.device_state != DEVICE_STATE_ERROR){
+        marlin_server.vars.device_state = DEVICE_STATE_IDLE;
+    }
     //	planner.quick_stop();
     //	marlin_server_park_head();
     //	planner.synchronize();
@@ -407,12 +411,14 @@ void marlin_server_print_pause(void) {
     card.pauseSDPrint();
     print_job_timer.pause();
     queue.inject_P("M125");
+    marlin_server.vars.device_state = DEVICE_STATE_PAUSED;
 }
 
 void marlin_server_print_resume(void) {
     wait_for_user = false;
     host_prompt_button_clicked = HOST_PROMPT_BTN_Continue;
     queue.inject_P("M24");
+    marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
 }
 
 void marlin_server_park_head(void) {
@@ -756,6 +762,18 @@ uint64_t _server_update_vars(uint64_t update) {
             changes |= MARLIN_VAR_MSK(MARLIN_VAR_DURATION);
         }
     }
+
+    if (update & MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE)) {
+        if(marlin_server.vars.device_state == DEVICE_STATE_PRINTING){
+            if(!(marlin_server.vars.sd_printing) && marlin_server.command != MARLIN_CMD_M600 && !(marlin_server.vars.motion ? 1 : 0)){
+                marlin_server.vars.device_state = DEVICE_STATE_FINISHED;
+            }
+        } else if (marlin_server.vars.device_state == DEVICE_STATE_IDLE && marlin_server.vars.sd_printing){
+            marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
+        }
+        changes |= MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE);
+    }
+
     return changes;
 }
 
@@ -999,6 +1017,7 @@ void onPrinterKilled(PGM_P const msg, PGM_P const component) {
     //_dbg("onPrinterKilled %s", msg);
     taskENTER_CRITICAL(); //never exit CRITICAL, wanted to use __disable_irq, but it does not work. i do not know why
     HAL_IWDG_Refresh(&hiwdg);
+    marlin_server.vars.device_state = DEVICE_STATE_ERROR;
     if (_is_thermal_error(msg)) { //todo remove me after new thermal manager
         const marlin_vars_t &vars = marlin_server.vars;
         temp_error(msg, component, vars.temp_nozzle, vars.target_nozzle, vars.temp_bed, vars.target_bed);
