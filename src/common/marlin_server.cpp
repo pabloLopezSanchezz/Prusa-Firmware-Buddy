@@ -76,6 +76,7 @@ typedef struct _marlin_server_t {
     uint32_t command_end;                                    // variable for notification
     marlin_mesh_t mesh;                                      // meshbed leveling
     uint64_t mesh_point_notsent[MARLIN_MAX_CLIENTS];         // mesh point mask (points that are not sent)
+    uint8_t device_state_change;                             // marks that change in device's printing state has occured
 } marlin_server_t;
 
 #pragma pack(pop)
@@ -174,6 +175,7 @@ void marlin_server_init(void) {
     marlin_server.mesh.xc = 4;
     marlin_server.mesh.yc = 4;
     marlin_server.gcode_name[0] = '\0';
+    marlin_server.device_state_change = 1;
 }
 
 void print_fan_spd() {
@@ -390,6 +392,7 @@ void marlin_server_manage_heater(void) {
 
 void marlin_server_quick_stop(void) {
     marlin_server.vars.device_state = DEVICE_STATE_IDLE;
+    marlin_server.device_state_change = 1;
     planner.quick_stop();
 }
 
@@ -400,6 +403,7 @@ void marlin_server_print_abort(void) {
     queue.clear();
     if(marlin_server.vars.device_state != DEVICE_STATE_ERROR){
         marlin_server.vars.device_state = DEVICE_STATE_IDLE;
+        marlin_server.device_state_change = 1;
     }
     //	planner.quick_stop();
     //	marlin_server_park_head();
@@ -412,6 +416,7 @@ void marlin_server_print_pause(void) {
     print_job_timer.pause();
     queue.inject_P("M125");
     marlin_server.vars.device_state = DEVICE_STATE_PAUSED;
+    marlin_server.device_state_change = 1;
 }
 
 void marlin_server_print_resume(void) {
@@ -419,6 +424,7 @@ void marlin_server_print_resume(void) {
     host_prompt_button_clicked = HOST_PROMPT_BTN_Continue;
     queue.inject_P("M24");
     marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
+    marlin_server.device_state_change = 1;
 }
 
 void marlin_server_park_head(void) {
@@ -764,14 +770,21 @@ uint64_t _server_update_vars(uint64_t update) {
     }
 
     if (update & MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE)) {
-        if(marlin_server.vars.device_state == DEVICE_STATE_PRINTING){
+        v.ui8 = marlin_server.vars.device_state;
+        if(v.ui8 == DEVICE_STATE_PRINTING){
             if(!(marlin_server.vars.sd_printing) && marlin_server.command != MARLIN_CMD_M600 && !(marlin_server.vars.motion ? 1 : 0)){
+                marlin_server.device_state_change = 1;
                 marlin_server.vars.device_state = DEVICE_STATE_FINISHED;
+                // TODO: HARVERST STATE AND THEN BACK TO IDLE
             }
-        } else if (marlin_server.vars.device_state == DEVICE_STATE_IDLE && marlin_server.vars.sd_printing){
+        } else if (v.ui8 == DEVICE_STATE_IDLE && marlin_server.vars.sd_printing){
+            marlin_server.device_state_change = 1;
             marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
         }
-        changes |= MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE);
+        if(marlin_server.device_state_change){
+            changes |= MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE);
+            marlin_server.device_state_change = 0;
+        }
     }
 
     return changes;
@@ -1018,6 +1031,7 @@ void onPrinterKilled(PGM_P const msg, PGM_P const component) {
     taskENTER_CRITICAL(); //never exit CRITICAL, wanted to use __disable_irq, but it does not work. i do not know why
     HAL_IWDG_Refresh(&hiwdg);
     marlin_server.vars.device_state = DEVICE_STATE_ERROR;
+    marlin_server.device_state_change = 1;
     if (_is_thermal_error(msg)) { //todo remove me after new thermal manager
         const marlin_vars_t &vars = marlin_server.vars;
         temp_error(msg, component, vars.temp_nozzle, vars.target_nozzle, vars.temp_bed, vars.target_bed);
