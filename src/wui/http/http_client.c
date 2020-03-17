@@ -28,6 +28,7 @@
 struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
+static int command_id = 0;
 
 /**
  * @ingroup httpc
@@ -145,6 +146,7 @@ httpc_free_state(httpc_state_t *req) {
     tpcb = req->pcb;
     mem_free(req);
     req = NULL;
+    command_id = -1;
 
     if (tpcb != NULL) {
         err_t r;
@@ -239,6 +241,19 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
                     if ((len >= 0) && ((u32_t)len < HTTPC_CONTENT_LEN_INVALID)) {
                         *content_length = (u32_t)len;
                     }
+                }
+            }
+        }
+
+        u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
+        if(command_id_hdr != 0xFFFF){
+            u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, content_len_hdr);
+            if (command_id_line_end != 0xFFFF) {
+                char command_id_num[16];
+                u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - 12);
+                memset(command_id_num, 0, sizeof(command_id_num));
+                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + 16) == command_id_num_len) {
+                    command_id = atoi(command_id_num);
                 }
             }
         }
@@ -421,7 +436,7 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     if(request_part[0] == '{'){
         http_json_parser((char *)&request_part, len_copied);
     } else if (request_part[0] == 'G' || request_part[0] == 'M'){
-        http_lowlvl_gcode_parser((char *)&request_part, len_copied);
+        http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
     }
     return ERR_OK;
 }

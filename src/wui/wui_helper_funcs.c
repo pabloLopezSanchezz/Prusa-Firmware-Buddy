@@ -7,6 +7,8 @@
 #include "eeprom.h"
 #include "ip4_addr.h"
 
+#define MAX_ACK_SIZE    16
+
 static char buffer[MAX_REQ_BODY_SIZE] = "";
 
 static int json_cmp(const char *json, jsmntok_t *tok, const char *s) {
@@ -79,7 +81,7 @@ void http_json_parser(char *json, uint32_t len) {
             ip4_addr_t tmp_addr;
             if (ip4addr_aton(request, &tmp_addr)) {
                 char connect_request[MAX_REQ_MARLIN_SIZE];
-                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %lu", tmp_addr.addr);
+                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %u", tmp_addr.addr);
                 send_request_to_wui(connect_request);
             }
             i++;
@@ -99,9 +101,10 @@ void http_json_parser(char *json, uint32_t len) {
     }
 }
 
-void http_lowlvl_gcode_parser(const char * request, uint32_t length){
+void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id){
     uint32_t curr = 0;
-    char gcode_str[MAX_REQ_MARLIN_SIZE];
+    static char gcode_str[MAX_REQ_MARLIN_SIZE];
+    char gcode_ack_str[MAX_ACK_SIZE];
     do {
         int i = curr;
         while(request[i] != '\0' && request[i] != '\n'){
@@ -110,6 +113,10 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length){
         strlcpy(gcode_str, request + curr, i - curr + 1);
         curr = i + 1;
         send_request_to_wui(gcode_str);
+        if(curr >= length && id >= 0){
+            snprintf(gcode_ack_str, MAX_ACK_SIZE, "!ack %u", id);
+            send_request_to_wui(gcode_ack_str);
+        }
     } while(curr < length);
 }
 

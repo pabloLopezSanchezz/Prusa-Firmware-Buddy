@@ -130,6 +130,9 @@ static int process_wui_request() {
         eeprom_set_string(EEVAR_CONNECT_KEY_START, wui.request + 4, CONNECT_SEC_KEY_LEN);
     } else if (strncmp(wui.request, "!cn ", 4) == 0){
         eeprom_set_string(EEVAR_LAN_HOSTNAME_START, wui.request + 4, LAN_HOSTNAME_MAX_LEN);
+    } else if (strncmp(wui.request, "!ack ", 5) == 0){
+        uint16_t command_id = atoi(wui.request + 5);
+        //send event ACCEPTED with command_id to CONNECT
     } else {
         marlin_wui_gcode(wui.request);
     }
