@@ -777,7 +777,7 @@ uint64_t _server_update_vars(uint64_t update) {
                 marlin_server.vars.device_state = DEVICE_STATE_FINISHED;
                 // TODO: HARVERST STATE AND THEN BACK TO IDLE
             }
-        } else if (v.ui8 == DEVICE_STATE_IDLE && marlin_server.vars.sd_printing){
+        } else if ((v.ui8 == DEVICE_STATE_IDLE || v.ui8 == DEVICE_STATE_FINISHED) && marlin_server.vars.sd_printing){
             marlin_server.device_state_change = 1;
             marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
         }
