@@ -1,4 +1,5 @@
 #include "wui_helper_funcs.h"
+#include "http_client.h"
 #include "jsmn.h"
 #include "wui.h"
 #include <stdarg.h>
@@ -104,7 +105,6 @@ void http_json_parser(char *json, uint32_t len) {
 void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id){
     uint32_t curr = 0;
     static char gcode_str[MAX_REQ_MARLIN_SIZE];
-    char gcode_ack_str[MAX_ACK_SIZE];
     do {
         int i = curr;
         while(request[i] != '\0' && request[i] != '\n'){
@@ -114,8 +114,10 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id
         curr = i + 1;
         send_request_to_wui(gcode_str);
         if(curr >= length && id >= 0){
-            snprintf(gcode_ack_str, MAX_ACK_SIZE, "!ack %u", id);
-            send_request_to_wui(gcode_ack_str);
+            connect_event_t evt;
+            strcpy(evt.state, "ACCEPTED");
+            evt.command_id = id;
+            buddy_http_client_init(MSG_EVENTS, &evt);
         }
     } while(curr < length);
 }

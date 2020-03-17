@@ -11,7 +11,12 @@
 extern "C" {
 #endif
 
-wui_err buddy_http_client_init();
+typedef enum {
+    MSG_TELEMETRY,
+    MSG_EVENTS,
+}MI_message_id_t;
+
+wui_err buddy_http_client_init(uint8_t id, void * container);
 
 void buddy_http_client_loop();
 
