@@ -99,6 +99,20 @@ void http_json_parser(char *json, uint32_t len) {
     }
 }
 
+void http_lowlvl_gcode_parser(const char * request, uint32_t length){
+    uint32_t curr = 0;
+    char gcode_str[128];
+    do {
+        int i = curr;
+        while(request[i] != '\0' && request[i] != '\n'){
+            i++;
+        }
+        strlcpy(gcode_str, request + curr, i - curr + 1);
+        curr = i + 1;
+        send_request_to_wui(gcode_str);
+    } while(curr < length);
+}
+
 const char *char_streamer(const char *format, ...) {
     va_list args;
     va_start(args, format);
