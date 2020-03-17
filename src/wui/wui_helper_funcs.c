@@ -101,7 +101,7 @@ void http_json_parser(char *json, uint32_t len) {
 
 void http_lowlvl_gcode_parser(const char * request, uint32_t length){
     uint32_t curr = 0;
-    char gcode_str[128];
+    char gcode_str[MAX_REQ_MARLIN_SIZE];
     do {
         int i = curr;
         while(request[i] != '\0' && request[i] != '\n'){

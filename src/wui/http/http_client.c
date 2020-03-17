@@ -418,11 +418,11 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
             break;
         }
     }
-    //if(request_part[0] == '{'){
+    if(request_part[0] == '{'){
         http_json_parser((char *)&request_part, len_copied);
-    //else if (request_part[0] == 'G' || request_part[0] == 'M'){
-    //  http_lowlvl_gcode_parser((char *)&request_part, len_copied);
-    //}
+    } else if (request_part[0] == 'G' || request_part[0] == 'M'){
+        http_lowlvl_gcode_parser((char *)&request_part, len_copied);
+    }
     return ERR_OK;
 }
 
