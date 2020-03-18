@@ -48,6 +48,7 @@ void update_web_vars(void) {
     web_vars.print_dur = wui.wui_marlin_vars->print_duration;
     web_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
+    web_vars.device_state = wui.wui_marlin_vars->device_state;
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(web_vars.gcode_name);
     }

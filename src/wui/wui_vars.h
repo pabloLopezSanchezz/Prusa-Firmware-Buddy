@@ -16,6 +16,7 @@ typedef struct {
     uint16_t flow_factor;
     uint8_t sd_precent_done;
     uint8_t sd_printing;
+    uint8_t device_state;
 } web_vars_t;
 extern web_vars_t web_vars;
 
