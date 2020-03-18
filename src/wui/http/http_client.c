@@ -455,7 +455,11 @@ static const char * telemetry_to_http_str(const char * host_ip4_str){
 
 static const char * events_to_http_str(void * container){
     
-    char * header = "POST /p/events HTTP/1.0\r\nContent_Type: application/json\r\n";
+    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
+    char header[HEADER_MAX_SIZE];
+    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
+    printer_token[API_TOKEN_LEN] = 0;
+    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
     return get_events_str(header, container);
 }
 
@@ -476,6 +480,8 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
         header_plus_data = telemetry_to_http_str(host_ip4_str);
     } else if (id == MSG_EVENTS){
         header_plus_data = events_to_http_str(container); // Does it need Host: host_ip4 header?
+    } else {
+        return ERR_VAL;        
     }
 
     req_len = strlen(header_plus_data);
