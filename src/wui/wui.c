@@ -52,7 +52,7 @@ void update_web_vars(void) {
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
     if(web_vars.device_state != wui.wui_marlin_vars->device_state){
         web_vars.device_state = wui.wui_marlin_vars->device_state;
-        http_client_send_message(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
+        buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
     }
     web_vars.device_state = wui.wui_marlin_vars->device_state;
     if (marlin_event(MARLIN_EVT_GFileChange)) {

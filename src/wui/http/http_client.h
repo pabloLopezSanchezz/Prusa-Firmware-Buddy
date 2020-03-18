@@ -18,7 +18,6 @@ typedef enum {
 }MI_message_id_t;
 
 wui_err buddy_http_client_init(uint8_t id, void * container);
-void http_client_send_message(uint8_t id, void * container);
 
 void buddy_http_client_loop();
 

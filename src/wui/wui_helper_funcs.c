@@ -82,7 +82,7 @@ void http_json_parser(char *json, uint32_t len) {
             ip4_addr_t tmp_addr;
             if (ip4addr_aton(request, &tmp_addr)) {
                 char connect_request[MAX_REQ_MARLIN_SIZE];
-                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %u", tmp_addr.addr);
+                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %lu", tmp_addr.addr);
                 send_request_to_wui(connect_request);
             }
             i++;
@@ -117,7 +117,7 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id
             connect_event_t evt;
             strcpy(evt.state, "ACCEPTED");
             evt.command_id = id;
-            http_client_send_message(MSG_EVENTS_ACK, &evt);   // calling from both threads?
+            buddy_http_client_init(MSG_EVENTS_ACK, &evt);   // calling from both threads?
         }
     } while(curr < length);
 }

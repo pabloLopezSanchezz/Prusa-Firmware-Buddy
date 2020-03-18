@@ -473,42 +473,6 @@ static const char * event_state_changed_to_http_str(void * container){
     return get_event_state_changed_str(header, container);
 }
 
-void http_client_send_message(uint8_t id, void * container){
-    connect_event_t evt;
-    const char * state_str;
-    switch(id){
-        case MSG_TELEMETRY:
-            buddy_http_client_init(id, 0);
-            break;
-        case MSG_EVENTS_ACK:
-            buddy_http_client_init(id, container);
-            break;
-        case MSG_EVENTS_STATE_CHANGED:
-            switch(*(uint8_t*)container){
-                case DEVICE_STATE_IDLE:
-                    state_str = "IDLE";
-                    break;
-                case DEVICE_STATE_ERROR:
-                    state_str = "ERROR";
-                case DEVICE_STATE_PRINTING:
-                    state_str = "PRINTING";
-                    break;
-                case DEVICE_STATE_PAUSED:
-                    state_str = "PAUSED";
-                    break;
-                case DEVICE_STATE_FINISHED:
-                    state_str = "FINISHED";
-                    break;
-                default:
-                    state_str = "UNKNOWN";
-                    break;
-            }
-            strcpy(evt.state, state_str);
-            buddy_http_client_init(id, &evt);
-            break;
-    }
-}
-
 wui_err buddy_http_client_init(uint8_t id, void * container) {
 
     size_t alloc_len;
@@ -527,7 +491,29 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
     } else if (id == MSG_EVENTS_ACK){
         header_plus_data = event_ack_to_http_str(container);
     } else if (id == MSG_EVENTS_STATE_CHANGED){
-        header_plus_data = event_state_changed_to_http_str(container);
+        connect_event_t evt;
+        const char * state_str;
+        switch(*(uint8_t*)container){
+                case DEVICE_STATE_IDLE:
+                    state_str = "IDLE";
+                    break;
+                case DEVICE_STATE_ERROR:
+                    state_str = "ERROR";
+                case DEVICE_STATE_PRINTING:
+                    state_str = "PRINTING";
+                    break;
+                case DEVICE_STATE_PAUSED:
+                    state_str = "PAUSED";
+                    break;
+                case DEVICE_STATE_FINISHED:
+                    state_str = "FINISHED";
+                    break;
+                default:
+                    state_str = "UNKNOWN";
+                    break;
+        }
+        strcpy(evt.state, state_str);
+        header_plus_data = event_state_changed_to_http_str(&evt);
     } else {
         return ERR_VAL;        
     }
@@ -593,7 +579,7 @@ void buddy_http_client_loop() {
     }
 
     if (netif_ip4_addr(&eth0)->addr != 0 && ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY)) {
-        http_client_send_message(MSG_TELEMETRY, 0);
+        buddy_http_client_init(MSG_TELEMETRY, 0);
         client_interval = xTaskGetTickCount();
     }
 }
