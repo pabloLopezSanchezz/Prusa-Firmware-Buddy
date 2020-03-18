@@ -89,7 +89,7 @@
  * the 'g_psHTTPHeaders' list.
  */
 #include "lwip/init.h"
-#include "lwip/apps/httpd.h"
+#include "httpd.h"
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/apps/fs.h"
