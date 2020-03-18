@@ -117,7 +117,7 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id
             connect_event_t evt;
             strcpy(evt.state, "ACCEPTED");
             evt.command_id = id;
-            buddy_http_client_init(MSG_EVENTS, &evt);   // calling from both threads?
+            http_client_send_message(MSG_EVENTS_ACK, &evt);   // calling from both threads?
         }
     } while(curr < length);
 }

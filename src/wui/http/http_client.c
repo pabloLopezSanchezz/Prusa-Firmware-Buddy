@@ -15,6 +15,7 @@
 #include "eeprom.h"
 #include "lwip/altcp.h"
 #include "lwip.h"
+#include "marlin_vars.h"
 
 #define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
@@ -453,14 +454,59 @@ static const char * telemetry_to_http_str(const char * host_ip4_str){
     return get_update_str(header);
 }
 
-static const char * events_to_http_str(void * container){
+static const char * event_ack_to_http_str(void * container){
     
     char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
     char header[HEADER_MAX_SIZE];
     eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
     printer_token[API_TOKEN_LEN] = 0;
     sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
-    return get_events_str(header, container);
+    return get_event_ack_str(header, container);
+}
+
+static const char * event_state_changed_to_http_str(void * container){
+    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
+    char header[HEADER_MAX_SIZE];
+    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
+    printer_token[API_TOKEN_LEN] = 0;
+    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
+    return get_event_state_changed_str(header, container);
+}
+
+void http_client_send_message(uint8_t id, void * container){
+    connect_event_t evt;
+    const char * state_str;
+    switch(id){
+        case MSG_TELEMETRY:
+            buddy_http_client_init(id, 0);
+            break;
+        case MSG_EVENTS_ACK:
+            buddy_http_client_init(id, container);
+            break;
+        case MSG_EVENTS_STATE_CHANGED:
+            switch(*(uint8_t*)container){
+                case DEVICE_STATE_IDLE:
+                    state_str = "IDLE";
+                    break;
+                case DEVICE_STATE_ERROR:
+                    state_str = "ERROR";
+                case DEVICE_STATE_PRINTING:
+                    state_str = "PRINTING";
+                    break;
+                case DEVICE_STATE_PAUSED:
+                    state_str = "PAUSED";
+                    break;
+                case DEVICE_STATE_FINISHED:
+                    state_str = "FINISHED";
+                    break;
+                default:
+                    state_str = "UNKNOWN";
+                    break;
+            }
+            strcpy(evt.state, state_str);
+            buddy_http_client_init(id, &evt);
+            break;
+    }
 }
 
 wui_err buddy_http_client_init(uint8_t id, void * container) {
@@ -478,8 +524,10 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
 
     if(id == MSG_TELEMETRY){
         header_plus_data = telemetry_to_http_str(host_ip4_str);
-    } else if (id == MSG_EVENTS){
-        header_plus_data = events_to_http_str(container); // Does it need Host: host_ip4 header?
+    } else if (id == MSG_EVENTS_ACK){
+        header_plus_data = event_ack_to_http_str(container);
+    } else if (id == MSG_EVENTS_STATE_CHANGED){
+        header_plus_data = event_state_changed_to_http_str(container);
     } else {
         return ERR_VAL;        
     }
@@ -545,7 +593,7 @@ void buddy_http_client_loop() {
     }
 
     if (netif_ip4_addr(&eth0)->addr != 0 && ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY)) {
-        buddy_http_client_init(MSG_TELEMETRY, 0);
+        http_client_send_message(MSG_TELEMETRY, 0);
         client_interval = xTaskGetTickCount();
     }
 }
