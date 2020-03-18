@@ -16,8 +16,7 @@
 #include "stdarg.h"
 
 #define BDY_WUI_API_BUFFER_SIZE 512
-#define BDY_NO_FS_FLAGS         0  // no flags for fs_open
-#define BDY_API_TELEMETRY_LEN   14 // length of "/api/telemetry" string
+#define BDY_NO_FS_FLAGS         0 // no flags for fs_open
 
 // for data exchange between wui thread and HTTP thread
 static web_vars_t web_vars_copy;
@@ -113,7 +112,10 @@ struct fs_file *wui_api_main(const char *uri) {
     api_file.index = 0;
     api_file.pextension = NULL;
     api_file.flags = BDY_NO_FS_FLAGS; // http server adds response header
-    if (!strncmp(uri, "/api/telemetry", BDY_API_TELEMETRY_LEN) && (BDY_API_TELEMETRY_LEN == strlen(uri))) {
+    char *t_string = "/api/telemetry";
+    uint32_t t_string_len = strlen(t_string);
+
+    if (!strncmp(uri, t_string, t_string_len) && (strlen(uri) == t_string_len)) {
         wui_api_telemetry(&api_file);
         return &api_file;
     }

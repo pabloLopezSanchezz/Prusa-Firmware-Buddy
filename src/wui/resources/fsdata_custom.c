@@ -10131,7 +10131,477 @@ static const unsigned char FSDATA_ALIGN_PRE data__favicon_ico[] FSDATA_ALIGN_POS
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__index_css = 4;
+static const unsigned int dummy_align__file_upload_html = 4;
+#endif
+static const unsigned char FSDATA_ALIGN_PRE data__file_upload_html[] FSDATA_ALIGN_POST = {
+    /* /file_upload.html (18 chars) */
+    0x2f,
+    0x66,
+    0x69,
+    0x6c,
+    0x65,
+    0x5f,
+    0x75,
+    0x70,
+    0x6c,
+    0x6f,
+    0x61,
+    0x64,
+    0x2e,
+    0x68,
+    0x74,
+    0x6d,
+    0x6c,
+    0x00,
+    0x00,
+    0x00,
+
+    /* HTTP header */
+    /* "HTTP/1.0 200 OK
+" (17 bytes) */
+    0x48,
+    0x54,
+    0x54,
+    0x50,
+    0x2f,
+    0x31,
+    0x2e,
+    0x30,
+    0x20,
+    0x32,
+    0x30,
+    0x30,
+    0x20,
+    0x4f,
+    0x4b,
+    0x0d,
+    0x0a,
+    /* "Server: lwIP/2.1.2 (http://savannah.nongnu.org/projects/lwip)
+" (63 bytes) */
+    0x53,
+    0x65,
+    0x72,
+    0x76,
+    0x65,
+    0x72,
+    0x3a,
+    0x20,
+    0x6c,
+    0x77,
+    0x49,
+    0x50,
+    0x2f,
+    0x32,
+    0x2e,
+    0x31,
+    0x2e,
+    0x32,
+    0x20,
+    0x28,
+    0x68,
+    0x74,
+    0x74,
+    0x70,
+    0x3a,
+    0x2f,
+    0x2f,
+    0x73,
+    0x61,
+    0x76,
+    0x61,
+    0x6e,
+    0x6e,
+    0x61,
+    0x68,
+    0x2e,
+    0x6e,
+    0x6f,
+    0x6e,
+    0x67,
+    0x6e,
+    0x75,
+    0x2e,
+    0x6f,
+    0x72,
+    0x67,
+    0x2f,
+    0x70,
+    0x72,
+    0x6f,
+    0x6a,
+    0x65,
+    0x63,
+    0x74,
+    0x73,
+    0x2f,
+    0x6c,
+    0x77,
+    0x69,
+    0x70,
+    0x29,
+    0x0d,
+    0x0a,
+    /* "Content-Length: 303
+" (18+ bytes) */
+    0x43,
+    0x6f,
+    0x6e,
+    0x74,
+    0x65,
+    0x6e,
+    0x74,
+    0x2d,
+    0x4c,
+    0x65,
+    0x6e,
+    0x67,
+    0x74,
+    0x68,
+    0x3a,
+    0x20,
+    0x33,
+    0x30,
+    0x33,
+    0x0d,
+    0x0a,
+    /* "Content-Type: text/html
+
+" (27 bytes) */
+    0x43,
+    0x6f,
+    0x6e,
+    0x74,
+    0x65,
+    0x6e,
+    0x74,
+    0x2d,
+    0x54,
+    0x79,
+    0x70,
+    0x65,
+    0x3a,
+    0x20,
+    0x74,
+    0x65,
+    0x78,
+    0x74,
+    0x2f,
+    0x68,
+    0x74,
+    0x6d,
+    0x6c,
+    0x0d,
+    0x0a,
+    0x0d,
+    0x0a,
+    /* raw file data (303 bytes) */
+    0x3c,
+    0x68,
+    0x74,
+    0x6d,
+    0x6c,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x3c,
+    0x68,
+    0x65,
+    0x61,
+    0x64,
+    0x3e,
+    0x3c,
+    0x74,
+    0x69,
+    0x74,
+    0x6c,
+    0x65,
+    0x3e,
+    0x46,
+    0x69,
+    0x6c,
+    0x65,
+    0x20,
+    0x55,
+    0x70,
+    0x6c,
+    0x6f,
+    0x61,
+    0x64,
+    0x3c,
+    0x2f,
+    0x74,
+    0x69,
+    0x74,
+    0x6c,
+    0x65,
+    0x3e,
+    0x3c,
+    0x2f,
+    0x68,
+    0x65,
+    0x61,
+    0x64,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x3c,
+    0x62,
+    0x6f,
+    0x64,
+    0x79,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x20,
+    0x20,
+    0x3c,
+    0x68,
+    0x32,
+    0x3e,
+    0x55,
+    0x70,
+    0x6c,
+    0x6f,
+    0x61,
+    0x64,
+    0x20,
+    0x46,
+    0x69,
+    0x6c,
+    0x65,
+    0x3c,
+    0x2f,
+    0x68,
+    0x32,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x20,
+    0x20,
+    0x3c,
+    0x66,
+    0x6f,
+    0x72,
+    0x6d,
+    0x20,
+    0x6d,
+    0x65,
+    0x74,
+    0x68,
+    0x6f,
+    0x64,
+    0x3d,
+    0x22,
+    0x70,
+    0x6f,
+    0x73,
+    0x74,
+    0x22,
+    0x20,
+    0x65,
+    0x6e,
+    0x63,
+    0x74,
+    0x79,
+    0x70,
+    0x65,
+    0x3d,
+    0x22,
+    0x6d,
+    0x75,
+    0x6c,
+    0x74,
+    0x69,
+    0x70,
+    0x61,
+    0x72,
+    0x74,
+    0x2f,
+    0x66,
+    0x6f,
+    0x72,
+    0x6d,
+    0x2d,
+    0x64,
+    0x61,
+    0x74,
+    0x61,
+    0x22,
+    0x20,
+    0x61,
+    0x63,
+    0x74,
+    0x69,
+    0x6f,
+    0x6e,
+    0x3d,
+    0x22,
+    0x46,
+    0x69,
+    0x6c,
+    0x65,
+    0x55,
+    0x70,
+    0x6c,
+    0x6f,
+    0x61,
+    0x64,
+    0x22,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x20,
+    0x20,
+    0x20,
+    0x20,
+    0x43,
+    0x68,
+    0x6f,
+    0x6f,
+    0x73,
+    0x65,
+    0x20,
+    0x74,
+    0x68,
+    0x65,
+    0x20,
+    0x66,
+    0x69,
+    0x6c,
+    0x65,
+    0x20,
+    0x74,
+    0x6f,
+    0x20,
+    0x75,
+    0x70,
+    0x6c,
+    0x6f,
+    0x61,
+    0x64,
+    0x3a,
+    0x0d,
+    0x0a,
+    0x20,
+    0x20,
+    0x20,
+    0x20,
+    0x3c,
+    0x69,
+    0x6e,
+    0x70,
+    0x75,
+    0x74,
+    0x20,
+    0x74,
+    0x79,
+    0x70,
+    0x65,
+    0x3d,
+    0x22,
+    0x66,
+    0x69,
+    0x6c,
+    0x65,
+    0x22,
+    0x20,
+    0x6e,
+    0x61,
+    0x6d,
+    0x65,
+    0x3d,
+    0x22,
+    0x66,
+    0x69,
+    0x6c,
+    0x65,
+    0x49,
+    0x44,
+    0x22,
+    0x20,
+    0x2f,
+    0x3e,
+    0x3c,
+    0x62,
+    0x72,
+    0x20,
+    0x2f,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x20,
+    0x20,
+    0x20,
+    0x20,
+    0x3c,
+    0x69,
+    0x6e,
+    0x70,
+    0x75,
+    0x74,
+    0x20,
+    0x74,
+    0x79,
+    0x70,
+    0x65,
+    0x3d,
+    0x22,
+    0x73,
+    0x75,
+    0x62,
+    0x6d,
+    0x69,
+    0x74,
+    0x22,
+    0x20,
+    0x76,
+    0x61,
+    0x6c,
+    0x75,
+    0x65,
+    0x3d,
+    0x22,
+    0x53,
+    0x45,
+    0x4e,
+    0x44,
+    0x22,
+    0x20,
+    0x2f,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x20,
+    0x20,
+    0x3c,
+    0x2f,
+    0x66,
+    0x6f,
+    0x72,
+    0x6d,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x3c,
+    0x2f,
+    0x62,
+    0x6f,
+    0x64,
+    0x79,
+    0x3e,
+    0x0d,
+    0x0a,
+    0x3c,
+    0x2f,
+    0x68,
+    0x74,
+    0x6d,
+    0x6c,
+    0x3e,
+};
+
+#if FSDATA_FILE_ALIGNMENT == 1
+static const unsigned int dummy_align__index_css = 5;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__index_css[] FSDATA_ALIGN_POST = {
     /* /index.css (11 chars) */
@@ -13186,7 +13656,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__index_css[] FSDATA_ALIGN_POST 
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__index_html = 5;
+static const unsigned int dummy_align__index_html = 6;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__index_html[] FSDATA_ALIGN_POST = {
     /* /index.html (12 chars) */
@@ -16086,7 +16556,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__index_html[] FSDATA_ALIGN_POST
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__index_js = 6;
+static const unsigned int dummy_align__index_js = 7;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__index_js[] FSDATA_ALIGN_POST = {
     /* /index.js (10 chars) */
@@ -20337,7 +20807,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__index_js[] FSDATA_ALIGN_POST =
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__post_gcode_html = 7;
+static const unsigned int dummy_align__post_gcode_html = 8;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__post_gcode_html[] FSDATA_ALIGN_POST = {
     /* /post_gcode.html (17 chars) */
@@ -20447,7 +20917,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__post_gcode_html[] FSDATA_ALIGN
     0x29,
     0x0d,
     0x0a,
-    /* "Content-Length: 1567
+    /* "Content-Length: 1562
 " (18+ bytes) */
     0x43,
     0x6f,
@@ -20468,7 +20938,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__post_gcode_html[] FSDATA_ALIGN
     0x31,
     0x35,
     0x36,
-    0x37,
+    0x32,
     0x0d,
     0x0a,
     /* "Content-Type: text/html
@@ -20501,7 +20971,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__post_gcode_html[] FSDATA_ALIGN
     0x0a,
     0x0d,
     0x0a,
-    /* raw file data (1567 bytes) */
+    /* raw file data (1562 bytes) */
     0x3c,
     0x21,
     0x44,
@@ -21709,21 +22179,16 @@ static const unsigned char FSDATA_ALIGN_PRE data__post_gcode_html[] FSDATA_ALIGN
     0x20,
     0x22,
     0x2f,
+    0x61,
     0x70,
-    0x6f,
-    0x73,
-    0x74,
-    0x5f,
+    0x69,
+    0x2f,
     0x67,
+    0x2d,
     0x63,
     0x6f,
     0x64,
     0x65,
-    0x2e,
-    0x68,
-    0x74,
-    0x6d,
-    0x6c,
     0x22,
     0x2c,
     0x0d,
@@ -22072,7 +22537,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__post_gcode_html[] FSDATA_ALIGN
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__status_filament_svg = 8;
+static const unsigned int dummy_align__status_filament_svg = 9;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__status_filament_svg[] FSDATA_ALIGN_POST = {
     /* /status_filament.svg (21 chars) */
@@ -23272,7 +23737,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__status_filament_svg[] FSDATA_A
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__status_heatbed_svg = 9;
+static const unsigned int dummy_align__status_heatbed_svg = 10;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__status_heatbed_svg[] FSDATA_ALIGN_POST = {
     /* /status_heatbed.svg (20 chars) */
@@ -24208,7 +24673,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__status_heatbed_svg[] FSDATA_AL
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__status_nozzle_svg = 10;
+static const unsigned int dummy_align__status_nozzle_svg = 11;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__status_nozzle_svg[] FSDATA_ALIGN_POST = {
     /* /status_nozzle.svg (19 chars) */
@@ -24903,7 +25368,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__status_nozzle_svg[] FSDATA_ALI
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__status_prnflow_svg = 11;
+static const unsigned int dummy_align__status_prnflow_svg = 12;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__status_prnflow_svg[] FSDATA_ALIGN_POST = {
     /* /status_prnflow.svg (20 chars) */
@@ -25549,7 +26014,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__status_prnflow_svg[] FSDATA_AL
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__status_prnspeed_svg = 12;
+static const unsigned int dummy_align__status_prnspeed_svg = 13;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__status_prnspeed_svg[] FSDATA_ALIGN_POST = {
     /* /status_prnspeed.svg (21 chars) */
@@ -27214,7 +27679,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__status_prnspeed_svg[] FSDATA_A
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__status_z_axis_svg = 13;
+static const unsigned int dummy_align__status_z_axis_svg = 14;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__status_z_axis_svg[] FSDATA_ALIGN_POST = {
     /* /status_z_axis.svg (19 chars) */
@@ -27834,7 +28299,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__status_z_axis_svg[] FSDATA_ALI
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__under_construction_gif = 14;
+static const unsigned int dummy_align__under_construction_gif = 15;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__under_construction_gif[] FSDATA_ALIGN_POST = {
     /* /under_construction.gif (24 chars) */
@@ -41169,7 +41634,7 @@ static const unsigned char FSDATA_ALIGN_PRE data__under_construction_gif[] FSDAT
 };
 
 #if FSDATA_FILE_ALIGNMENT == 1
-static const unsigned int dummy_align__under_construction_png = 15;
+static const unsigned int dummy_align__under_construction_png = 16;
 #endif
 static const unsigned char FSDATA_ALIGN_PRE data__under_construction_png[] FSDATA_ALIGN_POST = {
     /* /under_construction.png (24 chars) */
@@ -45879,8 +46344,16 @@ const struct fsdata_file file__favicon_ico[] = { {
     FS_FILE_FLAGS_HEADER_INCLUDED | FS_FILE_FLAGS_HEADER_PERSISTENT,
 } };
 
-const struct fsdata_file file__index_css[] = { {
+const struct fsdata_file file__file_upload_html[] = { {
     file__favicon_ico,
+    data__file_upload_html,
+    data__file_upload_html + 20,
+    sizeof(data__file_upload_html) - 20,
+    FS_FILE_FLAGS_HEADER_INCLUDED | FS_FILE_FLAGS_HEADER_PERSISTENT,
+} };
+
+const struct fsdata_file file__index_css[] = { {
+    file__file_upload_html,
     data__index_css,
     data__index_css + 12,
     sizeof(data__index_css) - 12,
@@ -45976,4 +46449,4 @@ const struct fsdata_file file__under_construction_png[] = { {
 } };
 
 #define FS_ROOT     file__under_construction_png
-#define FS_NUMFILES 16
+#define FS_NUMFILES 17

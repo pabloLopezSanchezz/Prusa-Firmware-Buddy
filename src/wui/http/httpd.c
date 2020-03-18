@@ -118,7 +118,17 @@
 #include "marlin_client.h"
 #include "wui_helper_funcs.h"
 #include "wui.h"
+#include "dbg.h"
 #define WUI_API_ROOT_STR_LEN 5
+
+#define MSG_BUFFSIZE           512
+#define MAX_MARLIN_REQUEST_LEN 100
+#define POST_URL_STR_MAX_LEN   50
+
+static char request_buf[MSG_BUFFSIZE];
+static void *current_connection;
+static void *valid_connection;
+
 /***************************************************************/
 
 #if LWIP_TCP && LWIP_CALLBACK_API
@@ -344,56 +354,50 @@ const struct http_ssi_tag_description http_ssi_tag_desc[] = {
 
 //------------------------------OUR-CODE---------------------------
 
-    #define MSG_BUFFSIZE           512
-    #define MAX_MARLIN_REQUEST_LEN 100
-    #define POST_URL_STR_MAX_LEN   50
-
-static char request_buf[MSG_BUFFSIZE];
-static char post_url_str[POST_URL_STR_MAX_LEN];
-
-static void *current_connection;
-static void *valid_connection;
-
-extern osMessageQId wui_queue; // input queue (uint8_t)
-extern osSemaphoreId wui_sema; // semaphore handle
-
 err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
     u16_t http_request_len, int content_len, char *response_uri,
     u16_t response_uri_len, u8_t *post_auto_wnd) {
 
-    strlcpy(post_url_str, "", 1);
-    LWIP_UNUSED_ARG(post_auto_wnd);
+    LWIP_UNUSED_ARG(post_auto_wnd); // default is 1 (httpd handles window updates automatically)
+
+    _dbg("request length: %d", http_request_len);
+    _dbg("content length: %d", content_len);
+    _dbg("response uri length: %d", response_uri_len);
 
     if (!memcmp(uri, "/api/g-code", 11)) {
         if (current_connection != connection) {
             current_connection = connection;
             valid_connection = NULL;
-            /* default page */
-            response_uri_len = 12;
-            snprintf(response_uri, response_uri_len, "/api/g-code");
-            strlcpy(post_url_str, "g-code.json", 12);
             return ERR_OK;
         }
     } else if (!memcmp(uri, "/admin.html", 11)) {
         if (current_connection != connection) {
             current_connection = connection;
             valid_connection = NULL;
-            /* default page */
-            response_uri_len = 12;
-            snprintf(response_uri, response_uri_len, "/admin.html");
-            strlcpy(post_url_str, "admin.html", 10);
+            return ERR_OK;
+        }
+    } else if (!memcmp(uri, "/FileUpload", 11)) {
+        if (current_connection != connection) {
+            current_connection = connection;
+            valid_connection = NULL;
             return ERR_OK;
         }
     }
+    // unsupported if reached here
+    snprintf(response_uri, 10, "POST404");
     return ERR_VAL;
 }
 
 err_t httpd_post_receive_data(void *connection, struct pbuf *p) {
+
     if (current_connection == connection) {
+
+        _dbg("receive data total length: %d", p->tot_len);
+        _dbg("receive data current pbuf length: %d", p->len);
         char request_part[(const u16_t)p->tot_len + 1];
         char *payload = p->payload;
         if (payload[0] == 0) {
-            return 0;
+            return ERR_OK;
         }
         u16_t ret = pbuf_copy_partial(p, request_part, p->tot_len, 0);
         if (ret && strlen(request_buf) + ret <= MSG_BUFFSIZE) {
@@ -404,24 +408,27 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p) {
         }
         request_buf[0] = 0;
     }
+
     return ERR_VAL;
 }
 
 void httpd_post_finished(void *connection, char *response_uri, u16_t response_uri_len) {
+    _dbg("post finished callback");
+    _dbg("response uri length: %d", response_uri_len);
 
     if (current_connection == connection) {
         if (valid_connection == connection) {
-            /*receiving data succeeded*/
-            //TODO: Send 200 OK
             if (request_buf[0] != 0) {
                 http_json_parser(request_buf, strlen(request_buf));
-                response_uri_len = strlen(post_url_str);
-                strlcpy(response_uri, post_url_str, response_uri_len + 1);
+
+                strlcpy(response_uri, "POST200", response_uri_len);
                 request_buf[0] = 0;
             }
         }
         current_connection = NULL;
         valid_connection = NULL;
+    } else {
+        strlcpy(response_uri, "POST500", response_uri_len);
     }
 }
 
@@ -956,6 +963,10 @@ get_http_headers(struct http_state *hs, const char *uri) {
         hs->hdrs[HDR_STRINGS_IDX_HTTP_STATUS] = g_psHTTPHeaderStrings[HTTP_HDR_BAD_REQUEST];
     } else if (strstr(uri, "501")) {
         hs->hdrs[HDR_STRINGS_IDX_HTTP_STATUS] = g_psHTTPHeaderStrings[HTTP_HDR_NOT_IMPL];
+    } else if (strstr(uri, "200")) {
+        hs->hdrs[HDR_STRINGS_IDX_HTTP_STATUS] = g_psHTTPHeaderStrings[HTTP_HDR_OK_11];
+    } else if (strstr(uri, "500")) {
+        hs->hdrs[HDR_STRINGS_IDX_HTTP_STATUS] = g_psHTTPHeaderStrings[HTTP_HDR_500];
     } else {
         hs->hdrs[HDR_STRINGS_IDX_HTTP_STATUS] = g_psHTTPHeaderStrings[HTTP_HDR_OK];
     }
@@ -1719,7 +1730,7 @@ http_find_error_file(struct http_state *hs, u16_t error_nr) {
     #else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
         #define http_find_error_file(hs, error_nr) ERR_ARG
     #endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
-
+    #if 0
 /**
  * Get the file struct for a 404 error page.
  * Tries some file names and returns NULL if none found.
@@ -1753,6 +1764,7 @@ http_get_404_file(struct http_state *hs, const char **uri) {
 
     return &hs->file_handle;
 }
+    #endif
 
     #if LWIP_HTTPD_SUPPORT_POST
 static err_t
@@ -2225,9 +2237,11 @@ http_uri_is_ssi(struct fs_file *file, const char *uri) {
 static err_t
 http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri,
     u8_t tag_check, char *params) {
-    #if !LWIP_HTTPD_SUPPORT_V09
+
     LWIP_UNUSED_ARG(is_09);
-    #endif
+    LWIP_UNUSED_ARG(tag_check);
+    LWIP_UNUSED_ARG(params);
+
     if (file != NULL) {
         /* file opened, initialise struct http_state */
     #if !LWIP_HTTPD_DYNAMIC_FILE_READ
@@ -2235,90 +2249,28 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const cha
         LWIP_ASSERT("file->data != NULL", file->data != NULL);
     #endif
 
-    #if LWIP_HTTPD_SSI
-        if (tag_check) {
-            struct http_ssi_state *ssi = http_ssi_state_alloc();
-            if (ssi != NULL) {
-                ssi->tag_index = 0;
-                ssi->tag_state = TAG_NONE;
-                ssi->parsed = file->data;
-                ssi->parse_left = file->len;
-                ssi->tag_end = file->data;
-                hs->ssi = ssi;
-            }
-        }
-    #else  /* LWIP_HTTPD_SSI */
-        LWIP_UNUSED_ARG(tag_check);
-    #endif /* LWIP_HTTPD_SSI */
         hs->handle = file;
-    #if LWIP_HTTPD_CGI_SSI
-        if (params != NULL) {
-            /* URI contains parameters, call generic CGI handler */
-            int count;
-        #if LWIP_HTTPD_CGI
-            if (http_cgi_paramcount >= 0) {
-                count = http_cgi_paramcount;
-            } else
-        #endif
-            {
-                count = extract_uri_parameters(hs, params);
-            }
-            httpd_cgi_handler(file, uri, count, http_cgi_params, http_cgi_param_vals
-        #if defined(LWIP_HTTPD_FILE_STATE) && LWIP_HTTPD_FILE_STATE
-                ,
-                file->state
-        #endif /* LWIP_HTTPD_FILE_STATE */
-            );
-        }
-    #else  /* LWIP_HTTPD_CGI_SSI */
-        LWIP_UNUSED_ARG(params);
-    #endif /* LWIP_HTTPD_CGI_SSI */
         hs->file = file->data;
         LWIP_ASSERT("File length must be positive!", (file->len >= 0));
-    #if LWIP_HTTPD_CUSTOM_FILES
-        if (file->is_custom_file && (file->data == NULL)) {
-            /* custom file, need to read data first (via fs_read_custom) */
-            hs->left = 0;
-        } else
-    #endif /* LWIP_HTTPD_CUSTOM_FILES */
-        {
-            hs->left = (u32_t)file->len;
-        }
+        hs->left = (u32_t)file->len;
         hs->retries = 0;
     #if LWIP_HTTPD_TIMING
         hs->time_started = sys_now();
     #endif /* LWIP_HTTPD_TIMING */
-    #if !LWIP_HTTPD_DYNAMIC_HEADERS
-        LWIP_ASSERT("HTTP headers not included in file system",
-            (hs->handle->flags & FS_FILE_FLAGS_HEADER_INCLUDED) != 0);
-    #endif /* !LWIP_HTTPD_DYNAMIC_HEADERS */
-    #if LWIP_HTTPD_SUPPORT_V09
-        if (is_09 && ((hs->handle->flags & FS_FILE_FLAGS_HEADER_INCLUDED) != 0)) {
-            /* HTTP/0.9 responses are sent without HTTP header,
-         search for the end of the header. */
-            char *file_start = lwip_strnstr(hs->file, CRLF CRLF, hs->left);
-            if (file_start != NULL) {
-                int diff = file_start + 4 - hs->file;
-                hs->file += diff;
-                hs->left -= (u32_t)diff;
-            }
-        }
-    #endif /* LWIP_HTTPD_SUPPORT_V09*/
+
     } else {
         hs->handle = NULL;
         hs->file = NULL;
         hs->left = 0;
         hs->retries = 0;
     }
-    #if LWIP_HTTPD_DYNAMIC_HEADERS
+
     /* Determine the HTTP headers to send based on the file extension of
    * the requested URI. */
     if ((hs->handle == NULL) || ((hs->handle->flags & FS_FILE_FLAGS_HEADER_INCLUDED) == 0)) {
         get_http_headers(hs, uri);
     }
-    #else  /* LWIP_HTTPD_DYNAMIC_HEADERS */
-    LWIP_UNUSED_ARG(uri);
-    #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
+
     #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
     if (hs->keepalive) {
         #if LWIP_HTTPD_SSI
@@ -2667,6 +2619,8 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09) {
     /* By default, assume we will not be processing server-side-includes tags */
     u8_t tag_check = 0;
 
+    LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opening %s\n", uri));
+
     // check for default files only in root directory
     if ((uri[0] == '/') && (uri[1] == 0)) {
 
@@ -2693,7 +2647,9 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09) {
     if (file == NULL) {
         if (0 == strncmp(uri, "/api/", WUI_API_ROOT_STR_LEN)) {
             file = wui_api_main(uri);
-            strcat((char *)uri, ".json"); // http server adds header info (data type) based on the file extension
+            if (NULL != file) {
+                strcat((char *)uri, ".json"); // http server adds header info (data type) based on the file extension
+            }
         }
     }
 
@@ -2712,14 +2668,21 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09) {
         err = fs_open(&hs->file_handle, uri);
         if (err == ERR_OK) {
             file = &hs->file_handle;
-        } else {
-            file = http_get_404_file(hs, &uri);
         }
     }
+
     if (file == NULL) {
-        /* None of the default filenames exist so send back a 404 page */
-        file = http_get_404_file(hs, &uri);
+        // check if this is for POST response
+        const char *post_prefix = "POST";
+    #define RESP_CODE_BUFF_LEN 4 // Buff len including null char
+        char post_response_code[RESP_CODE_BUFF_LEN];
+        if (0 == strncmp(uri, post_prefix, strnlen(post_prefix, RESP_CODE_BUFF_LEN))) { // POST response
+            strlcpy(post_response_code, uri + RESP_CODE_BUFF_LEN, RESP_CODE_BUFF_LEN);
+        } else {
+            strlcpy(uri, "404", LWIP_HTTPD_URI_BUF_LEN); // really file not found
+        }
     }
+
     return http_init_file(hs, file, is_09, uri, tag_check, params);
 }
 
