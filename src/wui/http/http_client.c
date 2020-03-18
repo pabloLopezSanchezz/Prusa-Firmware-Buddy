@@ -467,15 +467,15 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
     httpc_state_t *req;
     ip4_addr_t host_ip4;
     char host_ip4_str[IP4_ADDR_STR_SIZE];
+    const char * header_plus_data;
 
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
-    const char * header_plus_data;
     if(id == MSG_TELEMETRY){
         header_plus_data = telemetry_to_http_str(host_ip4_str);
     } else if (id == MSG_EVENTS){
-        header_plus_data = events_to_http_str(container);
+        header_plus_data = events_to_http_str(container); // Does it need Host: host_ip4 header?
     }
 
     req_len = strlen(header_plus_data);
