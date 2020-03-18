@@ -120,6 +120,15 @@
 #include "wui.h"
 #include "dbg.h"
 #define WUI_API_ROOT_STR_LEN 5
+
+#define MSG_BUFFSIZE           512
+#define MAX_MARLIN_REQUEST_LEN 100
+#define POST_URL_STR_MAX_LEN   50
+
+static char request_buf[MSG_BUFFSIZE];
+static void *current_connection;
+static void *valid_connection;
+
 /***************************************************************/
 
 #if LWIP_TCP && LWIP_CALLBACK_API
@@ -345,19 +354,6 @@ const struct http_ssi_tag_description http_ssi_tag_desc[] = {
 
 //------------------------------OUR-CODE---------------------------
 
-    #define MSG_BUFFSIZE           512
-    #define MAX_MARLIN_REQUEST_LEN 100
-    #define POST_URL_STR_MAX_LEN   50
-
-static char request_buf[MSG_BUFFSIZE];
-//static char post_url_str[POST_URL_STR_MAX_LEN];
-
-static void *current_connection;
-static void *valid_connection;
-
-//extern osMessageQId wui_queue; // input queue (uint8_t)
-//extern osSemaphoreId wui_sema; // semaphore handle
-
 err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
     u16_t http_request_len, int content_len, char *response_uri,
     u16_t response_uri_len, u8_t *post_auto_wnd) {
@@ -372,35 +368,23 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
         if (current_connection != connection) {
             current_connection = connection;
             valid_connection = NULL;
-            /* default page */
-            //  response_uri_len = 12;
-            //  snprintf(response_uri, response_uri_len, "/api/g-code");
-            //   strlcpy(post_url_str, "g-code.json", 12);
             return ERR_OK;
         }
     } else if (!memcmp(uri, "/admin.html", 11)) {
         if (current_connection != connection) {
             current_connection = connection;
             valid_connection = NULL;
-            /* default page */
-            //   response_uri_len = 12;
-            //   snprintf(response_uri, response_uri_len, "/admin.html");
-            //    strlcpy(post_url_str, "admin.html", 10);
             return ERR_OK;
         }
     } else if (!memcmp(uri, "/FileUpload", 11)) {
         if (current_connection != connection) {
             current_connection = connection;
             valid_connection = NULL;
-            /* default page */
-            //           response_uri_len = 0;
-            //            snprintf(response_uri, response_uri_len, "/admin.html");
-            //            strlcpy(post_url_str, "admin.html", 10);
             return ERR_OK;
         }
     }
     // unsupported if reached here
-    snprintf(response_uri, 10, "/404.html");
+    snprintf(response_uri, 10, "POST404");
     return ERR_VAL;
 }
 
@@ -434,19 +418,17 @@ void httpd_post_finished(void *connection, char *response_uri, u16_t response_ur
 
     if (current_connection == connection) {
         if (valid_connection == connection) {
-            /*receiving data succeeded*/
-            //TODO: Send 200 OK
             if (request_buf[0] != 0) {
                 http_json_parser(request_buf, strlen(request_buf));
 
-                strlcpy(response_uri, "200", response_uri_len);
+                strlcpy(response_uri, "POST200", response_uri_len);
                 request_buf[0] = 0;
             }
         }
         current_connection = NULL;
         valid_connection = NULL;
     } else {
-        strlcpy(response_uri, "500", response_uri_len);
+        strlcpy(response_uri, "POST500", response_uri_len);
     }
 }
 
@@ -2667,11 +2649,37 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09) {
             file = wui_api_main(uri);
             if (NULL != file) {
                 strcat((char *)uri, ".json"); // http server adds header info (data type) based on the file extension
-            } else {
-                strlcpy(uri, "404", LWIP_HTTPD_URI_BUF_LEN);
             }
-        } else if (!(0 == strncmp(uri, "200", 3)) && !(0 == strncmp(uri, "500", 3))) {
-            strlcpy(uri, "404", LWIP_HTTPD_URI_BUF_LEN);
+        }
+    }
+
+    if (file == NULL) {
+        /* No - we've been asked for a specific file. */
+        /* First, isolate the base URI (without any parameters) */
+        params = (char *)strchr(uri, '?');
+        if (params != NULL) {
+            /* URI contains parameters. NULL-terminate the base URI */
+            *params = '\0';
+            params++;
+        }
+
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opening %s\n", uri));
+
+        err = fs_open(&hs->file_handle, uri);
+        if (err == ERR_OK) {
+            file = &hs->file_handle;
+        }
+    }
+
+    if (file == NULL) {
+        // check if this is for POST response
+        const char *post_prefix = "POST";
+    #define RESP_CODE_BUFF_LEN 4 // Buff len including null char
+        char post_response_code[RESP_CODE_BUFF_LEN];
+        if (0 == strncmp(uri, post_prefix, strnlen(post_prefix, RESP_CODE_BUFF_LEN))) { // POST response
+            strlcpy(post_response_code, uri + RESP_CODE_BUFF_LEN, RESP_CODE_BUFF_LEN);
+        } else {
+            strlcpy(uri, "404", LWIP_HTTPD_URI_BUF_LEN); // really file not found
         }
     }
 
