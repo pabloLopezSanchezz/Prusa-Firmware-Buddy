@@ -28,6 +28,7 @@
 struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
+static int command_id = 0;
 
 /**
  * @ingroup httpc
@@ -145,6 +146,7 @@ httpc_free_state(httpc_state_t *req) {
     tpcb = req->pcb;
     mem_free(req);
     req = NULL;
+    command_id = -1;
 
     if (tpcb != NULL) {
         err_t r;
@@ -239,6 +241,19 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
                     if ((len >= 0) && ((u32_t)len < HTTPC_CONTENT_LEN_INVALID)) {
                         *content_length = (u32_t)len;
                     }
+                }
+            }
+        }
+
+        u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
+        if(command_id_hdr != 0xFFFF){
+            u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, content_len_hdr);
+            if (command_id_line_end != 0xFFFF) {
+                char command_id_num[16];
+                u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - 12);
+                memset(command_id_num, 0, sizeof(command_id_num));
+                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + 16) == command_id_num_len) {
+                    command_id = atoi(command_id_num);
                 }
             }
         }
@@ -418,29 +433,56 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
             break;
         }
     }
-    http_json_parser((char *)&request_part, len_copied);
+    if(request_part[0] == '{'){
+        http_json_parser((char *)&request_part, len_copied);
+    } else if (request_part[0] == 'G' || request_part[0] == 'M'){
+        http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
+    }
     return ERR_OK;
 }
 
-wui_err buddy_http_client_init() {
-
-    char host_ip4_str[IP4_ADDR_STR_SIZE];
+static const char * telemetry_to_http_str(const char * host_ip4_str){
     char header[HEADER_MAX_SIZE];
     char *uri = "/p/telemetry";
     char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
-    ip4_addr_t host_ip4;
+
+    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
+    printer_token[API_TOKEN_LEN] = 0;
+    snprintf(header, HEADER_MAX_SIZE, "POST %s HTTP/1.0\r\nHost: %s\nPrinter-Token: %s\r\n", uri, host_ip4_str, printer_token);
+    
+    return get_update_str(header);
+}
+
+static const char * events_to_http_str(void * container){
+    
+    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
+    char header[HEADER_MAX_SIZE];
+    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
+    printer_token[API_TOKEN_LEN] = 0;
+    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
+    return get_events_str(header, container);
+}
+
+wui_err buddy_http_client_init(uint8_t id, void * container) {
 
     size_t alloc_len;
     mem_size_t mem_alloc_len;
     int req_len, req_len2;
     httpc_state_t *req;
+    ip4_addr_t host_ip4;
+    char host_ip4_str[IP4_ADDR_STR_SIZE];
+    const char * header_plus_data;
 
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
-    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
-    printer_token[API_TOKEN_LEN] = 0;
-    snprintf(header, HEADER_MAX_SIZE, "POST %s HTTP/1.0\r\nHost: %s\nPrinter-Token: %s\r\n", uri, host_ip4_str, printer_token);
-    const char *header_plus_data = get_update_str(header);
+
+    if(id == MSG_TELEMETRY){
+        header_plus_data = telemetry_to_http_str(host_ip4_str);
+    } else if (id == MSG_EVENTS){
+        header_plus_data = events_to_http_str(container); // Does it need Host: host_ip4 header?
+    } else {
+        return ERR_VAL;        
+    }
 
     req_len = strlen(header_plus_data);
 
@@ -503,7 +545,7 @@ void buddy_http_client_loop() {
     }
 
     if (netif_ip4_addr(&eth0)->addr != 0 && ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY)) {
-        buddy_http_client_init();
+        buddy_http_client_init(MSG_TELEMETRY, 0);
         client_interval = xTaskGetTickCount();
     }
 }

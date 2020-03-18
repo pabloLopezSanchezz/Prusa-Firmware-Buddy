@@ -82,6 +82,17 @@ const char *get_update_str(const char *header) {
         percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
 }
 
+const char *get_events_str(const char * header, void * container){
+    const connect_event_t * evt = (const connect_event_t *)container;
+
+    return char_streamer("%s{"
+                         "\"event\":\"%s\","
+                         "\"command_id\":%d"
+                         "}",
+                         header,
+                         evt->state, evt->command_id);
+}
+
 static void wui_api_telemetry(struct fs_file *file) {
 
     const char *ptr = get_update_str("");

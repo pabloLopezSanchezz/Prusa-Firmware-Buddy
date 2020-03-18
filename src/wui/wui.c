@@ -48,6 +48,7 @@ void update_web_vars(void) {
     web_vars.print_dur = wui.wui_marlin_vars->print_duration;
     web_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
+    web_vars.device_state = wui.wui_marlin_vars->device_state;
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(web_vars.gcode_name);
     }
@@ -131,7 +132,7 @@ static int process_wui_request() {
     } else if (strncmp(wui.request, "!cn ", 4) == 0){
         eeprom_set_string(EEVAR_LAN_HOSTNAME_START, wui.request + 4, LAN_HOSTNAME_MAX_LEN);
     } else {
-        marlin_json_gcode(wui.request);
+        marlin_wui_gcode(wui.request);
     }
     return 1;
 }
