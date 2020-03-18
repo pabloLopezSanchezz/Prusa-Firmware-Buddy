@@ -1,4 +1,5 @@
 #include "wui_helper_funcs.h"
+#include "http_client.h"
 #include "jsmn.h"
 #include "wui.h"
 #include <stdarg.h>
@@ -6,6 +7,8 @@
 #include <string.h>
 #include "eeprom.h"
 #include "ip4_addr.h"
+
+#define MAX_ACK_SIZE    16
 
 static char buffer[MAX_REQ_BODY_SIZE] = "";
 
@@ -79,7 +82,7 @@ void http_json_parser(char *json, uint32_t len) {
             ip4_addr_t tmp_addr;
             if (ip4addr_aton(request, &tmp_addr)) {
                 char connect_request[MAX_REQ_MARLIN_SIZE];
-                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %lu", tmp_addr.addr);
+                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %u", tmp_addr.addr);
                 send_request_to_wui(connect_request);
             }
             i++;
@@ -97,6 +100,26 @@ void http_json_parser(char *json, uint32_t len) {
             i++;
         }
     }
+}
+
+void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id){
+    uint32_t curr = 0;
+    static char gcode_str[MAX_REQ_MARLIN_SIZE];
+    do {
+        int i = curr;
+        while(request[i] != '\0' && request[i] != '\n'){
+            i++;
+        }
+        strlcpy(gcode_str, request + curr, i - curr + 1);
+        curr = i + 1;
+        send_request_to_wui(gcode_str);
+        if(curr >= length && id >= 0){
+            connect_event_t evt;
+            strcpy(evt.state, "ACCEPTED");
+            evt.command_id = id;
+            buddy_http_client_init(MSG_EVENTS, &evt);   // calling from both threads?
+        }
+    } while(curr < length);
 }
 
 const char *char_streamer(const char *format, ...) {

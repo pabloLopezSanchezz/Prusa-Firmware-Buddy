@@ -71,8 +71,8 @@ extern int marlin_wait_motion(uint32_t timeout);
 // enqueue gcode - thread-safe version  (request '!g xxx')
 extern void marlin_gcode(const char *gcode);
 
-// enqueue gcode from ethernet command (json parsed)
-extern void marlin_json_gcode(const char *gcode);
+// enqueue gcode from ethernet command (json parsed or pain text)
+extern void marlin_wui_gcode(const char *gcode);
 
 // enqueue gcode - printf-like, returns number of chars printed
 extern int marlin_gcode_printf(const char *format, ...);

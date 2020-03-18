@@ -132,7 +132,7 @@ static int process_wui_request() {
     } else if (strncmp(wui.request, "!cn ", 4) == 0){
         eeprom_set_string(EEVAR_LAN_HOSTNAME_START, wui.request + 4, LAN_HOSTNAME_MAX_LEN);
     } else {
-        marlin_json_gcode(wui.request);
+        marlin_wui_gcode(wui.request);
     }
     return 1;
 }

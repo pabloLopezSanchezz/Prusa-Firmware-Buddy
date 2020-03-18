@@ -231,7 +231,7 @@ void marlin_gcode(const char *gcode) {
     _wait_ack_from_server(client->id);
 }
 
-void marlin_json_gcode(const char *gcode) {
+void marlin_wui_gcode(const char *gcode) {
     char request[MARLIN_MAX_REQUEST];
     marlin_client_t *client = _client_ptr();
     if (client == 0)
