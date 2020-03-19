@@ -20,11 +20,12 @@
 #define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
 #define IP4_ADDR_STR_SIZE         16
-#define HEADER_MAX_SIZE           128
+#define HEADER_MAX_SIZE           256
 #define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1
 #define HTTPC_POLL_TIMEOUT        3 /* 1.5 seconds */
+#define MAX_HEADER_GEN_PART_SIZE  32+24
 
 struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
@@ -436,41 +437,25 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     }
     if(request_part[0] == '{'){
         http_json_parser((char *)&request_part, len_copied);
-    } else if (request_part[0] == 'G' || request_part[0] == 'M'){
+    } else {
         http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
     }
     return ERR_OK;
 }
 
-static const char * telemetry_to_http_str(const char * host_ip4_str){
-    char header[HEADER_MAX_SIZE];
-    char *uri = "/p/telemetry";
-    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
-
+static void create_http_header(char * dest, const char * method, const char * uri, const char * content_type, const char * host_ip){
+    static char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
+    char header_gen_part[MAX_HEADER_GEN_PART_SIZE + 1]; // 32 Content type + 24 Host
     eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
     printer_token[API_TOKEN_LEN] = 0;
-    snprintf(header, HEADER_MAX_SIZE, "POST %s HTTP/1.0\r\nHost: %s\nPrinter-Token: %s\r\n", uri, host_ip4_str, printer_token);
-    
-    return get_update_str(header);
-}
-
-static const char * event_ack_to_http_str(void * container){
-    
-    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
-    char header[HEADER_MAX_SIZE];
-    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
-    printer_token[API_TOKEN_LEN] = 0;
-    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
-    return get_event_ack_str(header, container);
-}
-
-static const char * event_state_changed_to_http_str(void * container){
-    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
-    char header[HEADER_MAX_SIZE];
-    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
-    printer_token[API_TOKEN_LEN] = 0;
-    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
-    return get_event_state_changed_str(header, container);
+    if (host_ip && content_type){
+        snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\nContent-Type: %s\r\n", host_ip, content_type);
+    } else if (host_ip){
+        snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\n", host_ip);
+    } else {
+        snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Content-Type: %s\r\n", content_type);
+    }
+    snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\n%s\r\n\r\n", method, uri, printer_token, header_gen_part);
 }
 
 wui_err buddy_http_client_init(uint8_t id, void * container) {
@@ -482,14 +467,17 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
     ip4_addr_t host_ip4;
     char host_ip4_str[IP4_ADDR_STR_SIZE];
     const char * header_plus_data;
+    char header[HEADER_MAX_SIZE];
 
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
     if(id == MSG_TELEMETRY){
-        header_plus_data = telemetry_to_http_str(host_ip4_str);
-    } else if (id == MSG_EVENTS_ACK){
-        header_plus_data = event_ack_to_http_str(container);
+        create_http_header(header, "POST", "/p/telemetry", "application/json", host_ip4_str);
+        header_plus_data = get_update_str(header);
+    } else if (id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ){
+        create_http_header(header, "POST", "/p/events", "application/json", 0);
+        header_plus_data = get_event_ack_str(header, container);
     } else if (id == MSG_EVENTS_STATE_CHANGED){
         connect_event_t evt;
         const char * state_str;
@@ -513,7 +501,8 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
                     break;
         }
         strcpy(evt.state, state_str);
-        header_plus_data = event_state_changed_to_http_str(&evt);
+        create_http_header(header, "POST", "/p/events", "application/json", 0);
+        header_plus_data = get_event_state_changed_str(header, container);
     } else {
         return ERR_VAL;        
     }

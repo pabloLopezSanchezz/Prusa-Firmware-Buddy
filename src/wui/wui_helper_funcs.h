@@ -7,8 +7,10 @@
 #define MAX_REQ_BODY_SIZE   512
 
 #define MAX_STATE_LEN   10
+#define MAX_REASON_LEN  50
 typedef struct{
     char state[MAX_STATE_LEN];
+    char reason[MAX_REASON_LEN];
     uint16_t command_id;
 } connect_event_t;
 

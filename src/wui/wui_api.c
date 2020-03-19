@@ -86,12 +86,25 @@ const char *get_update_str(const char *header) {
 const char *get_event_ack_str(const char * header, void * container){
     const connect_event_t * evt = (const connect_event_t *)container;
 
-    return char_streamer("%s{"
+    const char * ptr;
+    if(strncmp(evt->state, "REJECTED", 8) == 0){
+        ptr = char_streamer("%s{"
+                         "\"event\":\"%s\","
+                         "\"command_id\":%d,"
+                         "\"reason\":\"%s\""
+                         "}",
+                         header,
+                         evt->state, evt->command_id, evt->reason);
+    } else {
+        ptr = char_streamer("%s{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d"
                          "}",
                          header,
                          evt->state, evt->command_id);
+    }
+    
+    return ptr; 
 }
 
 const char *get_event_state_changed_str(const char *header, void * container){
