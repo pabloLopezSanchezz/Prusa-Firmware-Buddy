@@ -237,7 +237,7 @@
 
 /** Set this to 0 to drop support for HTTP/0.9 clients (to save some bytes) */
 #if !defined LWIP_HTTPD_SUPPORT_V09 || defined __DOXYGEN__
-    #define LWIP_HTTPD_SUPPORT_V09 1
+    #define LWIP_HTTPD_SUPPORT_V09 0
 #endif
 
 /** Set this to 1 to enable HTTP/1.1 persistent connections.

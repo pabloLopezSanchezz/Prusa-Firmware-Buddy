@@ -27,11 +27,13 @@ static const char *const g_psHTTPHeaderStrings[] = {
     "Connection: keep-alive\r\n",
     "Connection: keep-alive\r\nContent-Length: ",
     "Server: " HTTPD_SERVER_AGENT "\r\n",
-    "\r\n<html><body><h2>404: The requested file cannot be found.</h2></body></html>\r\n"
+    "\r\n<html><body><h2>404: The requested file cannot be found.</h2></body></html>\r\n",
+    "HTTP/1.0 500 Internal Server Error\r\n"
     #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
     ,
     "Connection: keep-alive\r\nContent-Length: 77\r\n\r\n<html><body><h2>404: The requested file cannot be found.</h2></body></html>\r\n"
     #endif
+
 };
 
     /* Indexes into the g_psHTTPHeaderStrings array */
@@ -49,8 +51,9 @@ static const char *const g_psHTTPHeaderStrings[] = {
     #define HTTP_HDR_KEEPALIVE_LEN  11 /* Connection: keep-alive + Content-Length: (HTTP 1.1)*/
     #define HTTP_HDR_SERVER         12 /* Server: HTTPD_SERVER_AGENT */
     #define DEFAULT_404_HTML        13 /* default 404 body */
+    #define HTTP_HDR_500            14 /* Server generic error message */
     #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
-        #define DEFAULT_404_HTML_PERSISTENT 14 /* default 404 body, but including Connection: keep-alive */
+        #define DEFAULT_404_HTML_PERSISTENT 15 /* default 404 body, but including Connection: keep-alive */
     #endif
 
     #define HTTP_CONTENT_TYPE(contenttype)                    "Content-Type: " contenttype "\r\n\r\n"
