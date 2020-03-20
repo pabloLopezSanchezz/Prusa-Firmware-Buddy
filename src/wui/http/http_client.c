@@ -19,6 +19,7 @@
 
 #define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
+#define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
 #define API_TOKEN_LEN             20
@@ -556,11 +557,20 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
     }
 
     req->recv_fn = data_received_fun;
-    tcp_connect(req->pcb, &host_ip4, 9000, httpc_tcp_connected);
+    tcp_connect(req->pcb, &host_ip4, CONNECT_DEF_PORT, httpc_tcp_connected);
     return ERR_OK;
 }
 
 void buddy_http_client_loop() {
+    static bool connect_ip_supplied = false;
+
+    if(!connect_ip_supplied){
+        if(eeprom_get_var(EEVAR_CONNECT_IP).ui32 == 0){
+            return;
+        } else {
+            connect_ip_supplied = true;
+        }
+    }
 
     if (!init_tick) {
         client_interval = xTaskGetTickCount();

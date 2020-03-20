@@ -53,7 +53,6 @@ void update_web_vars(void) {
         web_vars.device_state = wui.wui_marlin_vars->device_state;
         buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
     }
-    web_vars.device_state = wui.wui_marlin_vars->device_state;
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(web_vars.gcode_name);
     }
