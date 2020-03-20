@@ -132,6 +132,7 @@ class FirmwareBuildConfiguration(BuildConfiguration):
                  build_type: BuildType,
                  toolchain: Path = None,
                  generator: str = None,
+                 generate_dfu: bool = False,
                  generate_bbf: bool = False,
                  signing_key: Path = None,
                  version_suffix: str = None,
@@ -143,6 +144,7 @@ class FirmwareBuildConfiguration(BuildConfiguration):
         self.toolchain = toolchain or FirmwareBuildConfiguration.default_toolchain(
         )
         self.generator = generator
+        self.generate_dfu = generate_dfu
         self.generate_bbf = generate_bbf
         self.signing_key = signing_key
         self.version_suffix = version_suffix
@@ -171,6 +173,7 @@ class FirmwareBuildConfiguration(BuildConfiguration):
             ('PRINTER', 'STRING', self.printer.value),
             ('BOOTLOADER', 'STRING', self.bootloader.value),
             ('GENERATE_BBF', 'STRING', str(generate_bbf).upper()),
+            ('GENERATE_DFU', 'BOOL', 'ON' if self.generate_dfu else 'OFF'),
             ('SIGNING_KEY', 'FILEPATH', str(signing_key_flg)),
             ('CMAKE_TOOLCHAIN_FILE', 'FILEPATH', str(self.toolchain)),
             ('CMAKE_BUILD_TYPE', 'STRING', self.build_type.value.title()),
@@ -297,8 +300,8 @@ def build(configuration: BuildConfiguration,
                                        check=False)
         build_returncode = build_process.returncode
         products.extend(
-            build_dir / fname
-            for fname in ['firmware', 'firmware.bin', 'firmware.bbf']
+            build_dir / fname for fname in
+            ['firmware', 'firmware.bin', 'firmware.bbf', 'firmware.dfu']
             if (build_dir / fname).exists())
     else:
         build_returncode = None
@@ -551,6 +554,11 @@ def main():
               ' Use --signing-key to specify a private key to be used for signing.')
     )
     parser.add_argument(
+        '--generate-dfu',
+        action='store_true',
+        help='Generate .dfu versions of the firmware.'
+    )
+    parser.add_argument(
         '--host-tools',
         action='store_true',
         help=('Build host tools (png2font and others). '
@@ -598,6 +606,7 @@ def main():
             printer=printer,
             bootloader=bootloader,
             build_type=build_type,
+            generate_dfu=args.generate_dfu,
             generate_bbf=args.generate_bbf,
             signing_key=args.signing_key,
             version_suffix=args.version_suffix,
