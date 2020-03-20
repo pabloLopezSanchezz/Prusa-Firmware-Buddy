@@ -394,9 +394,15 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p) {
         if (NULL != p->payload) {
             request_buf[0] = 0;
             u16_t ret = pbuf_copy_partial(p, request_buf, p->len, 0);
+            if (p->len == ret) {
+                ret_code = ERR_OK;
+                post_request_valid = true;
+            } else {
+                ret_code = ERR_VAL;
+                post_request_valid = false;
+            }
         }
-        ret_code = ERR_OK;
-        post_request_valid = true;
+
     } else {
         post_request_valid = false;
     }
@@ -412,7 +418,7 @@ void httpd_post_finished(void *connection, char *response_uri,
     _dbg("post finished callback");
     _dbg("response uri length: %d", response_uri_len);
 
-    if (false == post_request_valid) {
+    if (true == post_request_valid) {
         if (request_buf[0] != 0) {
             http_json_parser(request_buf, strlen(request_buf));
 
