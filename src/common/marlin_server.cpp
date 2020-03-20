@@ -778,6 +778,7 @@ uint64_t _server_update_vars(uint64_t update) {
         }
         if(marlin_server.notify_events & MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange)){
             marlin_server.notify_events &= ~MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
+            _send_notify_event(MARLIN_EVT_DevStateChange, 0, 0);
             changes |= MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE);
         }
     }
