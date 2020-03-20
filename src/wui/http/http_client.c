@@ -455,7 +455,7 @@ static void create_http_header(char * dest, const char * method, const char * ur
     } else {
         snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Content-Type: %s\r\n", content_type);
     }
-    snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\n%s\r\n\r\n", method, uri, printer_token, header_gen_part);
+    snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\n%s\r\n", method, uri, printer_token, header_gen_part);
 }
 
 wui_err buddy_http_client_init(uint8_t id, void * container) {
@@ -502,7 +502,7 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
         }
         strcpy(evt.state, state_str);
         create_http_header(header, "POST", "/p/events", "application/json", 0);
-        header_plus_data = get_event_state_changed_str(header, container);
+        header_plus_data = get_event_state_changed_str(header, &evt);
     } else {
         return ERR_VAL;        
     }

@@ -71,7 +71,6 @@ typedef struct _marlin_server_t {
     uint8_t pqueue_tail;                                     // copy of planner.block_buffer_tail
     uint8_t pqueue;                                          // calculated number of records in planner queue
     uint8_t gqueue;                                          // copy of queue.length - number of commands in gcode queue
-    uint8_t server_device_state;                             // device state stored by server
     uint32_t command;                                        // actually running command
     uint32_t command_begin;                                  // variable for notification
     uint32_t command_end;                                    // variable for notification
@@ -776,8 +775,8 @@ uint64_t _server_update_vars(uint64_t update) {
         } else if ((v.ui8 == DEVICE_STATE_IDLE || v.ui8 == DEVICE_STATE_FINISHED) && marlin_server.vars.sd_printing){
             marlin_server.server_device_state = DEVICE_STATE_PRINTING;
         }
-        if(marlin_server.server_device_state != marlin_server.vars.device_state){
-            marlin_server.vars.device_state = marlin_server.server_device_state;
+        if(marlin_server.notify_events & MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange)){
+            marlin_server.notify_events &= ~MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
             changes |= MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE);
         }
     }
