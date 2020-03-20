@@ -18,6 +18,7 @@
 
 #define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
+#define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           128
 #define API_TOKEN_LEN             20
@@ -448,7 +449,7 @@ static const char * telemetry_to_http_str(const char * host_ip4_str){
 
     eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
     printer_token[API_TOKEN_LEN] = 0;
-    snprintf(header, HEADER_MAX_SIZE, "POST %s HTTP/1.0\r\nHost: %s\nPrinter-Token: %s\r\n", uri, host_ip4_str, printer_token);
+    snprintf(header, HEADER_MAX_SIZE, "POST %s HTTP/1.0\r\nHost: %s\nPrinter-Token: %s\r\n\r\n", uri, host_ip4_str, printer_token);
     
     return get_update_str(header);
 }
@@ -459,7 +460,7 @@ static const char * events_to_http_str(void * container){
     char header[HEADER_MAX_SIZE];
     eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
     printer_token[API_TOKEN_LEN] = 0;
-    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n", printer_token);
+    sprintf(header, "POST /p/events HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Type: application/json\r\n\r\n", printer_token);
     return get_events_str(header, container);
 }
 
@@ -533,11 +534,20 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
     }
 
     req->recv_fn = data_received_fun;
-    tcp_connect(req->pcb, &host_ip4, 9000, httpc_tcp_connected);
+    tcp_connect(req->pcb, &host_ip4, CONNECT_DEF_PORT, httpc_tcp_connected);
     return ERR_OK;
 }
 
 void buddy_http_client_loop() {
+    static bool connect_ip_supplied = false;
+
+    if(!connect_ip_supplied){
+        if(eeprom_get_var(EEVAR_CONNECT_IP).ui32 == 0){
+            return;
+        } else {
+            connect_ip_supplied = true;
+        }
+    }
 
     if (!init_tick) {
         client_interval = xTaskGetTickCount();
