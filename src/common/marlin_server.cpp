@@ -766,14 +766,15 @@ uint64_t _server_update_vars(uint64_t update) {
     }
 
     if (update & MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE)) {
-        v.ui8 = marlin_server.server_device_state;
-        if(v.ui8 == DEVICE_STATE_PRINTING){
+        if(marlin_server.vars.device_state == DEVICE_STATE_PRINTING){
             if(!(marlin_server.vars.sd_printing) && marlin_server.command != MARLIN_CMD_M600 && !(marlin_server.vars.motion ? 1 : 0)){
-                marlin_server.server_device_state = DEVICE_STATE_FINISHED;
+                marlin_server.vars.device_state = DEVICE_STATE_FINISHED;
+                marlin_server.notify_events |= MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
                 // TODO: HARVERST STATE AND THEN BACK TO IDLE
             }
-        } else if ((v.ui8 == DEVICE_STATE_IDLE || v.ui8 == DEVICE_STATE_FINISHED) && marlin_server.vars.sd_printing){
-            marlin_server.server_device_state = DEVICE_STATE_PRINTING;
+        } else if ((marlin_server.vars.device_state == DEVICE_STATE_IDLE || marlin_server.vars.device_state == DEVICE_STATE_FINISHED) && marlin_server.vars.sd_printing){
+            marlin_server.vars.device_state = DEVICE_STATE_PRINTING;
+            marlin_server.notify_events |= MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
         }
         if(marlin_server.notify_events & MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange)){
             marlin_server.notify_events &= ~MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
@@ -927,7 +928,8 @@ int _server_set_var(char *name_val_str) {
 }
 
 void _device_state_change(uint8_t new_state){
-    marlin_server.server_device_state = new_state;
+    marlin_server.vars.device_state = new_state;
+    marlin_server.notify_events |= MARLIN_EVT_MSK(MARLIN_EVT_DevStateChange);
     marlin_server_update(MARLIN_VAR_MSK(MARLIN_VAR_DEVICE_STATE));
 }
 
