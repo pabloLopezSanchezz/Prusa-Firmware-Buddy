@@ -106,7 +106,7 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id
     uint32_t curr = 0;
     static char gcode_str[MAX_REQ_MARLIN_SIZE];
 
-    if(length <= 2 || (request[0] != 'G' && request[0] != 'M')){
+    if(length <= 2){
         connect_event_t evt;
         strcpy(evt.state, "REJECTED");
         evt.command_id = id;

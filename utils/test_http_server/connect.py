@@ -8,7 +8,7 @@ PORT = 8000
 HTTP_OK = "HTTP/1.1 200 OK\r\n\r\n"
 HTTP_LOWLVL_GCODE = "HTTP/1.1 200 OK\r\nContent-Type: text/x.gcode\r\nContent-Length: 6\r\nCommand-Id: 1254\r\n\r\nG28 XY"
 HTTP_RESPONSE_ACC = "POST /p/events HTTP/1.0\r\nPrinter-Token: 01234567899876543210\r\nContent-Type: application/json\r\n\r\n{\"event\":\"ACCEPTED\",\"command_id\":1254}"
-HTTP_LOWLVL_GCODES = "HTTP/1.1 200 OK\r\nContent-Type: text/x.gcode\r\nContent-Length: 21\r\nCommand-Id: 23\r\n\r\nG1 X50\nG1 Y50\nG28 XY"
+HTTP_LOWLVL_GCODES = "HTTP/1.1 200 OK\r\nContent-Type: text/x.gcode\r\nContent-Length: 23\r\nCommand-Id: 23\r\n\r\nG1 X160\nG1 X180\nG1 X170"
 HTTP_BAD_GCODE = "HTTP/1.1 200 OK\r\nContent-Type: text/x.gcode\r\nContent-Length: 1\r\nCommand-Id: 404\r\n\r\nG"
 TEST_COUNT = 3
 
@@ -18,7 +18,7 @@ fail_count = 0
 
 test_phase_info = ["Single valid lowlvl gcode request with ACCEPTED event", "Multi valid lowlvl gcode request with ACCEPTED event", "Bad lowlvl gcode request with REJECTED event"]
 test_response_events = ["ACCEPTED", "ACCEPTED", "REJECTED"]
-test_response_check = ["\"command_id\":1254", "\"command_id\":23", "\"command_id\":1254"]
+test_response_check = ["\"command_id\":1254", "\"command_id\":23", "\"command_id\":404"]
 test_phase = 0
 test_repetions = 10
 
@@ -32,7 +32,8 @@ args = parser.parse_args()
 
 def evaluate():
     global test_phase, success_count, telemetry_count, fail_count, test_repetions
-    print("PHASE COMPLETED" + str(test_phase))
+    print("PHASE " + str(test_phase + 1) + " COMPLETED")
+    print("Phase description: " + test_phase_info[test_phase])
     print("Successful tests: " + str(success_count) + "/" + str(telemetry_count))
     print("Failed tests: " + str(fail_count) + "/" + str(telemetry_count))
     fail_count = success_count = 0

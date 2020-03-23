@@ -17,7 +17,7 @@
 #include "lwip.h"
 #include "marlin_vars.h"
 
-#define CLIENT_CONNECT_DELAY      10000 // 1 Sec.
+#define CLIENT_CONNECT_DELAY      3000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
 #define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
@@ -438,9 +438,10 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
             break;
         }
     }
+
     if(request_part[0] == '{'){
         http_json_parser((char *)&request_part, len_copied);
-    } else {
+    } else if (request_part[0] == 'G' || request_part[0] == 'M'){
         http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
     }
 
