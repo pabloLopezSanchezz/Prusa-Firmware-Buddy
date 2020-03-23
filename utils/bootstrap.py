@@ -64,6 +64,10 @@ dependencies = {
         'version': '1.0.0',
         'url': 'https://prusa-buddy-firmware-dependencies.s3.eu-central-1.amazonaws.com/bootloader-mini-1.0.0.zip',
     },
+    'bootloader-mk4': {
+        'version': '0a140cb',
+        'url': 'https://prusa-buddy-firmware-dependencies.s3.eu-central-1.amazonaws.com/bootloader-mk4-0a140cbecace07deaeb171a5f964836638f69212.zip',
+    },
 }
 pip_dependencies = ['ecdsa']
 # yapf: enable
