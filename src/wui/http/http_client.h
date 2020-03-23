@@ -13,7 +13,10 @@ extern "C" {
 
 typedef enum {
     MSG_TELEMETRY,
-    MSG_EVENTS,
+    MSG_EVENTS_ACC,
+    MSG_EVENTS_REJ,
+    MSG_EVENTS_FIN,
+    MSG_EVENTS_STATE_CHANGED,
 }MI_message_id_t;
 
 wui_err buddy_http_client_init(uint8_t id, void * container);

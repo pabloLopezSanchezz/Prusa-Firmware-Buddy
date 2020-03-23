@@ -16,8 +16,7 @@
 #include "stdarg.h"
 
 #define BDY_WUI_API_BUFFER_SIZE 512
-#define BDY_NO_FS_FLAGS         0  // no flags for fs_open
-#define BDY_API_TELEMETRY_LEN   14 // length of "/api/telemetry" string
+#define BDY_NO_FS_FLAGS         0 // no flags for fs_open
 
 // for data exchange between wui thread and HTTP thread
 static web_vars_t web_vars_copy;
@@ -83,15 +82,39 @@ const char *get_update_str(const char *header) {
         percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
 }
 
-const char *get_events_str(const char * header, void * container){
+const char *get_event_ack_str(const char * header, void * container){
     const connect_event_t * evt = (const connect_event_t *)container;
 
-    return char_streamer("%s{"
+    const char * ptr;
+    if(strncmp(evt->state, "REJECTED", 8) == 0){
+        ptr = char_streamer("%s{"
+                         "\"event\":\"%s\","
+                         "\"command_id\":%d,"
+                         "\"reason\":\"%s\""
+                         "}",
+                         header,
+                         evt->state, evt->command_id, evt->reason);
+    } else {
+        ptr = char_streamer("%s{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d"
                          "}",
                          header,
                          evt->state, evt->command_id);
+    }
+    
+    return ptr; 
+}
+
+const char *get_event_state_changed_str(const char *header, void * container){
+    const connect_event_t * evt = (const connect_event_t *)container;
+
+    return char_streamer("%s{"
+                         "\"event\":\"STATE_CHANGED\","
+                         "\"state\":\"%s\""
+                         "}",
+                         header,
+                         evt->state);
 }
 
 static void wui_api_telemetry(struct fs_file *file) {
@@ -113,7 +136,10 @@ struct fs_file *wui_api_main(const char *uri) {
     api_file.index = 0;
     api_file.pextension = NULL;
     api_file.flags = BDY_NO_FS_FLAGS; // http server adds response header
-    if (!strncmp(uri, "/api/telemetry", BDY_API_TELEMETRY_LEN) && (BDY_API_TELEMETRY_LEN == strlen(uri))) {
+    char *t_string = "/api/telemetry";
+    uint32_t t_string_len = strlen(t_string);
+
+    if (!strncmp(uri, t_string, t_string_len) && (strlen(uri) == t_string_len)) {
         wui_api_telemetry(&api_file);
         return &api_file;
     }

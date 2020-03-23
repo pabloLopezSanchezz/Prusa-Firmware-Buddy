@@ -82,7 +82,7 @@ void http_json_parser(char *json, uint32_t len) {
             ip4_addr_t tmp_addr;
             if (ip4addr_aton(request, &tmp_addr)) {
                 char connect_request[MAX_REQ_MARLIN_SIZE];
-                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %u", tmp_addr.addr);
+                snprintf(connect_request, MAX_REQ_MARLIN_SIZE, "!cip %lu", tmp_addr.addr);
                 send_request_to_wui(connect_request);
             }
             i++;
@@ -105,6 +105,16 @@ void http_json_parser(char *json, uint32_t len) {
 void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id){
     uint32_t curr = 0;
     static char gcode_str[MAX_REQ_MARLIN_SIZE];
+
+    if(length <= 2 || (request[0] != 'G' && request[0] != 'M')){
+        connect_event_t evt;
+        strcpy(evt.state, "REJECTED");
+        evt.command_id = id;
+        strcpy(evt.reason, "Wrong command body.");
+        buddy_http_client_init(MSG_EVENTS_REJ, &evt);
+        return;
+    }
+
     do {
         int i = curr;
         while(i < length && request[i] != '\0' && request[i] != '\n'){
@@ -117,7 +127,7 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id
             connect_event_t evt;
             strcpy(evt.state, "ACCEPTED");
             evt.command_id = id;
-            buddy_http_client_init(MSG_EVENTS, &evt);   // calling from both threads?
+            buddy_http_client_init(MSG_EVENTS_ACC, &evt);
         }
     } while(curr < length);
 }

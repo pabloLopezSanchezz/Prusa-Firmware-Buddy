@@ -34,6 +34,8 @@ const char *__evt_name[] = {
     "Message",
     "Reheat",
     "DialogCreation",
+    "GFileChange",
+    "DevStateChange",
     "Acknowledge",
 };
 

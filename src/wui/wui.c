@@ -18,7 +18,6 @@
 #define MAX_WUI_REQUEST_LEN       100
 #define MAX_MARLIN_REQUEST_LEN    100
 #define WUI_FLG_PEND_REQ          0x0001
-//#define BUDDY_DISABLE_HTTP_CLIENT //disabling http client for next public release
 
 osMessageQId tcpclient_wui_queue = 0; // char input queue (uint8_t)
 osSemaphoreId tcpclient_wui_sema = 0; // semaphore handle
@@ -38,6 +37,8 @@ web_client_t wui;
 static void wui_queue_cycle(void);
 static int process_wui_request(void);
 
+
+
 void update_web_vars(void) {
     osMutexWait(wui_thread_mutex_id, osWaitForever);
     web_vars.pos[Z_AXIS_POS] = wui.wui_marlin_vars->pos[Z_AXIS_POS];
@@ -48,7 +49,10 @@ void update_web_vars(void) {
     web_vars.print_dur = wui.wui_marlin_vars->print_duration;
     web_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
-    web_vars.device_state = wui.wui_marlin_vars->device_state;
+    if(marlin_event(MARLIN_EVT_DevStateChange)){
+        web_vars.device_state = wui.wui_marlin_vars->device_state;
+        buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
+    }
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(web_vars.gcode_name);
     }
@@ -66,6 +70,7 @@ void StartWebServerTask(void const *argument) {
         wui.wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
         update_web_vars();
     }
+    wui.wui_marlin_vars->device_state = DEVICE_STATE_IDLE;
     wui.flags = wui.request_len = 0;
 
     MX_LWIP_Init();
@@ -124,7 +129,7 @@ static int process_wui_request() {
 
     if(strncmp(wui.request, "!cip ", 5) == 0){
         uint32_t ip;
-        if(sscanf(wui.request + 5, "%u", &ip)){
+        if(sscanf(wui.request + 5, "%lu", &ip)){
             eeprom_set_var(EEVAR_CONNECT_IP, variant8_ui32(ip));
         }
     } else if (strncmp(wui.request, "!ck ", 4) == 0){
