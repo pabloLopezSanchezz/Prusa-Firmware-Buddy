@@ -107,10 +107,10 @@ void http_lowlvl_gcode_parser(const char * request, uint32_t length, uint16_t id
     static char gcode_str[MAX_REQ_MARLIN_SIZE];
     do {
         int i = curr;
-        while(request[i] != '\0' && request[i] != '\n'){
+        while(i < length && request[i] != '\0' && request[i] != '\n'){
             i++;
         }
-        strlcpy(gcode_str, request + curr, i - curr + 1);
+        strlcpy(gcode_str, request + curr, i - curr);
         curr = i + 1;
         send_request_to_wui(gcode_str);
         if(curr >= length && id >= 0){

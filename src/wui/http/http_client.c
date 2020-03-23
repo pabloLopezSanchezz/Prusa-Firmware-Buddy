@@ -16,7 +16,7 @@
 #include "lwip/altcp.h"
 #include "lwip.h"
 
-#define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
+#define CLIENT_CONNECT_DELAY      10000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
 #define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
@@ -248,12 +248,12 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
 
         u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
         if(command_id_hdr != 0xFFFF){
-            u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, content_len_hdr);
+            u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, command_id_hdr);
             if (command_id_line_end != 0xFFFF) {
                 char command_id_num[16];
                 u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - 12);
                 memset(command_id_num, 0, sizeof(command_id_num));
-                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + 16) == command_id_num_len) {
+                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + 12) == command_id_num_len) {
                     command_id = atoi(command_id_num);
                 }
             }
@@ -428,8 +428,10 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
         if (len_copied != p->len) {
             return ERR_ARG;
         }
-        p = p->next;
-        if (NULL == p) {
+        struct pbuf * p_next = p->next;
+        pbuf_free(p);
+        p = p_next;
+        if (NULL == p_next) {
             request_part[(const u16_t)p->tot_len] = 0; // end of line added
             break;
         }
@@ -439,6 +441,7 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     } else if (request_part[0] == 'G' || request_part[0] == 'M'){
         http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
     }
+
     return ERR_OK;
 }
 
