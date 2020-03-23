@@ -4,11 +4,14 @@
 #include "M330.h"
 #include "metric.h"
 
+#ifdef LOADCELL_HX711
+    #include "loadcell_hx711.h"
+#endif
+
+static void record_pre_gcode_metrics();
+
 bool GcodeSuite::process_parsed_command_custom(bool no_ok) {
-    {
-        static metric_t gcode = METRIC("gcode", METRIC_VALUE_STRING, 0, METRIC_HANDLER_DISABLE_ALL);
-        metric_record_string(&gcode, "%s", parser.command_ptr);
-    }
+    record_pre_gcode_metrics();
 
     switch (parser.command_letter) {
     case 'M':
@@ -33,4 +36,25 @@ bool GcodeSuite::process_parsed_command_custom(bool no_ok) {
     default:
         return false;
     }
+}
+
+static void record_pre_gcode_metrics() {
+    static metric_t gcode = METRIC("gcode", METRIC_VALUE_STRING, 0, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_string(&gcode, "%s", parser.command_ptr);
+
+#ifdef LOADCELL_HX711
+    static metric_t loadcell_scale_m = METRIC("loadcell_scale", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
+    static metric_t loadcell_threshold_m = METRIC("loadcell_threshold", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
+    static metric_t loadcell_hysteresis_m = METRIC("loadcell_hysteresis", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
+    metric_register(&loadcell_scale_m);
+    metric_register(&loadcell_threshold_m);
+    metric_register(&loadcell_hysteresis_m);
+
+    if (parser.command_letter == 'G' && parser.codenum == 29) {
+        // log loadcell settings on beginning of G29
+        metric_record_float(&loadcell_scale_m, loadcell_scale);
+        metric_record_float(&loadcell_threshold_m, loadcell_threshold);
+        metric_record_float(&loadcell_hysteresis_m, loadcell_hysteresis);
+    }
+#endif
 }
