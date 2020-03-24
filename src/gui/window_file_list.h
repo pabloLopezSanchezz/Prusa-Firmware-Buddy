@@ -24,7 +24,7 @@
  * */
 
 #ifndef SDSORT_LIMIT
-    #define SDSORT_LIMIT 64 // DOS folder name size
+    #define SDSORT_LIMIT 16 // DOS folder name size
 #endif
 
 #ifndef FOLDER_SORTING
