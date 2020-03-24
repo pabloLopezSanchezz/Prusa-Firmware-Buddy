@@ -94,6 +94,10 @@
     #define WIZARD_Z_CALIBRATION
 #endif
 
+//CRC32 config - use hardware CRC32 with RTOS
+#define CRC32_USE_HW
+#define CRC32_USE_RTOS
+
 //guiconfig.h included with config
 #include "guiconfig.h"
 

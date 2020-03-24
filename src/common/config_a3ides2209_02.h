@@ -65,8 +65,13 @@
 
 //--------------------------------------
 //Jogwheel configuration
-#define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
-#define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
+#if PRINTER_TYPE == PRINTER_PRUSA_MK4
+    #define JOGWHEEL_PIN_EN1 PE13 // encoder signal 1 pin
+    #define JOGWHEEL_PIN_EN2 PE15 // encoder signal 2 pin
+#else
+    #define JOGWHEEL_PIN_EN1 PE15 // encoder signal 1 pin
+    #define JOGWHEEL_PIN_EN2 PE13 // encoder signal 2 pin
+#endif
 
 #define JOGWHEEL_PIN_ENC PE12 // button pin
 

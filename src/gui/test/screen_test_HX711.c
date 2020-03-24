@@ -9,7 +9,6 @@
     #include "gui.h"
     #include "loadcell_hx711.h"
     #include "gpio.h"
-    #include "new_eeprom.h"
     #include "eeprom.h"
 
     #pragma pack(push)

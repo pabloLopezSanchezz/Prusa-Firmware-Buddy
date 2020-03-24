@@ -3,8 +3,7 @@
 #ifndef _HWIO_A3IDES_H
 #define _HWIO_A3IDES_H
 
-#include "hwio.h"
-#include "config.h"
+#include "printers.h"
 
 //a3ides digital inputs
 #define _DI_Z_MIN   0 // PA8
@@ -28,8 +27,12 @@
 #define _DO_Y_DIR    8 // PD12
 #define _DO_Y_STEP   9 // PD13
 
-#define _DO_Y_ENABLE 3  // PD14
-#define _DO_Z_DIR    11 // PD15
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4) // TODO: condition based on board
+    #define _DO_Y_ENABLE 3
+#else
+    #define _DO_Y_ENABLE 10 // PD14
+#endif
+#define _DO_Z_DIR 11 // PD15
 
 //a3ides analog inputs
 #define _ADC_HW_IDENTIFY    0 // PA3 - chan 3
@@ -51,11 +54,5 @@
 //a3ides heater control
 #define _HEATER_0   0 //
 #define _HEATER_BED 1 //
-
-//a3ides pwm outputs
-#define HWIO_PWM_HEATER_BED 0 //BED PWM
-#define HWIO_PWM_HEATER_0   1 //NOZZLE PWM
-#define HWIO_PWM_FAN1       2 //PRINT FAN?
-#define HWIO_PWM_FAN        3 //NOZZLE FAN?
 
 #endif // _HWIO_A3IDES_H

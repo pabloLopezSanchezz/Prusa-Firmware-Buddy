@@ -60,6 +60,7 @@ pipeline {
                                     --build-type ${config.build_type} \
                                     --bootloader ${config.bootloader} \
                                     --generate-bbf \
+                                    --generate-dfu \
                                     --no-store-output \
                                     --version-suffix=${variant_full_suffix} \
                                     --version-suffix-short=${short_suffix} ${options}
