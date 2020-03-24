@@ -15,9 +15,9 @@
 #include "eeprom.h"
 #include <string.h>
 
-#define MAX_WUI_REQUEST_LEN       100
-#define MAX_MARLIN_REQUEST_LEN    100
-#define WUI_FLG_PEND_REQ          0x0001
+#define MAX_WUI_REQUEST_LEN    100
+#define MAX_MARLIN_REQUEST_LEN 100
+#define WUI_FLG_PEND_REQ       0x0001
 
 osMessageQId tcpclient_wui_queue = 0; // char input queue (uint8_t)
 osSemaphoreId tcpclient_wui_sema = 0; // semaphore handle
@@ -37,8 +37,6 @@ web_client_t wui;
 static void wui_queue_cycle(void);
 static int process_wui_request(void);
 
-
-
 void update_web_vars(void) {
     osMutexWait(wui_thread_mutex_id, osWaitForever);
     web_vars.pos[Z_AXIS_POS] = wui.wui_marlin_vars->pos[Z_AXIS_POS];
@@ -49,7 +47,7 @@ void update_web_vars(void) {
     web_vars.print_dur = wui.wui_marlin_vars->print_duration;
     web_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
-    if(marlin_event(MARLIN_EVT_DevStateChange)){
+    if (marlin_event(MARLIN_EVT_DevStateChange)) {
         web_vars.device_state = wui.wui_marlin_vars->device_state;
         buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
     }
@@ -83,9 +81,9 @@ void StartWebServerTask(void const *argument) {
             marlin_client_loop();
             update_web_vars();
         }
-#ifndef BUDDY_DISABLE_HTTP_CLIENT
+#ifdef BUDDY_ENABLE_CONNECT
         buddy_http_client_loop();
-#endif
+#endif // BUDDY_ENABLE_CONNECT
         osDelay(100);
     }
 }
@@ -127,15 +125,19 @@ static void wui_queue_cycle() {
 }
 static int process_wui_request() {
 
-    if(strncmp(wui.request, "!cip ", 5) == 0){
+    if (strncmp(wui.request, "!cip ", 5) == 0) {
         uint32_t ip;
-        if(sscanf(wui.request + 5, "%lu", &ip)){
-            eeprom_set_var(EEVAR_CONNECT_IP, variant8_ui32(ip));
+        if (sscanf(wui.request + 5, "%lu", &ip)) {
+            eeprom_set_var(EEVAR_CONNECT_IP4, variant8_ui32(ip));
         }
-    } else if (strncmp(wui.request, "!ck ", 4) == 0){
-        eeprom_set_string(EEVAR_CONNECT_KEY_START, wui.request + 4, CONNECT_SEC_KEY_LEN);
-    } else if (strncmp(wui.request, "!cn ", 4) == 0){
-        eeprom_set_string(EEVAR_LAN_HOSTNAME_START, wui.request + 4, LAN_HOSTNAME_MAX_LEN);
+    } else if (strncmp(wui.request, "!ck ", 4) == 0) {
+        variant8_t token = variant8_pchar(wui.request + 4, 0, 0);
+        eeprom_set_var(EEVAR_CONNECT_TOKEN, token);
+        variant8_done(&token);
+    } else if (strncmp(wui.request, "!cn ", 4) == 0) {
+        variant8_t hostname = variant8_pchar(wui.request + 4, 0, 0);
+        eeprom_set_var(EEVAR_LAN_HOSTNAME, hostname);
+        variant8_done(&hostname);
     } else {
         marlin_wui_gcode(wui.request);
     }

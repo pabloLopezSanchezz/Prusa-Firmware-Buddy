@@ -22,11 +22,10 @@
 #define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
-#define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1
 #define HTTPC_POLL_TIMEOUT        3 /* 1.5 seconds */
-#define MAX_HEADER_GEN_PART_SIZE  32+24
+#define MAX_HEADER_GEN_PART_SIZE  32 + 24
 
 struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
@@ -249,7 +248,7 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
         }
 
         u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
-        if(command_id_hdr != 0xFFFF){
+        if (command_id_hdr != 0xFFFF) {
             u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, command_id_hdr);
             if (command_id_line_end != 0xFFFF) {
                 char command_id_num[16];
@@ -430,7 +429,7 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
         if (len_copied != p->len) {
             return ERR_ARG;
         }
-        struct pbuf * p_next = p->next;
+        struct pbuf *p_next = p->next;
         pbuf_free(p);
         p = p_next;
         if (NULL == p_next) {
@@ -439,23 +438,23 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
         }
     }
 
-    if(request_part[0] == '{'){
+    if (request_part[0] == '{') {
         http_json_parser((char *)&request_part, len_copied);
-    } else if (request_part[0] == 'G' || request_part[0] == 'M'){
+    } else if (request_part[0] == 'G' || request_part[0] == 'M') {
         http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
     }
 
     return ERR_OK;
 }
 
-static void create_http_header(char * dest, const char * method, const char * uri, const char * content_type, const char * host_ip){
-    static char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
+static void create_http_header(char *dest, const char *method, const char *uri, const char *content_type, const char *host_ip) {
+    static char printer_token[API_TOKEN_LEN + 1];       // extra space of end of line
     char header_gen_part[MAX_HEADER_GEN_PART_SIZE + 1]; // 32 Content type + 24 Host
     eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
     printer_token[API_TOKEN_LEN] = 0;
-    if (host_ip && content_type){
+    if (host_ip && content_type) {
         snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\nContent-Type: %s\r\n", host_ip, content_type);
-    } else if (host_ip){
+    } else if (host_ip) {
         snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\n", host_ip);
     } else {
         snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Content-Type: %s\r\n", content_type);
@@ -463,7 +462,7 @@ static void create_http_header(char * dest, const char * method, const char * ur
     snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\n%s\r\n", method, uri, printer_token, header_gen_part);
 }
 
-wui_err buddy_http_client_init(uint8_t id, void * container) {
+wui_err buddy_http_client_init(uint8_t id, void *container) {
 
     size_t alloc_len;
     mem_size_t mem_alloc_len;
@@ -471,45 +470,45 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
     httpc_state_t *req;
     ip4_addr_t host_ip4;
     char host_ip4_str[IP4_ADDR_STR_SIZE];
-    const char * header_plus_data;
+    const char *header_plus_data;
     char header[HEADER_MAX_SIZE];
 
-    host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP).ui32;
+    host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
-    if(id == MSG_TELEMETRY){
+    if (id == MSG_TELEMETRY) {
         create_http_header(header, "POST", "/p/telemetry", "application/json", host_ip4_str);
         header_plus_data = get_update_str(header);
-    } else if (id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ){
+    } else if (id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ) {
         create_http_header(header, "POST", "/p/events", "application/json", 0);
         header_plus_data = get_event_ack_str(header, container);
-    } else if (id == MSG_EVENTS_STATE_CHANGED){
+    } else if (id == MSG_EVENTS_STATE_CHANGED) {
         connect_event_t evt;
-        const char * state_str;
-        switch(*(uint8_t*)container){
-                case DEVICE_STATE_IDLE:
-                    state_str = "IDLE";
-                    break;
-                case DEVICE_STATE_ERROR:
-                    state_str = "ERROR";
-                case DEVICE_STATE_PRINTING:
-                    state_str = "PRINTING";
-                    break;
-                case DEVICE_STATE_PAUSED:
-                    state_str = "PAUSED";
-                    break;
-                case DEVICE_STATE_FINISHED:
-                    state_str = "FINISHED";
-                    break;
-                default:
-                    state_str = "UNKNOWN";
-                    break;
+        const char *state_str;
+        switch (*(uint8_t *)container) {
+        case DEVICE_STATE_IDLE:
+            state_str = "IDLE";
+            break;
+        case DEVICE_STATE_ERROR:
+            state_str = "ERROR";
+        case DEVICE_STATE_PRINTING:
+            state_str = "PRINTING";
+            break;
+        case DEVICE_STATE_PAUSED:
+            state_str = "PAUSED";
+            break;
+        case DEVICE_STATE_FINISHED:
+            state_str = "FINISHED";
+            break;
+        default:
+            state_str = "UNKNOWN";
+            break;
         }
         strcpy(evt.state, state_str);
         create_http_header(header, "POST", "/p/events", "application/json", 0);
         header_plus_data = get_event_state_changed_str(header, &evt);
     } else {
-        return ERR_VAL;        
+        return ERR_VAL;
     }
 
     req_len = strlen(header_plus_data);
@@ -568,8 +567,8 @@ wui_err buddy_http_client_init(uint8_t id, void * container) {
 void buddy_http_client_loop() {
     static bool connect_ip_supplied = false;
 
-    if(!connect_ip_supplied){
-        if(eeprom_get_var(EEVAR_CONNECT_IP).ui32 == 0){
+    if (!connect_ip_supplied) {
+        if (eeprom_get_var(EEVAR_CONNECT_IP).ui32 == 0) {
             return;
         } else {
             connect_ip_supplied = true;

@@ -194,9 +194,11 @@ static char httpd_req_buf[LWIP_HTTPD_MAX_REQ_LENGTH + 1];
         #define LWIP_HTTPD_URI_BUF_LEN LWIP_HTTPD_MAX_REQUEST_URI_LEN
     #endif
     #if LWIP_HTTPD_URI_BUF_LEN
+        #if LWIP_HTTPD_SUPPORT_POST
 /* Filename for response file to send when POST is finished or
  * search for default files when a directory is requested. */
 static char http_uri_buf[LWIP_HTTPD_URI_BUF_LEN + 1];
+        #endif
     #endif
 
     #if LWIP_HTTPD_DYNAMIC_HEADERS
@@ -352,8 +354,8 @@ const struct http_ssi_tag_description http_ssi_tag_desc[] = {
 
     #endif /* LWIP_HTTPD_SSI */
 
-//------------------------------OUR-CODE---------------------------
-
+    //------------------------------OUR-CODE---------------------------
+    #if LWIP_HTTPD_SUPPORT_POST
 err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
     u16_t http_request_len, int content_len, char *response_uri,
     u16_t response_uri_len, u8_t *post_auto_wnd) {
@@ -432,7 +434,8 @@ void httpd_post_finished(void *connection, char *response_uri, u16_t response_ur
     }
 }
 
-//------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
+    #endif
 
     #if LWIP_HTTPD_CGI
 /* CGI handler information */
