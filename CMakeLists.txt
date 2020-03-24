@@ -131,6 +131,7 @@ set(unused "${CMAKE_VERBOSE_MAKEFILE} ${CMAKE_RULE_MESSAGES}")
 set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI")
 set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
 set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL")
+set(PRINTERS_WITH_INIT_TRINAMIC_FROM_MARLIN_ONLY "XL" "IXL" "MANIPULATOR" "PICKER" "EXTRACTOR")
 set(WUI YES)
 
 if(${PRINTER} IN_LIST PRINTERS_WITH_FILAMENT_SENSOR_YES)
@@ -147,6 +148,12 @@ else()
   set(GUI NO)
 endif()
 message(STATUS "GUI: ${GUI}")
+
+if(${PRINTER} IN_LIST PRINTERS_WITH_INIT_TRINAMIC_FROM_MARLIN_ONLY)
+  set(INIT_TRINAMIC_FROM_MARLIN_ONLY YES)
+else()
+  set(INIT_TRINAMIC_FROM_MARLIN_ONLY NO)
+endif()
 
 # append custom C/C++ flags
 if(CUSTOM_COMPILE_OPTIONS)
@@ -509,8 +516,7 @@ target_sources(
           src/common/marlin_server.cpp
           src/common/sim_motion.cpp
           src/common/st25dv64k.c
-          src/common/trinamic.cpp
-          src/common/trinamic.h
+          $<$<STREQUAL:${INIT_TRINAMIC_FROM_MARLIN_ONLY},NO>:src/common/trinamic.cpp>
           src/common/w25x.c
           src/common/gcode_file.cpp
           src/common/gcode_thumb_decoder.cpp
@@ -649,4 +655,11 @@ set_property(
   SOURCE src/common/bsod.c src/common/appmain.cpp src/common/sys.cpp src/common/putslave.c
   APPEND
   PROPERTY COMPILE_DEFINITIONS HAS_GUI=$<BOOL:${GUI}>
+  )
+
+set_property(
+  SOURCE src/common/appmain.cpp src/common/putslave.c
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS
+           INIT_TRINAMIC_FROM_MARLIN_ONLY=$<BOOL:${INIT_TRINAMIC_FROM_MARLIN_ONLY}>
   )

@@ -81,7 +81,9 @@ void app_setup(void) {
     Temperature::temp_hotend[0].pid.Kd = eeprom_get_var(EEVAR_PID_NOZ_D).flt;
     thermalManager.updatePID();
 
-    init_tmc();
+    if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
+        init_tmc();
+    }
     //DBG("after init_tmc (%ld ms)", HAL_GetTick());
 
 #ifdef LOADCELL_HX711
@@ -133,7 +135,9 @@ void app_run(void) {
                 hwio_fan_set_pwm(i, 0); // disable fans
         }
         reset_trinamic_drivers();
-        init_tmc();
+        if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
+            init_tmc();
+        }
     } else
         app_setup();
     //DBG("after setup (%ld ms)", HAL_GetTick());
