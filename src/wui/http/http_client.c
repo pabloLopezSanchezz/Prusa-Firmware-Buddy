@@ -22,6 +22,7 @@
 #define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
+#define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1
 #define HTTPC_POLL_TIMEOUT        3 /* 1.5 seconds */
@@ -450,8 +451,9 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 static void create_http_header(char *dest, const char *method, const char *uri, const char *content_type, const char *host_ip) {
     static char printer_token[API_TOKEN_LEN + 1];       // extra space of end of line
     char header_gen_part[MAX_HEADER_GEN_PART_SIZE + 1]; // 32 Content type + 24 Host
-    eeprom_get_string(EEVAR_CONNECT_KEY_START, printer_token, API_TOKEN_LEN);
-    printer_token[API_TOKEN_LEN] = 0;
+    variant8_t printer_token_ptr = eeprom_get_var(EEVAR_CONNECT_TOKEN);
+    strlcpy(printer_token, printer_token_ptr.pch, API_TOKEN_LEN + 1);
+
     if (host_ip && content_type) {
         snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\nContent-Type: %s\r\n", host_ip, content_type);
     } else if (host_ip) {
@@ -568,7 +570,7 @@ void buddy_http_client_loop() {
     static bool connect_ip_supplied = false;
 
     if (!connect_ip_supplied) {
-        if (eeprom_get_var(EEVAR_CONNECT_IP).ui32 == 0) {
+        if (eeprom_get_var(EEVAR_CONNECT_IP4).ui32 == 0) {
             return;
         } else {
             connect_ip_supplied = true;
