@@ -32,10 +32,13 @@
 #include "eeprom.h"
 #include "diag.h"
 #include "safe_state.h"
+#include "crc32.h"
 
 #include <Arduino.h>
 #include "trinamic.h"
 #include "../Marlin/src/module/configuration_store.h"
+#include "../Marlin/src/module/temperature.h"
+#include "../Marlin/src/module/probe.h"
 
 #define DBG _dbg0 //debug level 0
 //#define DBG(...)  //disable debug
@@ -66,7 +69,19 @@ void app_setup(void) {
 
     setup();
 
-    if (HAS_MARLIN_ONLY_DRIVER == 0) {
+    // variables from eeprom - temporary solution
+    probe_offset.z = eeprom_get_var(EEVAR_ZOFFSET).flt;
+#if ENABLED(PIDTEMPBED)
+    Temperature::temp_bed.pid.Kp = eeprom_get_var(EEVAR_PID_BED_P).flt;
+    Temperature::temp_bed.pid.Ki = eeprom_get_var(EEVAR_PID_BED_I).flt;
+    Temperature::temp_bed.pid.Kd = eeprom_get_var(EEVAR_PID_BED_D).flt;
+#endif
+    Temperature::temp_hotend[0].pid.Kp = eeprom_get_var(EEVAR_PID_NOZ_P).flt;
+    Temperature::temp_hotend[0].pid.Ki = eeprom_get_var(EEVAR_PID_NOZ_I).flt;
+    Temperature::temp_hotend[0].pid.Kd = eeprom_get_var(EEVAR_PID_NOZ_D).flt;
+    thermalManager.updatePID();
+
+    if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
         init_tmc();
     }
     //DBG("after init_tmc (%ld ms)", HAL_GetTick());
@@ -89,6 +104,8 @@ void app_run(void) {
     if (diag_fastboot)
         osThreadResume(webServerTaskHandle);
 #endif //BUDDY_ENABLE_ETHERNET
+
+    crc32_init();
 
     uint8_t defaults_loaded = eeprom_init();
 
@@ -118,7 +135,7 @@ void app_run(void) {
                 hwio_fan_set_pwm(i, 0); // disable fans
         }
         reset_trinamic_drivers();
-        if (HAS_MARLIN_ONLY_DRIVER == 0) {
+        if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
             init_tmc();
         }
     } else

@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "guitypes.h"
+#include "printers.h"
 
 ///////////////////////////
 // display type selector //
