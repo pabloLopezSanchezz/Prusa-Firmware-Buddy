@@ -63,7 +63,9 @@ pipeline {
                                     --generate-dfu \
                                     --no-store-output \
                                     --version-suffix=${variant_full_suffix} \
-                                    --version-suffix-short=${short_suffix} ${options}
+                                    --version-suffix-short=${short_suffix} ${options} \
+                                    --version-suffix=${full_suffix} \
+                                    --version-suffix-short=${short_suffix}
                             """
                         }
                     }
