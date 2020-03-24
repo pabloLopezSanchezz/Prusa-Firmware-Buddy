@@ -26,7 +26,8 @@ extern osMutexId wui_web_mutex_id;
 
 struct fs_file *wui_api_main(const char *uri);
 const char *get_update_str(const char *header);
-const char *get_events_str(const char * header, void * container);
+const char *get_event_ack_str(const char * header, void * container);
+const char *get_event_state_changed_str(const char *header, void * container);
 
 #ifdef __cplusplus
 }

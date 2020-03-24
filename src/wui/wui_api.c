@@ -82,15 +82,39 @@ const char *get_update_str(const char *header) {
         percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
 }
 
-const char *get_events_str(const char * header, void * container){
+const char *get_event_ack_str(const char * header, void * container){
     const connect_event_t * evt = (const connect_event_t *)container;
 
-    return char_streamer("%s{"
+    const char * ptr;
+    if(strncmp(evt->state, "REJECTED", 8) == 0){
+        ptr = char_streamer("%s{"
+                         "\"event\":\"%s\","
+                         "\"command_id\":%d,"
+                         "\"reason\":\"%s\""
+                         "}",
+                         header,
+                         evt->state, evt->command_id, evt->reason);
+    } else {
+        ptr = char_streamer("%s{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d"
                          "}",
                          header,
                          evt->state, evt->command_id);
+    }
+    
+    return ptr; 
+}
+
+const char *get_event_state_changed_str(const char *header, void * container){
+    const connect_event_t * evt = (const connect_event_t *)container;
+
+    return char_streamer("%s{"
+                         "\"event\":\"STATE_CHANGED\","
+                         "\"state\":\"%s\""
+                         "}",
+                         header,
+                         evt->state);
 }
 
 static void wui_api_telemetry(struct fs_file *file) {
