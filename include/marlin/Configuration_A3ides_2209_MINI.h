@@ -573,10 +573,18 @@
 
 // @section homing
 
+//! Move in opposite direction as first homing move
+//! useful for sensor-less homing to avoid clicking noise
+//! implemented only for Cartesian kinematics
+#define MOVE_BACK_BEFORE_HOMING
+#if ENABLED(MOVE_BACK_BEFORE_HOMING)
+    #define MOVE_BACK_BEFORE_HOMING_DISTANCE 1.92f
+#endif
+
 // Specify here all the endstop connectors that are connected to any endstop or probe.
 // Almost all printers will be using one per axis. Probes will use one or more of the
 // extra connectors. Leave undefined any used for non-endstop and non-probe purposes.
-#define MINDA_BROKEN_CABLE_DETECTION
+//#define MINDA_BROKEN_CABLE_DETECTION
 #define USE_XMIN_PLUG
 #define USE_YMIN_PLUG
 #define USE_ZMIN_PLUG
