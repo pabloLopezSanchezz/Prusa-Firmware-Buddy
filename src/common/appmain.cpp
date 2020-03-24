@@ -66,7 +66,7 @@ void app_setup(void) {
 
     setup();
 
-    if (HAS_MARLIN_ONLY_DRIVER == 0) {
+    if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
         init_tmc();
     }
     //DBG("after init_tmc (%ld ms)", HAL_GetTick());
@@ -118,7 +118,7 @@ void app_run(void) {
                 hwio_fan_set_pwm(i, 0); // disable fans
         }
         reset_trinamic_drivers();
-        if (HAS_MARLIN_ONLY_DRIVER == 0) {
+        if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
             init_tmc();
         }
     } else
