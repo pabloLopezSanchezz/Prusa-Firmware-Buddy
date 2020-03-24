@@ -79,7 +79,7 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 /* lwip customization includes -----------------------------------------------*/
 
-#include "lwip/apps/httpd.h"
+#include "httpd.h"
 #include "eeprom.h"
 /* Global Variables ---------------------------------------------------------*/
 extern struct netif eth0;
