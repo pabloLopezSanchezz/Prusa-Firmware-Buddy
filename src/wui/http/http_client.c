@@ -7,7 +7,6 @@
  */
 
 #include "http_client.h"
-#include "wui_helper_funcs.h"
 #include <stdbool.h>
 #include "wui_api.h"
 #include "stm32f4xx_hal.h"
@@ -511,7 +510,6 @@ wui_err buddy_http_client_init(uint8_t id, connect_event_t * evt) {
         }
     } else if (id == MSG_EVENTS_STATE_CHANGED){
         strlcpy(http_client.event.state, evt->state, MAX_STATE_LEN);
-            break;
     }
 
     header_plus_data = create_http_request(id);

@@ -18,6 +18,7 @@
 #define MAX_WUI_REQUEST_LEN    100
 #define MAX_MARLIN_REQUEST_LEN 100
 #define WUI_FLG_PEND_REQ       0x0001
+#define BUDDY_ENABLE_CONNECT
 
 osMessageQId tcpclient_wui_queue = 0; // char input queue (uint8_t)
 osSemaphoreId tcpclient_wui_sema = 0; // semaphore handle
