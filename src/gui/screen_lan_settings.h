@@ -13,6 +13,7 @@
 #include "screen_menu.h"
 #include "lwip/netif.h"
 #include "eeprom.h"
+#include "lwip.h"
 
 #define plsd              ((screen_lan_settings_data_t *)screen->pdata)
 #define MAC_ADDR_STR_SIZE 18
