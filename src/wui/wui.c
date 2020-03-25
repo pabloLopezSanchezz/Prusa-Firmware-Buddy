@@ -49,7 +49,27 @@ void update_web_vars(void) {
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
     if (marlin_event(MARLIN_EVT_DevStateChange)) {
         web_vars.device_state = wui.wui_marlin_vars->device_state;
-        buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
+        connect_event_t evt;
+        switch (web_vars.device_state) {
+        case DEVICE_STATE_IDLE:
+            strlcpy(evt.state, "IDLE", MAX_STATE_LEN);
+            break;
+        case DEVICE_STATE_ERROR:
+            strlcpy(evt.state, "ERROR", MAX_STATE_LEN);
+        case DEVICE_STATE_PRINTING:
+            strlcpy(evt.state, "IDLE", MAX_STATE_LEN);
+            break;
+        case DEVICE_STATE_PAUSED:
+            strlcpy(evt.state, "PAUSED", MAX_STATE_LEN);
+            break;
+        case DEVICE_STATE_FINISHED:
+            strlcpy(evt.state, "FINISHED", MAX_STATE_LEN);
+            break;
+        default:
+            strlcpy(evt.state, "UNKNOWN", MAX_STATE_LEN);
+            break;
+        }
+        buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &evt);
     }
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(web_vars.gcode_name);

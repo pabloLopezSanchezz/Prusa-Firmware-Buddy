@@ -8,6 +8,14 @@
 
 #define MAX_STATE_LEN   10
 #define MAX_REASON_LEN  50
+
+typedef enum {
+    MSG_TELEMETRY,
+    MSG_EVENTS_ACC,
+    MSG_EVENTS_REJ,
+    MSG_EVENTS_FIN,
+    MSG_EVENTS_STATE_CHANGED,
+}MI_message_id_t;
 typedef struct{
     char state[MAX_STATE_LEN];
     char reason[MAX_REASON_LEN];

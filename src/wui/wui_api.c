@@ -23,7 +23,7 @@ static web_vars_t web_vars_copy;
 // for storing /api/* data
 static struct fs_file api_file;
 
-const char *get_update_str(const char *header) {
+const char *get_update_str(void) {
 
     osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);
     if (status == osOK) {
@@ -39,7 +39,7 @@ const char *get_update_str(const char *header) {
     const char *filament_material = filaments[get_filament()].name;
 
     if (!web_vars_copy.sd_printing) {
-        return char_streamer("%s{"
+        return char_streamer("{"
                              "\"temp_nozzle\":%d,"
                              "\"temp_bed\":%d,"
                              "\"material\":\"%s\","
@@ -47,7 +47,6 @@ const char *get_update_str(const char *header) {
                              "\"printing_speed\":%d,"
                              "\"flow_factor\":%d"
                              "}",
-            header,
             actual_nozzle, actual_heatbed, filament_material,
             z_pos_mm, print_speed, flow_factor);
     }
@@ -64,7 +63,7 @@ const char *get_update_str(const char *header) {
 
     print_dur_to_string(print_time, web_vars_copy.print_dur);
 
-    return char_streamer("%s{"
+    return char_streamer("{"
                          "\"temp_nozzle\":%d,"
                          "\"temp_bed\":%d,"
                          "\"material\":\"%s\","
@@ -76,50 +75,43 @@ const char *get_update_str(const char *header) {
                          "\"time_est\":\"%s\","
                          "\"project_name\":\"%s\""
                          "}",
-        header,
         actual_nozzle, actual_heatbed, filament_material,
         z_pos_mm, print_speed, flow_factor,
         percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
 }
 
-const char *get_event_ack_str(const char * header, void * container){
-    const connect_event_t * evt = (const connect_event_t *)container;
-
-    const char * ptr;
-    if(strncmp(evt->state, "REJECTED", 8) == 0){
-        ptr = char_streamer("%s{"
+const char *get_event_ack_str(uint8_t id, connect_event_t * evt){
+    const char * ptr = 0;
+    if(id == MSG_EVENTS_REJ){
+        ptr = char_streamer("{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d,"
                          "\"reason\":\"%s\""
                          "}",
-                         header,
                          evt->state, evt->command_id, evt->reason);
-    } else {
-        ptr = char_streamer("%s{"
+    } else if(id == MSG_EVENTS_ACC){
+        ptr = char_streamer("{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d"
                          "}",
-                         header,
                          evt->state, evt->command_id);
     }
     
     return ptr; 
 }
 
-const char *get_event_state_changed_str(const char *header, void * container){
-    const connect_event_t * evt = (const connect_event_t *)container;
+const char *get_event_state_changed_str(connect_event_t * evt){
 
-    return char_streamer("%s{"
+    return char_streamer("{"
                          "\"event\":\"STATE_CHANGED\","
                          "\"state\":\"%s\""
                          "}",
-                         header,
                          evt->state);
 }
 
 static void wui_api_telemetry(struct fs_file *file) {
 
-    const char *ptr = get_update_str("");
+    const char *ptr = get_update_str();
 
     uint16_t response_len = strlen(ptr);
     file->len = response_len;

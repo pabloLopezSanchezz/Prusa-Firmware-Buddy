@@ -22,12 +22,18 @@
 #define CONNECT_DEF_PORT          8000
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
+#define BODY_MAX_SIZE             512
 #define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1
 #define HTTPC_POLL_TIMEOUT        3 /* 1.5 seconds */
 #define MAX_HEADER_GEN_PART_SIZE  32 + 24
 
+typedef struct {
+    connect_event_t event;
+} http_client_t;
+
+http_client_t http_client;
 struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
@@ -448,7 +454,7 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     return ERR_OK;
 }
 
-static void create_http_header(char *dest, const char *method, const char *uri, const char *content_type, const char *host_ip) {
+static void create_http_header(char *dest, uint16_t content_length, const char *method, const char *uri, const char *content_type, const char *host_ip) {
     static char printer_token[API_TOKEN_LEN + 1];       // extra space of end of line
     char header_gen_part[MAX_HEADER_GEN_PART_SIZE + 1]; // 32 Content type + 24 Host
     variant8_t printer_token_ptr = eeprom_get_var(EEVAR_CONNECT_TOKEN);
@@ -461,10 +467,30 @@ static void create_http_header(char *dest, const char *method, const char *uri, 
     } else {
         snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Content-Type: %s\r\n", content_type);
     }
-    snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\n%s\r\n", method, uri, printer_token, header_gen_part);
+    snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Length: %u\r\n%s\r\n", method, uri, printer_token, content_length, header_gen_part);
 }
 
-wui_err buddy_http_client_init(uint8_t id, void *container) {
+static const char * create_http_request(uint8_t id){
+    static char header[HEADER_MAX_SIZE];
+    static char body[BODY_MAX_SIZE];
+    uint16_t content_length = 0;
+
+    if (id == MSG_TELEMETRY) {
+        content_length = strlcpy(body, get_update_str(), BODY_MAX_SIZE);
+        create_http_header(header, content_length, "POST", "/p/telemetry", "application/json", 0);
+    } else if (id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ) {
+        content_length = strlcpy(body, get_event_ack_str(id, &(http_client.event)), BODY_MAX_SIZE);
+        create_http_header(header, content_length, "POST", "/p/events", "application/json", 0);
+    } else if (id == MSG_EVENTS_STATE_CHANGED) {
+        content_length = strlcpy(body, get_event_state_changed_str(&(http_client.event)), BODY_MAX_SIZE);
+        create_http_header(header, content_length, "POST", "/p/events", "application/json", 0);
+    } else {
+        return 0;
+    }
+    return char_streamer("%s%s", header, body);
+}
+
+wui_err buddy_http_client_init(uint8_t id, connect_event_t * evt) {
 
     size_t alloc_len;
     mem_size_t mem_alloc_len;
@@ -473,44 +499,23 @@ wui_err buddy_http_client_init(uint8_t id, void *container) {
     ip4_addr_t host_ip4;
     char host_ip4_str[IP4_ADDR_STR_SIZE];
     const char *header_plus_data;
-    char header[HEADER_MAX_SIZE];
 
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
-    if (id == MSG_TELEMETRY) {
-        create_http_header(header, "POST", "/p/telemetry", "application/json", host_ip4_str);
-        header_plus_data = get_update_str(header);
-    } else if (id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ) {
-        create_http_header(header, "POST", "/p/events", "application/json", 0);
-        header_plus_data = get_event_ack_str(header, container);
-    } else if (id == MSG_EVENTS_STATE_CHANGED) {
-        connect_event_t evt;
-        const char *state_str;
-        switch (*(uint8_t *)container) {
-        case DEVICE_STATE_IDLE:
-            state_str = "IDLE";
-            break;
-        case DEVICE_STATE_ERROR:
-            state_str = "ERROR";
-        case DEVICE_STATE_PRINTING:
-            state_str = "PRINTING";
-            break;
-        case DEVICE_STATE_PAUSED:
-            state_str = "PAUSED";
-            break;
-        case DEVICE_STATE_FINISHED:
-            state_str = "FINISHED";
-            break;
-        default:
-            state_str = "UNKNOWN";
-            break;
+    if(id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ){
+        http_client.event.command_id = evt->command_id;
+        strlcpy(http_client.event.state, evt->state, MAX_STATE_LEN);
+        if(id == MSG_EVENTS_REJ){
+            strlcpy(http_client.event.reason, evt->reason, MAX_REASON_LEN);
         }
-        strcpy(evt.state, state_str);
-        create_http_header(header, "POST", "/p/events", "application/json", 0);
-        header_plus_data = get_event_state_changed_str(header, &evt);
-    } else {
-        return ERR_VAL;
+    } else if (id == MSG_EVENTS_STATE_CHANGED){
+        strlcpy(http_client.event.state, evt->state, MAX_STATE_LEN);
+    }
+
+    header_plus_data = create_http_request(id);
+    if(!header_plus_data){
+        return ERR_ARG;
     }
 
     req_len = strlen(header_plus_data);
