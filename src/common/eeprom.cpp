@@ -130,9 +130,13 @@ static const eeprom_vars_t eeprom_var_defaults = {
     DEFAULT_Kp,       // EEVAR_PID_NOZ_P
     scalePID_i(DEFAULT_Ki),    // EEVAR_PID_NOZ_I
     scalePID_d(DEFAULT_Kd),    // EEVAR_PID_NOZ_D
+#if ENABLED(PIDTEMPBED)
     DEFAULT_bedKp,             // EEVAR_PID_BED_P
     scalePID_i(DEFAULT_bedKi), // EEVAR_PID_BED_I
     scalePID_d(DEFAULT_bedKd), // EEVAR_PID_BED_D
+#else
+    0, 0, 0,
+#endif
     0,               // EEVAR_LAN_FLAG
     0,               // EEVAR_LAN_IP4_ADDR
     0,               // EEVAR_LAN_IP4_MSK
