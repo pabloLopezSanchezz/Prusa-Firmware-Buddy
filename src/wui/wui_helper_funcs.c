@@ -7,6 +7,9 @@
 #include <string.h>
 #include "eeprom.h"
 #include "ip4_addr.h"
+
+//#define HTTP_DUBAI_HACK
+
 #ifdef HTTP_DUBAI_HACK
 #include "version.h"
 #endif
