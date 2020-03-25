@@ -8,6 +8,12 @@
 #include "eeprom.h"
 #include "ip4_addr.h"
 
+//#define HTTP_DUBAI_HACK
+
+#ifdef HTTP_DUBAI_HACK
+#include "version.h"
+#endif
+
 #define MAX_ACK_SIZE 16
 
 static char buffer[MAX_REQ_BODY_SIZE] = "";
@@ -73,7 +79,11 @@ void http_json_parser(char *json, uint32_t len) {
     }
 
     for (int i = 0; i < ret; i++) {
+#ifdef HTTP_DUBAI_HACK
+        if (json_cmp(json, &t[i], project_firmware_name) == 0) {
+#else
         if (json_cmp(json, &t[i], "command") == 0) {
+#endif //HTTP_DUBAI_HACK
             strlcpy(request, json + t[i + 1].start, (t[i + 1].end - t[i + 1].start + 1));
             i++;
             send_request_to_wui(request);
