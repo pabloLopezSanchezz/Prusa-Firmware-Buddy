@@ -3,6 +3,8 @@
 
 #include "cmsis_os.h"
 
+#define HTTP_DUBAI_HACK
+
 #define MAX_REQ_MARLIN_SIZE 100
 #define MAX_REQ_BODY_SIZE   512
 
