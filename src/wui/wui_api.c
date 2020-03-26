@@ -160,7 +160,8 @@ static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_heade
 
     uint32_t cmd_count = 0;
     uint32_t index = 0;
-    char *line_start_pos = request;
+    char *line_start_addr = request;
+    char *line_end_addr;
     uint32_t i = 0;
 
     do {
@@ -169,15 +170,15 @@ static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_heade
             return CMD_REJT_GCODES_LIMI; // return if more than 10 codes in the response
         }
 
-        while (i < h_info_ptr->content_lenght && request[i] != '\0' && request[i] != '\n') {
+        while ((i < h_info_ptr->content_lenght) && (request[i] != '\0') && (request[i] != '\r') && (request[i + 1] != '\n')) {
             i++;
         }
 
-        char *line_end_pos = line_start_pos + i - 1;
-        uint32_t str_len = line_end_pos - line_start_pos;
-        strlcpy(&gcode_str[index++], line_start_pos, str_len + 1);
-        line_start_pos = line_end_pos + 2;
-        i++;
+        line_end_addr = request + i;
+        uint32_t str_len = line_end_addr - line_start_addr;
+        strlcpy(&gcode_str[index++], line_start_addr, str_len + 1);
+        line_start_addr = line_end_addr + 2;
+        i = i + 2; // skip the end of line chars
 
     } while (i < h_info_ptr->content_lenght);
 
