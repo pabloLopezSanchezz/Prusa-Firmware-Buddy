@@ -18,7 +18,7 @@
 
 #define CLIENT_CONNECT_DELAY      3000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
-#define CONNECT_DEF_PORT          8000
+#define CONNECT_DEST_PORT         80
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
 #define BODY_MAX_SIZE             512
@@ -566,7 +566,7 @@ wui_err buddy_http_client_init(uint8_t id, connect_event_t * evt) {
     }
 
     req->recv_fn = data_received_fun;
-    tcp_connect(req->pcb, &host_ip4, CONNECT_DEF_PORT, httpc_tcp_connected);
+    tcp_connect(req->pcb, &host_ip4, CONNECT_DEST_PORT, httpc_tcp_connected);
     return ERR_OK;
 }
 
