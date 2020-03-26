@@ -300,7 +300,7 @@ static uint8_t _load_config(void) {
             _change_static_to_dhcp();
         }
 #ifdef BUDDY_ENABLE_CONNECT
-        if (tmp_config.set_flag & NETVAR_MSK(NETVAR_SETFLG_CONNECT_TOKEN)) {
+        if (tmp_config.set_flag & NETVAR_MSK(NETVAR_CONNECT_TOKEN)) {
             variant8_t token = variant8_pchar(tmp_config.connect_token, 0, 0);
             eeprom_set_var(EEVAR_CONNECT_TOKEN, token);
             //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
