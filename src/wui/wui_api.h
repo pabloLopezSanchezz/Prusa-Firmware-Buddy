@@ -10,6 +10,7 @@
 #define _WUI_API_H_
 
 #include "httpd.h"
+#include "http_client.h"
 #include "lwip/apps/fs.h"
 #include "wui_helper_funcs.h"
 #include "marlin_vars.h"
@@ -26,8 +27,8 @@ extern osMutexId wui_web_mutex_id;
 
 struct fs_file *wui_api_main(const char *uri);
 const char *get_update_str(void);
-const char *get_event_ack_str(uint8_t id, connect_event_t * evt);
-const char *get_event_state_changed_str(connect_event_t * container);
+
+HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_header_info *h_info_ptr);
 
 #ifdef __cplusplus
 }

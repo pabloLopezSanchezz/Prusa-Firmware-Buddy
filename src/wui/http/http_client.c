@@ -16,7 +16,7 @@
 #include "lwip.h"
 #include "marlin_vars.h"
 
-#define CLIENT_CONNECT_DELAY      3000 // 1 Sec.
+#define CLIENT_CONNECT_DELAY      50000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
 #define CONNECT_DEST_PORT         80
 #define IP4_ADDR_STR_SIZE         16
@@ -26,18 +26,15 @@
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1
 #define HTTPC_POLL_TIMEOUT        3 /* 1.5 seconds */
-#define MAX_HEADER_GEN_PART_SIZE  32 + 24
+#define MAX_HEADER_GEN_PART_SIZE  (32 + 24)
+#define HTTPC_BUFF_SZ             512 // buffer size for http client requests
 
-typedef struct {
-    connect_event_t event;
-} http_client_t;
-
-http_client_t http_client;
+static char httpc_req_buffer[HTTPC_BUFF_SZ + 1] = "";  // buffer to make the request for HTTP request
+static char httpc_resp_buffer[HTTPC_BUFF_SZ + 1] = ""; // buffer to work with the response of HTTP request
 struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
-static int command_id = 0;
-
+static httpc_header_info header_info;
 /**
  * @ingroup httpc
  * HTTP client result codes
@@ -154,7 +151,6 @@ httpc_free_state(httpc_state_t *req) {
     tpcb = req->pcb;
     mem_free(req);
     req = NULL;
-    command_id = -1;
 
     if (tpcb != NULL) {
         err_t r;
@@ -253,6 +249,8 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
             }
         }
 
+        //        header_info.content_lenght = *content_length;
+
         u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
         if (command_id_hdr != 0xFFFF) {
             u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, command_id_hdr);
@@ -261,9 +259,11 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
                 u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - 12);
                 memset(command_id_num, 0, sizeof(command_id_num));
                 if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + 12) == command_id_num_len) {
-                    command_id = atoi(command_id_num);
+                    header_info.command_id = atoi(command_id_num);
                 }
             }
+        } else {
+            header_info.command_id = 0; // Invalid Command ID
         }
         return ERR_OK;
     }
@@ -416,12 +416,17 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     LWIP_UNUSED_ARG(tpcb);
     LWIP_UNUSED_ARG(err);
     uint32_t len_copied = 0;
+    HTTPC_COMMAND_STATUS cmd_status = CMD_UNKNOWN;
     if (NULL == p) {
         return ERR_ARG;
     }
 
-    char request_part[(const u16_t)p->tot_len + 1];
-
+    if (HTTPC_BUFF_SZ < p->tot_len) {
+        cmd_status = CMD_REJT_SIZE;
+        pbuf_free(p);
+        return ERR_OK;
+    }
+    header_info.content_lenght = p->tot_len;
     while (len_copied < p->tot_len) {
 
         char *payload = p->payload;
@@ -430,7 +435,7 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
             return ERR_ARG;
         }
 
-        len_copied += pbuf_copy_partial(p, request_part, p->tot_len, 0);
+        len_copied += pbuf_copy_partial(p, httpc_resp_buffer, p->tot_len, 0);
 
         if (len_copied != p->len) {
             return ERR_ARG;
@@ -439,57 +444,59 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
         pbuf_free(p);
         p = p_next;
         if (NULL == p_next) {
-            request_part[(const u16_t)p->tot_len] = 0; // end of line added
+            httpc_resp_buffer[(const u16_t)p->tot_len] = 0; // end of line added
             break;
         }
     }
 
-    if (request_part[0] == '{') {
-        http_json_parser((char *)&request_part, len_copied);
-    } else if (request_part[0] == 'G' || request_part[0] == 'M') {
-        http_lowlvl_gcode_parser((char *)&request_part, len_copied, command_id);
-    }
+    cmd_status = parse_http_reply(httpc_resp_buffer, len_copied, &header_info);
 
     return ERR_OK;
 }
 
-static void create_http_header(char *dest, uint16_t content_length, const char *method, const char *uri, const char *content_type, const char *host_ip) {
-    static char printer_token[API_TOKEN_LEN + 1];       // extra space of end of line
-    char header_gen_part[MAX_HEADER_GEN_PART_SIZE + 1]; // 32 Content type + 24 Host
+static void create_http_header(char *http_header_str, uint32_t content_length, HTTP_CLIENT_REQ_TYPE reqest_type) {
+    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
     variant8_t printer_token_ptr = eeprom_get_var(EEVAR_CONNECT_TOKEN);
     strlcpy(printer_token, printer_token_ptr.pch, API_TOKEN_LEN + 1);
+#define STR_SIZE_MAX 50
+    char uri[STR_SIZE_MAX] = { 0 };
+    char content_type[STR_SIZE_MAX] = { 0 };
 
-    if (host_ip && content_type) {
-        snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\nContent-Type: %s\r\n", host_ip, content_type);
-    } else if (host_ip) {
-        snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Host: %s\r\n", host_ip);
-    } else {
-        snprintf(header_gen_part, MAX_HEADER_GEN_PART_SIZE, "Content-Type: %s\r\n", content_type);
+    switch (reqest_type) {
+    case REQ_TELEMETRY:
+        strlcpy(uri, "/p/telemetry", STR_SIZE_MAX);
+        strlcpy(content_type, "application/json", STR_SIZE_MAX);
+        break;
+    default:
+        break;
     }
-    snprintf(dest, HEADER_MAX_SIZE, "%s %s HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Length: %u\r\n%s\r\n", method, uri, printer_token, content_length, header_gen_part);
+    snprintf(http_header_str, HEADER_MAX_SIZE - 1, "POST %s HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Length: %lu\r\nContent-Type: %s\r\n\r\n", uri, printer_token, content_length, content_type);
 }
 
-static const char * create_http_request(uint8_t id){
-    static char header[HEADER_MAX_SIZE];
-    static char body[BODY_MAX_SIZE];
-    uint16_t content_length = 0;
+static uint32_t get_reqest_body(char *http_body_str, HTTP_CLIENT_REQ_TYPE reqest_type) {
 
-    if (id == MSG_TELEMETRY) {
-        content_length = strlcpy(body, get_update_str(), BODY_MAX_SIZE);
-        create_http_header(header, content_length, "POST", "/p/telemetry", "application/json", 0);
-    } else if (id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ) {
-        content_length = strlcpy(body, get_event_ack_str(id, &(http_client.event)), BODY_MAX_SIZE);
-        create_http_header(header, content_length, "POST", "/p/events", "application/json", 0);
-    } else if (id == MSG_EVENTS_STATE_CHANGED) {
-        content_length = strlcpy(body, get_event_state_changed_str(&(http_client.event)), BODY_MAX_SIZE);
-        create_http_header(header, content_length, "POST", "/p/events", "application/json", 0);
-    } else {
-        return 0;
+    uint32_t content_length = 0;
+    switch (reqest_type) {
+    case REQ_TELEMETRY:
+        content_length = strlcpy(http_body_str, get_update_str(), BODY_MAX_SIZE);
+        break;
+    default:
+        break;
     }
-    return char_streamer("%s%s", header, body);
+    return content_length;
 }
 
-wui_err buddy_http_client_init(uint8_t id, connect_event_t * evt) {
+static const char *create_http_request(HTTP_CLIENT_REQ_TYPE reqest_type) {
+    char header[HEADER_MAX_SIZE];
+    char body[BODY_MAX_SIZE];
+
+    uint32_t content_length = get_reqest_body(body, reqest_type);
+    create_http_header(header, content_length, reqest_type);
+    snprintf(httpc_req_buffer, HTTPC_BUFF_SZ, "%s%s", header, body);
+    return (const char *)&httpc_req_buffer;
+}
+
+wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
 
     size_t alloc_len;
     mem_size_t mem_alloc_len;
@@ -502,18 +509,8 @@ wui_err buddy_http_client_init(uint8_t id, connect_event_t * evt) {
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
-    if(id == MSG_EVENTS_ACC || id == MSG_EVENTS_REJ){
-        http_client.event.command_id = evt->command_id;
-        strlcpy(http_client.event.state, evt->state, MAX_STATE_LEN);
-        if(id == MSG_EVENTS_REJ){
-            strlcpy(http_client.event.reason, evt->reason, MAX_REASON_LEN);
-        }
-    } else if (id == MSG_EVENTS_STATE_CHANGED){
-        strlcpy(http_client.event.state, evt->state, MAX_STATE_LEN);
-    }
-
-    header_plus_data = create_http_request(id);
-    if(!header_plus_data){
+    header_plus_data = create_http_request(reqest_type);
+    if (!header_plus_data) {
         return ERR_ARG;
     }
 
@@ -571,14 +568,9 @@ wui_err buddy_http_client_init(uint8_t id, connect_event_t * evt) {
 }
 
 void buddy_http_client_loop() {
-    static bool connect_ip_supplied = false;
 
-    if (!connect_ip_supplied) {
-        if (eeprom_get_var(EEVAR_CONNECT_IP4).ui32 == 0) {
-            return;
-        } else {
-            connect_ip_supplied = true;
-        }
+    if (eeprom_get_var(EEVAR_CONNECT_IP4).ui32 == 0) {
+        return;
     }
 
     if (!init_tick) {
@@ -586,8 +578,9 @@ void buddy_http_client_loop() {
         init_tick = true;
     }
 
-    if (netif_ip4_addr(&eth0)->addr != 0 && ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY)) {
-        buddy_http_client_init(MSG_TELEMETRY, 0);
+    if (netif_ip4_addr(&eth0)->addr != 0
+        && ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY)) {
+        buddy_http_client_req(REQ_TELEMETRY);
         client_interval = xTaskGetTickCount();
     }
 }

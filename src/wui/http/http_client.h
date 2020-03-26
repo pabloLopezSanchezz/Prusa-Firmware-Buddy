@@ -13,14 +13,32 @@ extern "C" {
 #endif
 
 typedef enum {
-    MSG_TELEMETRY,
-    MSG_EVENTS_ACC,
-    MSG_EVENTS_REJ,
-    MSG_EVENTS_FIN,
-    MSG_EVENTS_STATE_CHANGED,
+    REQ_TELEMETRY,
+    REQ_EVENT,
 } HTTP_CLIENT_REQ_TYPE;
 
-wui_err buddy_http_client_init(uint8_t id, connect_event_t *container);
+typedef enum {
+    TYPE_JSON,
+    TYPE_GCODE
+} HTTPC_CONTENT_TYPE;
+
+typedef enum {
+    CMD_UNKNOWN,
+    CMD_ACCEPTED,
+    CMD_REJT_GEN,
+    CMD_REJT_SIZE,       // The response data size is larger than supported
+    CMD_REJT_CMD_STRUCT, // error in the command structure
+    CMD_REJT_CMD_ID,     // error with Command-Id
+    CMD_FINISHED
+} HTTPC_COMMAND_STATUS;
+
+typedef struct {
+    uint32_t command_id;
+    uint32_t content_lenght;
+    HTTPC_CONTENT_TYPE content_type;
+} httpc_header_info;
+
+wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type);
 
 void buddy_http_client_loop();
 

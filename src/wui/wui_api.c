@@ -80,6 +80,7 @@ const char *get_update_str(void) {
         percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
 }
 
+#if 0
 const char *get_event_ack_str(uint8_t id, connect_event_t * evt){
     const char * ptr = 0;
     if(id == MSG_EVENTS_REJ){
@@ -96,8 +97,8 @@ const char *get_event_ack_str(uint8_t id, connect_event_t * evt){
                          "}",
                          evt->state, evt->command_id);
     }
-    
-    return ptr; 
+
+    return ptr;
 }
 
 const char *get_event_state_changed_str(connect_event_t * evt){
@@ -108,7 +109,7 @@ const char *get_event_state_changed_str(connect_event_t * evt){
                          "}",
                          evt->state);
 }
-
+#endif
 static void wui_api_telemetry(struct fs_file *file) {
 
     const char *ptr = get_update_str();
@@ -136,4 +137,46 @@ struct fs_file *wui_api_main(const char *uri) {
         return &api_file;
     }
     return NULL;
+}
+
+static HTTPC_COMMAND_STATUS parse_high_level_cmd(char *json, uint32_t len) {
+    char cmd_str[200];
+    uint32_t ret_code = httpc_json_parser(json, len, cmd_str);
+    if (ret_code) {
+        return CMD_REJT_CMD_STRUCT;
+    } else {
+        return CMD_ACCEPTED;
+    }
+}
+
+static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_header_info *h_info_ptr) {
+
+    static char gcode_str[MAX_REQ_MARLIN_SIZE];
+
+    if (h_info_ptr->content_lenght <= 2) {
+        return CMD_REJT_CMD_STRUCT;
+    }
+
+    int i = 0;
+    while (i < h_info_ptr->content_lenght && request[i] != '\0' && request[i] != '\n') {
+        i++;
+    }
+    strlcpy(gcode_str, request, 50); // size limited to 50 chars now
+
+    send_request_to_wui(gcode_str);
+
+    return CMD_ACCEPTED;
+}
+
+HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_header_info *h_info_ptr) {
+    HTTPC_COMMAND_STATUS cmd_status;
+    if (0 == h_info_ptr->command_id) {
+        return CMD_REJT_CMD_ID;
+    }
+    if (TYPE_JSON == h_info_ptr->content_type) {
+        cmd_status = parse_high_level_cmd(reply, reply_len);
+    } else if (TYPE_GCODE == h_info_ptr->content_type) {
+        cmd_status = parse_low_level_cmd(reply, h_info_ptr);
+    }
+    return cmd_status;
 }
