@@ -18,6 +18,7 @@ typedef enum {
 } HTTP_CLIENT_REQ_TYPE;
 
 typedef enum {
+    TYPE_INVALID,
     TYPE_JSON,
     TYPE_GCODE
 } HTTPC_CONTENT_TYPE;
@@ -26,9 +27,11 @@ typedef enum {
     CMD_UNKNOWN,
     CMD_ACCEPTED,
     CMD_REJT_GEN,
-    CMD_REJT_SIZE,       // The response data size is larger than supported
-    CMD_REJT_CMD_STRUCT, // error in the command structure
-    CMD_REJT_CMD_ID,     // error with Command-Id
+    CMD_REJT_SIZE,        // The response data size is larger than supported
+    CMD_REJT_CMD_STRUCT,  // error in the command structure
+    CMD_REJT_CMD_ID,      // error with Command-Id
+    CMD_REJT_CDNT_TYPE,   // error with Content-Type
+    CMD_REJT_GCODES_LIMI, // number of gcodes in x-gcode request exceeded
     CMD_FINISHED
 } HTTPC_COMMAND_STATUS;
 

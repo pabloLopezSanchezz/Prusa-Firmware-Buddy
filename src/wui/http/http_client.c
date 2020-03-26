@@ -16,7 +16,7 @@
 #include "lwip.h"
 #include "marlin_vars.h"
 
-#define CLIENT_CONNECT_DELAY      50000 // 1 Sec.
+#define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
 #define CLIENT_PORT_NO            9000
 #define CONNECT_DEST_PORT         80
 #define IP4_ADDR_STR_SIZE         16
@@ -225,6 +225,8 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 /** Wait for all headers to be received, return its length and content-length (if available) */
 static err_t
 http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
+    httpc_header_info empty_str = {};
+    header_info = empty_str;
     u16_t end1 = pbuf_memfind(p, "\r\n\r\n", 4, 0);
     if (end1 < (0xFFFF - 2)) {
         /* all headers received */
@@ -232,6 +234,31 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
         u16_t content_len_hdr;
         *content_length = HTTPC_CONTENT_LEN_INVALID;
         *total_header_len = end1 + 4;
+
+        uint32_t content_type_hdr;
+        content_type_hdr = pbuf_memfind(p, "Content-Type: ", 14, 0);
+        if (content_type_hdr != 0xFFFF) {
+            u16_t content_type_line_end = pbuf_memfind(p, "\r\n", 2, content_type_hdr);
+            if (content_type_line_end != 0xFFFF) {
+                char content_type_str[20];
+                u16_t content_type_len = (u16_t)(content_type_line_end - content_type_hdr - 14);
+                if (20 < content_type_len) {
+                    header_info.content_type = TYPE_INVALID;
+                }
+                memset(content_type_str, 0, sizeof(content_type_str));
+                if (pbuf_copy_partial(p, content_type_str, content_type_len, content_type_hdr + 14) == content_type_len) {
+                    char *type_json_str = "application/json";
+                    char *type_xgcode_str = "text/x.gcode";
+                    if (0 == strncmp(content_type_str, type_json_str, strlen(type_json_str))) {
+                        header_info.content_type = TYPE_JSON;
+                    } else if (0 == strncmp(content_type_str, type_xgcode_str, strlen(type_xgcode_str))) {
+                        header_info.content_type = TYPE_GCODE;
+                    } else {
+                        header_info.content_type = TYPE_INVALID;
+                    }
+                }
+            }
+        }
 
         content_len_hdr = pbuf_memfind(p, "Content-Length: ", 16, 0);
         if (content_len_hdr != 0xFFFF) {
@@ -248,8 +275,6 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
                 }
             }
         }
-
-        //        header_info.content_lenght = *content_length;
 
         u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
         if (command_id_hdr != 0xFFFF) {
@@ -417,6 +442,9 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     LWIP_UNUSED_ARG(err);
     uint32_t len_copied = 0;
     HTTPC_COMMAND_STATUS cmd_status = CMD_UNKNOWN;
+
+    memset(httpc_resp_buffer, 0, HTTPC_BUFF_SZ); // reset the memory
+
     if (NULL == p) {
         return ERR_ARG;
     }

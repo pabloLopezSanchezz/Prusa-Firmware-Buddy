@@ -16,7 +16,8 @@
 #include "stdarg.h"
 
 #define BDY_WUI_API_BUFFER_SIZE 512
-#define BDY_NO_FS_FLAGS         0 // no flags for fs_open
+#define BDY_NO_FS_FLAGS         0  // no flags for fs_open
+#define CMD_LIMIT               10 // number of commands accepted in low level command response
 
 // for data exchange between wui thread and HTTP thread
 static web_vars_t web_vars_copy;
@@ -151,19 +152,38 @@ static HTTPC_COMMAND_STATUS parse_high_level_cmd(char *json, uint32_t len) {
 
 static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_header_info *h_info_ptr) {
 
-    static char gcode_str[MAX_REQ_MARLIN_SIZE];
+    char gcode_str[CMD_LIMIT][MAX_REQ_MARLIN_SIZE] = { 0 };
 
     if (h_info_ptr->content_lenght <= 2) {
         return CMD_REJT_CMD_STRUCT;
     }
 
-    int i = 0;
-    while (i < h_info_ptr->content_lenght && request[i] != '\0' && request[i] != '\n') {
-        i++;
-    }
-    strlcpy(gcode_str, request, 50); // size limited to 50 chars now
+    uint32_t cmd_count = 0;
+    uint32_t index = 0;
+    char *line_start_pos = request;
+    uint32_t i = 0;
 
-    send_request_to_wui(gcode_str);
+    do {
+        cmd_count++;
+        if (CMD_LIMIT < cmd_count) {
+            return CMD_REJT_GCODES_LIMI; // return if more than 10 codes in the response
+        }
+
+        while (i < h_info_ptr->content_lenght && request[i] != '\0' && request[i] != '\n') {
+            i++;
+        }
+
+        char *line_end_pos = line_start_pos + i - 1;
+        uint32_t str_len = line_end_pos - line_start_pos;
+        strlcpy(&gcode_str[index++], line_start_pos, str_len + 1);
+        line_start_pos = line_end_pos + 2;
+        i++;
+
+    } while (i < h_info_ptr->content_lenght);
+
+    for (uint32_t cnt = 0; cnt < cmd_count; cnt++) {
+        send_request_to_wui(&gcode_str[cmd_count]);
+    }
 
     return CMD_ACCEPTED;
 }
@@ -177,6 +197,8 @@ HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_hea
         cmd_status = parse_high_level_cmd(reply, reply_len);
     } else if (TYPE_GCODE == h_info_ptr->content_type) {
         cmd_status = parse_low_level_cmd(reply, h_info_ptr);
+    } else {
+        cmd_status = CMD_REJT_CDNT_TYPE;
     }
     return cmd_status;
 }
