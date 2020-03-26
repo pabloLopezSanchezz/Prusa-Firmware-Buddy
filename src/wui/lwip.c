@@ -132,6 +132,7 @@ void MX_LWIP_Init(void) {
         dns2.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
         dns_setserver(0, &dns1);
         dns_setserver(1, &dns2);
+        
         netif_set_addr(&eth0, &ipaddr, &netmask, &gw);
     }
     if(!(ee_lan_flg & LAN_EEFLG_ONOFF) && netif_is_link_up(&eth0)){

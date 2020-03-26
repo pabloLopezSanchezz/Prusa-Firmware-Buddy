@@ -149,6 +149,7 @@ extern "C" {
     #define LWIP_NETIF_HOSTNAME        1
     #define LWIP_HTTPD_SUPPORT_POST    1
     #define HTTPD_SERVER_AGENT         "Prusa Buddy"
+    #define LWIP_DNS                   1
 
 /* USER CODE END 1 */
 
