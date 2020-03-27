@@ -16,7 +16,7 @@
 #include "lwip.h"
 #include "marlin_vars.h"
 
-#define CLIENT_CONNECT_DELAY      1000 // 1 Sec.
+#define CLIENT_CONNECT_DELAY      3000 // 1000 = 1 Sec.
 #define CLIENT_PORT_NO            9000
 #define CONNECT_DEST_PORT         80
 #define IP4_ADDR_STR_SIZE         16
@@ -442,6 +442,8 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     LWIP_UNUSED_ARG(err);
     uint32_t len_copied = 0;
     HTTPC_COMMAND_STATUS cmd_status = CMD_UNKNOWN;
+    httpc_state_t *req = (httpc_state_t *)arg;
+    httpc_result_t result;
 
     memset(httpc_resp_buffer, 0, HTTPC_BUFF_SZ); // reset the memory
 
@@ -478,6 +480,8 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     }
 
     cmd_status = parse_http_reply(httpc_resp_buffer, len_copied, &header_info);
+    result = HTTPC_RESULT_OK;
+    httpc_close(req, result, req->rx_status, ERR_OK);
 
     return ERR_OK;
 }

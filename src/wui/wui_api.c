@@ -183,7 +183,7 @@ static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_heade
     } while (i < h_info_ptr->content_lenght);
 
     for (uint32_t cnt = 0; cnt < cmd_count; cnt++) {
-        send_request_to_wui(&gcode_str[cmd_count]);
+        send_request_to_wui(&gcode_str[cnt]);
     }
 
     return CMD_ACCEPTED;
