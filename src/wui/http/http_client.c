@@ -16,22 +16,20 @@
 #include "lwip.h"
 #include "marlin_vars.h"
 
-#define CLIENT_CONNECT_DELAY      3000 // 1000 = 1 Sec.
-#define CLIENT_PORT_NO            9000
-#define CONNECT_DEST_PORT         80
+#define CLIENT_CONNECT_DELAY      10000 // 1000 = 1 Sec.
+#define CONNECT_SERVER_PORT       80
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
 #define BODY_MAX_SIZE             512
 #define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1
-#define HTTPC_POLL_TIMEOUT        3 /* 1.5 seconds */
-#define MAX_HEADER_GEN_PART_SIZE  (32 + 24)
+#define HTTPC_POLL_TIMEOUT        3   /* 1.5 seconds */
 #define HTTPC_BUFF_SZ             512 // buffer size for http client requests
 
 static char httpc_req_buffer[HTTPC_BUFF_SZ + 1] = "";  // buffer to make the request for HTTP request
 static char httpc_resp_buffer[HTTPC_BUFF_SZ + 1] = ""; // buffer to work with the response of HTTP request
-struct tcp_pcb *client_pcb;
+//struct tcp_pcb *client_pcb;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
 static httpc_header_info header_info;
@@ -580,7 +578,7 @@ wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
         httpc_free_state(req);
         return ERR_MEM;
     }
-    req->remote_port = CLIENT_PORT_NO;
+
     altcp_arg(req->pcb, req);
     altcp_recv(req->pcb, httpc_tcp_recv);
     altcp_err(req->pcb, httpc_tcp_err);
@@ -595,7 +593,7 @@ wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
     }
 
     req->recv_fn = data_received_fun;
-    tcp_connect(req->pcb, &host_ip4, CONNECT_DEST_PORT, httpc_tcp_connected);
+    tcp_connect(req->pcb, &host_ip4, CONNECT_SERVER_PORT, httpc_tcp_connected);
     return ERR_OK;
 }
 
