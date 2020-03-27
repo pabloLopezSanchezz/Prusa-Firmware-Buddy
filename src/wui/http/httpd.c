@@ -112,6 +112,7 @@
 #include <string.h> /* memset */
 #include <stdlib.h> /* atoi */
 #include <stdio.h>
+#include "stdbool.h"
 
 /*******   Customization ***************************************/
 #include "wui_api.h"
@@ -121,13 +122,12 @@
 #include "dbg.h"
 #define WUI_API_ROOT_STR_LEN 5
 
-#define MSG_BUFFSIZE           512
+#define MSG_BUFFSIZE           1500
 #define MAX_MARLIN_REQUEST_LEN 100
 #define POST_URL_STR_MAX_LEN   50
 
 static char request_buf[MSG_BUFFSIZE];
-static void *current_connection;
-static void *valid_connection;
+static bool post_request_valid = false;
 
 /***************************************************************/
 
@@ -362,26 +362,21 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
 
     LWIP_UNUSED_ARG(post_auto_wnd); // default is 1 (httpd handles window updates automatically)
 
-    _dbg("request length: %d", http_request_len);
-    _dbg("content length: %d", content_len);
-    _dbg("response uri length: %d", response_uri_len);
+    struct http_state *hs = (struct http_state *)connection;
 
-    if (!memcmp(uri, "/api/g-code", 11)) {
-        if (current_connection != connection) {
-            current_connection = connection;
-            valid_connection = NULL;
+    _dbg("HTTP post begin");
+    _dbg("http_request_len: %d", http_request_len);
+    _dbg("content length: %d", content_len);
+
+    if (hs != NULL) {
+        if (!memcmp(uri, "/api/g-code", 11)) {
+            post_request_valid = true;
             return ERR_OK;
-        }
-    } else if (!memcmp(uri, "/admin.html", 11)) {
-        if (current_connection != connection) {
-            current_connection = connection;
-            valid_connection = NULL;
+        } else if (!memcmp(uri, "/admin.html", 11)) {
+            post_request_valid = true;
             return ERR_OK;
-        }
-    } else if (!memcmp(uri, "/FileUpload", 11)) {
-        if (current_connection != connection) {
-            current_connection = connection;
-            valid_connection = NULL;
+        } else if (!memcmp(uri, "/FileUpload", 11)) {
+            post_request_valid = true;
             return ERR_OK;
         }
     }
@@ -391,46 +386,52 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
 }
 
 err_t httpd_post_receive_data(void *connection, struct pbuf *p) {
+    err_enum_t ret_code = ERR_VAL;
+    struct http_state *hs = (struct http_state *)connection;
 
-    if (current_connection == connection) {
-
+    _dbg("packet");
+    if (hs != NULL && p != NULL) {
         _dbg("receive data total length: %d", p->tot_len);
         _dbg("receive data current pbuf length: %d", p->len);
-        char request_part[(const u16_t)p->tot_len + 1];
-        char *payload = p->payload;
-        if (payload[0] == 0) {
-            return ERR_OK;
+        if (NULL != p->payload) {
+            request_buf[0] = 0;
+            u16_t ret = pbuf_copy_partial(p, request_buf, p->len, 0);
+            if (p->len == ret) {
+                ret_code = ERR_OK;
+                post_request_valid = true;
+            } else {
+                ret_code = ERR_VAL;
+                post_request_valid = false;
+            }
         }
-        u16_t ret = pbuf_copy_partial(p, request_part, p->tot_len, 0);
-        if (ret && strlen(request_buf) + ret <= MSG_BUFFSIZE) {
-            request_part[ret] = 0;
-            strncat(request_buf, request_part, ret + 1);
-            valid_connection = connection;
-            return ERR_OK;
-        }
-        request_buf[0] = 0;
+
+    } else {
+        post_request_valid = false;
     }
 
-    return ERR_VAL;
+    if (p != NULL) {
+        pbuf_free(p);
+    }
+    return ret_code;
 }
 
-void httpd_post_finished(void *connection, char *response_uri, u16_t response_uri_len) {
+void httpd_post_finished(void *connection, char *response_uri,
+    u16_t response_uri_len) {
     _dbg("post finished callback");
     _dbg("response uri length: %d", response_uri_len);
 
-    if (current_connection == connection) {
-        if (valid_connection == connection) {
-            if (request_buf[0] != 0) {
-                http_json_parser(request_buf, strlen(request_buf));
+    if (true == post_request_valid) {
+        if (request_buf[0] != 0) {
+            http_json_parser(request_buf, strlen(request_buf));
 
-                strlcpy(response_uri, "POST200", response_uri_len);
-                request_buf[0] = 0;
-            }
+            strlcpy(response_uri, "POST200", response_uri_len);
+            request_buf[0] = 0;
+
+        } else {
+            strlcpy(response_uri, "POST500", response_uri_len);
         }
-        current_connection = NULL;
-        valid_connection = NULL;
     } else {
-        strlcpy(response_uri, "POST500", response_uri_len);
+        strlcpy(response_uri, "POST400", response_uri_len); // bad request
     }
 }
 
