@@ -37,6 +37,32 @@ web_client_t wui;
 static void wui_queue_cycle(void);
 static int process_wui_request(void);
 
+static void device_state_change() {
+
+    if (marlin_event(MARLIN_EVT_DevStateChange)) {
+        web_vars.device_state = wui.wui_marlin_vars->device_state;
+        switch (web_vars.device_state) {
+        case DEVICE_STATE_IDLE:
+
+            break;
+        case DEVICE_STATE_ERROR:
+
+        case DEVICE_STATE_PRINTING:
+
+            break;
+        case DEVICE_STATE_PAUSED:
+
+            break;
+        case DEVICE_STATE_FINISHED:
+
+            break;
+        default:
+
+            break;
+        }
+    }
+}
+
 void update_web_vars(void) {
     osMutexWait(wui_thread_mutex_id, osWaitForever);
     web_vars.pos[Z_AXIS_POS] = wui.wui_marlin_vars->pos[Z_AXIS_POS];
@@ -47,13 +73,11 @@ void update_web_vars(void) {
     web_vars.print_dur = wui.wui_marlin_vars->print_duration;
     web_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
     web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
-    if (marlin_event(MARLIN_EVT_DevStateChange)) {
-        web_vars.device_state = wui.wui_marlin_vars->device_state;
-        buddy_http_client_init(MSG_EVENTS_STATE_CHANGED, &web_vars.device_state);
-    }
+
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(web_vars.gcode_name);
     }
+
     osMutexRelease(wui_thread_mutex_id);
 }
 

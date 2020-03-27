@@ -9,7 +9,6 @@
 #include "ini_handler.h"
 #include "lwip/dhcp.h"
 #include "lwip/netifapi.h"
-#include "lwip.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>

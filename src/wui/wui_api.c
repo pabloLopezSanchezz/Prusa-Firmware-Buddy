@@ -16,14 +16,15 @@
 #include "stdarg.h"
 
 #define BDY_WUI_API_BUFFER_SIZE 512
-#define BDY_NO_FS_FLAGS         0 // no flags for fs_open
+#define BDY_NO_FS_FLAGS         0  // no flags for fs_open
+#define CMD_LIMIT               10 // number of commands accepted in low level command response
 
 // for data exchange between wui thread and HTTP thread
 static web_vars_t web_vars_copy;
 // for storing /api/* data
 static struct fs_file api_file;
 
-const char *get_update_str(const char *header) {
+const char *get_update_str(void) {
 
     osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);
     if (status == osOK) {
@@ -39,7 +40,7 @@ const char *get_update_str(const char *header) {
     const char *filament_material = filaments[get_filament()].name;
 
     if (!web_vars_copy.sd_printing) {
-        return char_streamer("%s{"
+        return char_streamer("{"
                              "\"temp_nozzle\":%d,"
                              "\"temp_bed\":%d,"
                              "\"material\":\"%s\","
@@ -47,7 +48,6 @@ const char *get_update_str(const char *header) {
                              "\"printing_speed\":%d,"
                              "\"flow_factor\":%d"
                              "}",
-            header,
             actual_nozzle, actual_heatbed, filament_material,
             z_pos_mm, print_speed, flow_factor);
     }
@@ -64,7 +64,7 @@ const char *get_update_str(const char *header) {
 
     print_dur_to_string(print_time, web_vars_copy.print_dur);
 
-    return char_streamer("%s{"
+    return char_streamer("{"
                          "\"temp_nozzle\":%d,"
                          "\"temp_bed\":%d,"
                          "\"material\":\"%s\","
@@ -76,50 +76,44 @@ const char *get_update_str(const char *header) {
                          "\"time_est\":\"%s\","
                          "\"project_name\":\"%s\""
                          "}",
-        header,
         actual_nozzle, actual_heatbed, filament_material,
         z_pos_mm, print_speed, flow_factor,
         percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
 }
 
-const char *get_event_ack_str(const char * header, void * container){
-    const connect_event_t * evt = (const connect_event_t *)container;
-
-    const char * ptr;
-    if(strncmp(evt->state, "REJECTED", 8) == 0){
-        ptr = char_streamer("%s{"
+#if 0
+const char *get_event_ack_str(uint8_t id, connect_event_t * evt){
+    const char * ptr = 0;
+    if(id == MSG_EVENTS_REJ){
+        ptr = char_streamer("{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d,"
                          "\"reason\":\"%s\""
                          "}",
-                         header,
                          evt->state, evt->command_id, evt->reason);
-    } else {
-        ptr = char_streamer("%s{"
+    } else if(id == MSG_EVENTS_ACC){
+        ptr = char_streamer("{"
                          "\"event\":\"%s\","
                          "\"command_id\":%d"
                          "}",
-                         header,
                          evt->state, evt->command_id);
     }
-    
-    return ptr; 
+
+    return ptr;
 }
 
-const char *get_event_state_changed_str(const char *header, void * container){
-    const connect_event_t * evt = (const connect_event_t *)container;
+const char *get_event_state_changed_str(connect_event_t * evt){
 
-    return char_streamer("%s{"
+    return char_streamer("{"
                          "\"event\":\"STATE_CHANGED\","
                          "\"state\":\"%s\""
                          "}",
-                         header,
                          evt->state);
 }
-
+#endif
 static void wui_api_telemetry(struct fs_file *file) {
 
-    const char *ptr = get_update_str("");
+    const char *ptr = get_update_str();
 
     uint16_t response_len = strlen(ptr);
     file->len = response_len;
@@ -144,4 +138,68 @@ struct fs_file *wui_api_main(const char *uri) {
         return &api_file;
     }
     return NULL;
+}
+
+static HTTPC_COMMAND_STATUS parse_high_level_cmd(char *json, uint32_t len) {
+    char cmd_str[200];
+    uint32_t ret_code = httpc_json_parser(json, len, cmd_str);
+    if (ret_code) {
+        return CMD_REJT_CMD_STRUCT;
+    } else {
+        return CMD_ACCEPTED;
+    }
+}
+
+static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_header_info *h_info_ptr) {
+
+    char gcode_str[CMD_LIMIT][MAX_REQ_MARLIN_SIZE] = { 0 };
+
+    if (h_info_ptr->content_lenght <= 2) {
+        return CMD_REJT_CMD_STRUCT;
+    }
+
+    uint32_t cmd_count = 0;
+    uint32_t index = 0;
+    const char *line_start_addr = request;
+    const char *line_end_addr;
+    uint32_t i = 0;
+
+    do {
+        cmd_count++;
+        if (CMD_LIMIT < cmd_count) {
+            return CMD_REJT_GCODES_LIMI; // return if more than 10 codes in the response
+        }
+
+        while ((i < h_info_ptr->content_lenght) && (request[i] != '\0') && (request[i] != '\r') && (request[i + 1] != '\n')) {
+            i++;
+        }
+
+        line_end_addr = request + i;
+        uint32_t str_len = line_end_addr - line_start_addr;
+        strlcpy(gcode_str[index++], line_start_addr, str_len + 1);
+        line_start_addr = line_end_addr + 2;
+        i = i + 2; // skip the end of line chars
+
+    } while (i < h_info_ptr->content_lenght);
+
+    for (uint32_t cnt = 0; cnt < cmd_count; cnt++) {
+        send_request_to_wui(gcode_str[cnt]);
+    }
+
+    return CMD_ACCEPTED;
+}
+
+HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_header_info *h_info_ptr) {
+    HTTPC_COMMAND_STATUS cmd_status;
+    if (0 == h_info_ptr->command_id) {
+        return CMD_REJT_CMD_ID;
+    }
+    if (TYPE_JSON == h_info_ptr->content_type) {
+        cmd_status = parse_high_level_cmd(reply, reply_len);
+    } else if (TYPE_GCODE == h_info_ptr->content_type) {
+        cmd_status = parse_low_level_cmd(reply, h_info_ptr);
+    } else {
+        cmd_status = CMD_REJT_CDNT_TYPE;
+    }
+    return cmd_status;
 }
