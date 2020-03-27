@@ -160,8 +160,8 @@ static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_heade
 
     uint32_t cmd_count = 0;
     uint32_t index = 0;
-    char *line_start_addr = request;
-    char *line_end_addr;
+    const char *line_start_addr = request;
+    const char *line_end_addr;
     uint32_t i = 0;
 
     do {
@@ -176,14 +176,14 @@ static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_heade
 
         line_end_addr = request + i;
         uint32_t str_len = line_end_addr - line_start_addr;
-        strlcpy(&gcode_str[index++], line_start_addr, str_len + 1);
+        strlcpy(gcode_str[index++], line_start_addr, str_len + 1);
         line_start_addr = line_end_addr + 2;
         i = i + 2; // skip the end of line chars
 
     } while (i < h_info_ptr->content_lenght);
 
     for (uint32_t cnt = 0; cnt < cmd_count; cnt++) {
-        send_request_to_wui(&gcode_str[cmd_count]);
+        send_request_to_wui(gcode_str[cnt]);
     }
 
     return CMD_ACCEPTED;
