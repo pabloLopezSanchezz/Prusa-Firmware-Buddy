@@ -21,11 +21,9 @@
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
 #define BODY_MAX_SIZE             512
-#define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1   // tcp_poll call interval (1 = 0.5 s)
-#define HTTPC_POLL_TIMEOUT        3   // number of tcp_poll calls before quiting the current connection request \
-                                    // (total time = HTTPC_POLL_TIMEOUT*HTTPC_POLL_INTERVAL)
+#define HTTPC_POLL_TIMEOUT        3   // number of tcp_poll calls before quiting the current connection request (total time = HTTPC_POLL_TIMEOUT*HTTPC_POLL_INTERVAL)
 #define HTTPC_BUFF_SZ             512 // buffer size for http client requests
 
 static char httpc_req_buffer[HTTPC_BUFF_SZ + 1] = "";  // buffer to make the request for HTTP request
@@ -350,6 +348,8 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
                 req->rx_hdrs = NULL;
                 /* go on with data */
                 req->parse_state = HTTPC_PARSE_RX_DATA;
+            } else {
+                pbuf_free(p);
             }
         }
     }
@@ -487,9 +487,10 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 }
 
 static void create_http_header(char *http_header_str, uint32_t content_length, HTTP_CLIENT_REQ_TYPE reqest_type) {
-    char printer_token[API_TOKEN_LEN + 1]; // extra space of end of line
+    char printer_token[CONNECT_TOKEN_SIZE + 1]; // extra space of end of line
     variant8_t printer_token_ptr = eeprom_get_var(EEVAR_CONNECT_TOKEN);
-    strlcpy(printer_token, printer_token_ptr.pch, API_TOKEN_LEN + 1);
+    strlcpy(printer_token, printer_token_ptr.pch, CONNECT_TOKEN_SIZE + 1);
+    variant8_done(&printer_token_ptr);
 #define STR_SIZE_MAX 50
     char uri[STR_SIZE_MAX] = { 0 };
     char content_type[STR_SIZE_MAX] = { 0 };
