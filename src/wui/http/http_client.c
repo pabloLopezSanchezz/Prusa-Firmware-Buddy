@@ -16,20 +16,21 @@
 #include "lwip.h"
 #include "marlin_vars.h"
 
-#define CLIENT_CONNECT_DELAY      10000 // 1000 = 1 Sec.
+#define CLIENT_CONNECT_DELAY      1000 // 1000 = 1 Sec.
 #define CONNECT_SERVER_PORT       80
 #define IP4_ADDR_STR_SIZE         16
 #define HEADER_MAX_SIZE           256
 #define BODY_MAX_SIZE             512
 #define API_TOKEN_LEN             20
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
-#define HTTPC_POLL_INTERVAL       1
-#define HTTPC_POLL_TIMEOUT        3   /* 1.5 seconds */
+#define HTTPC_POLL_INTERVAL       1   // tcp_poll call interval (1 = 0.5 s)
+#define HTTPC_POLL_TIMEOUT        3   // number of tcp_poll calls before quiting the current connection request \
+                                    // (total time = HTTPC_POLL_TIMEOUT*HTTPC_POLL_INTERVAL)
 #define HTTPC_BUFF_SZ             512 // buffer size for http client requests
 
 static char httpc_req_buffer[HTTPC_BUFF_SZ + 1] = "";  // buffer to make the request for HTTP request
 static char httpc_resp_buffer[HTTPC_BUFF_SZ + 1] = ""; // buffer to work with the response of HTTP request
-//struct tcp_pcb *client_pcb;
+static bool httpc_req_active = false;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
 static httpc_header_info header_info;
@@ -169,6 +170,7 @@ httpc_free_state(httpc_state_t *req) {
 /** Close the connection: call finished callback and free the state */
 static err_t
 httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, err_t err) {
+    httpc_req_active = false;
     if (req != NULL) {
         if (req->conn_settings != NULL) {
             if (req->conn_settings->result_fn != NULL) {
@@ -480,7 +482,7 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     cmd_status = parse_http_reply(httpc_resp_buffer, len_copied, &header_info);
     result = HTTPC_RESULT_OK;
     httpc_close(req, result, req->rx_status, ERR_OK);
-
+    LWIP_UNUSED_ARG(cmd_status);
     return ERR_OK;
 }
 
@@ -578,12 +580,13 @@ wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
         httpc_free_state(req);
         return ERR_MEM;
     }
-
+    // setup callback functions
     altcp_arg(req->pcb, req);
     altcp_recv(req->pcb, httpc_tcp_recv);
     altcp_err(req->pcb, httpc_tcp_err);
     altcp_poll(req->pcb, httpc_tcp_poll, HTTPC_POLL_INTERVAL);
     altcp_sent(req->pcb, httpc_tcp_sent);
+    req->recv_fn = data_received_fun; // callback when response data received
 
     /* set up request buffer */
     req_len2 = strlcpy((char *)req->request->payload, header_plus_data, req_len + 1);
@@ -592,7 +595,6 @@ wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type) {
         return ERR_VAL;
     }
 
-    req->recv_fn = data_received_fun;
     tcp_connect(req->pcb, &host_ip4, CONNECT_SERVER_PORT, httpc_tcp_connected);
     return ERR_OK;
 }
@@ -610,7 +612,10 @@ void buddy_http_client_loop() {
 
     if (netif_ip4_addr(&eth0)->addr != 0
         && ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY)) {
-        buddy_http_client_req(REQ_TELEMETRY);
+        if (!httpc_req_active) {
+            buddy_http_client_req(REQ_TELEMETRY);
+            httpc_req_active = true;
+        }
         client_interval = xTaskGetTickCount();
     }
 }
