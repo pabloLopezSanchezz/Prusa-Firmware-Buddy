@@ -7,18 +7,27 @@ import time
 import json
 
 HTTP_OK = "HTTP/1.0 200 OK\r\n"
+
+#       IF YOU ADD SOME TEST:
+#           add path to the test to TEST_PATHS list below
+#           check example.txt if your json test is compatible with this test sctipt
+
+
+# paths to json test files
 TEST_PATHS = ["tests/lowlvl_gcode.json", 'tests/lowlvl_gcodes.json']
 
 time_start = 0.00
-next_delay = 5.00
+next_delay = 5.00       # we can set a wait time before executing another test
 
-test_cnt = 1
-test_curr = 0
-json_telemetry = {}
-json_obj = {}
+test_cnt = 1            # test count
+test_curr = 0           # current test
+json_telemetry = {}     # telemetry json object loaded at the beggining of the test
+json_obj = {}           # json object variable (currently loaded json test object)
 
+# generic creation of the response header
 def create_header(header_obj):
     ret = HTTP_OK
+    # appends whatever header we currently want
     if 'token' is in header_obj:
         ret.append("Printer-Token: " + header_obj['token']'\r\n')
     if 'c-length' is in header_obj:
@@ -75,7 +84,7 @@ def create_request(json_obj):
 
 # loads test from json file
 def test_load():
-    global json_obj, test_curr, next_delay
+    global json_obj, test_curr, next_delay, test_name
 
     file_json = open(TEST_PATHS[test_curr], "r")
     json_obj = json.load(file_json)
@@ -83,10 +92,6 @@ def test_load():
     next_delay = 0.00 
     if 'delay' in json_obj['test']:
         next_delay = json_obj['test']['delay']
-    
-    test_name = "Unknown"
-    if 'name' in json_obj['test']:
-        test_name = json_obj['test']['name']
 
     ret_str = create_request(json_obj)
 
@@ -95,7 +100,7 @@ def test_load():
     else:
         test_curr += 1
 
-    return test_name, ret_str
+    return ret_str
 
 # telemetry is tested in every cycle
 # in case of failiure, error is logged in error output file "connect_tests_resutls.txt"
@@ -120,8 +125,43 @@ def test_failed(data, name):
         file_results.write(str(now) + " Wrong response data of test: " + name + "\n" + data + "\n\n")
         file_results.close()
 
-def prepare_next_test():
-    global test_curr, test_cnt, next_delay, tests
+# test the response from printer
+def test_printers_response(data_str):
+    global json_obj
+    json_response = 0
+
+    test_name = "Unknown"
+    if 'name' in json_obj['test']:
+        test_name = json_obj['test']['name']
+
+    for item in json_obj['test']['result']['header']:
+        if str(item) not in data_str:
+            # test fail -> log info
+            test_failed(data_str, test_name)
+            return
+        
+    if 'body' in json_obj['test']:
+        if json_response is 1:
+    else:
+        # only heafer response: success
+        return
+
+    # look if body is json structure
+    if 'application/json' in data_str:
+        json_response = 1            
+        t = data_str.find('\r\n\r\n')
+        if t is not -1:
+            json_body = data_str[t + 4:]
+            if len(json_body) < 1 or json_body[0] != '{' or json_body[-1] != '}':
+                test_failed(data_str, test_name)
+                # test failed: not proper json structure in the body
+                return
+            #json_obj = 
+
+
+    
+             
+    
 
 class TestTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -146,6 +186,8 @@ class TestTCPHandler(socketserver.BaseRequestHandler):
                 ret_data = HTTP_OK + "\r\n"
 
             self.request.sendall(ret_data.encode('utf-8'))
+        else:
+            test_printers_response(data_str)
 
 def main():
     

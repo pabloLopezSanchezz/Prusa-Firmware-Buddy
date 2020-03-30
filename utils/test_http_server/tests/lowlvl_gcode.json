@@ -21,13 +21,13 @@
 		"result": 
 		{
 				"header": 
-				{
-					"method": "POST",
-					"uri": "/p/events",
-					"http": "HTTP/1.0",
-					"token": "01234567899876543210",
-					"c-type": "application/json"
-				}
+				[
+					"POST",
+					"/p/events",
+					"HTTP/1.0",
+					"01234567899876543210",
+					"application/json"
+				]
 		,
 		
 				"body":
