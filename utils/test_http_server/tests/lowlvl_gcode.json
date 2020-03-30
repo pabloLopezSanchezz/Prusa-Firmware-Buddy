@@ -1,0 +1,40 @@
+{
+	"test":
+	{
+		"name": "Low level GCODE",
+		"delay": 5,
+		"request":
+		{
+				"header": 
+				{
+					"c-type": "text/x.gcode",
+					"c-id": 1254
+				}
+		,
+				"body": 
+				{
+					"type": "low",
+					"repeat": 3,
+					"command": "G28 XY"
+				}
+		},
+		"result": 
+		{
+				"header": 
+				{
+					"method": "POST",
+					"uri": "/p/events",
+					"http": "HTTP/1.0",
+					"token": "01234567899876543210",
+					"c-type": "application/json"
+				}
+		,
+		
+				"body":
+				{
+					"event": "ACCEPTED",
+					"command_id": 1254
+				}
+		}
+	}
+}

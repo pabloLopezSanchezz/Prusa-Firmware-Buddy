@@ -1,0 +1,54 @@
+{
+	"test":
+	{
+		"name": "Example...",   # name of the test
+		"delay": 15,            # time for the printer to execute the command
+		"request":          # what server sends to the printer
+		{
+				"header": 
+				{
+                    #"token": xxxxx,            # Printer-Token:  xxx
+					"c-type": "text/x.gcode",   # Content-Type:   xxx
+                    #"c-length": x,              # Content-Length: xxx
+                    "c-id": 23                  # Content-Id:     xxx
+				}
+		,
+				"body": 
+				{
+                    "type": "low",      # low/high as low or high level command
+                    #"repeat": x,       # number of repetition of the "command"
+                    "commands":         # custome queue of low level commands
+                    [
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY",
+                        "G28 XY"
+                    ]
+				}
+		},
+		"result":       # what printer should return
+		{
+				"header":  # key words that we look for in the response
+                [
+					"POST",   
+					"/p/events",
+					"HTTP/1.0",
+					"01234567899876543210",
+					"application/json"
+                ]
+		,
+		
+				"body":     # exact response body we look for
+				{
+					"event": "ACCEPTED",
+					"command_id": 23
+				}
+		}
+	}
+}
