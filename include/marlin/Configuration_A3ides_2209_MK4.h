@@ -439,9 +439,9 @@
     //#define  DEFAULT_Kd 56.23
 
     // RING
-    #define DEFAULT_Kp 18.00
-    #define DEFAULT_Ki 1.84
-    #define DEFAULT_Kd 43.91
+    #define DEFAULT_Kp 17.00
+    #define DEFAULT_Ki 1.00
+    #define DEFAULT_Kd 115.00
 
 // MakerGear
 //#define DEFAULT_Kp 7.0
@@ -501,9 +501,9 @@
     //#define DEFAULT_bedKd 1675.16
 
     //24V Prusa MK3 bed
-    #define DEFAULT_bedKp 160.97
-    #define DEFAULT_bedKi 14.07
-    #define DEFAULT_bedKd 460.39
+    #define DEFAULT_bedKp 29.60
+    #define DEFAULT_bedKi 1.36
+    #define DEFAULT_bedKd 429.33
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
