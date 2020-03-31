@@ -125,6 +125,23 @@ def test_failed(data, name):
         file_results.write(str(now) + " Wrong response data of test: " + name + "\n" + data + "\n\n")
         file_results.close()
 
+# testing json structure decoded from printer's response
+#   res_body = decoded json structure
+def test_json_body(res_body):
+    # loaded json test structure
+    global json_body
+    test_body = json_body['test']['result']['body']
+    if 'event' in test_body:
+        if test_body['event'] != res_body['event']:
+            return 1
+    if 'command_id' in test_body:
+        if test_body['commmand_id'] != res_body['command_id']
+            return 1
+    
+    # ADD ANOTHER TEST
+    
+    return 0
+
 # test the response from printer
 def test_printers_response(data_str):
     global json_obj
@@ -136,32 +153,36 @@ def test_printers_response(data_str):
 
     for item in json_obj['test']['result']['header']:
         if str(item) not in data_str:
-            # test fail -> log info
+            # test fail: keyword not found -> log info
             test_failed(data_str, test_name)
             return
-        
-    if 'body' in json_obj['test']:
-        if json_response is 1:
-    else:
-        # only heafer response: success
+
+    if 'body' not in json_obj['test']:
+        # test success: only header response expected
         return
 
+    t = data_str.find('\r\n\r\n')
+    if t is not -1:
+        # test fail: body not found -> log info
+        test_failed(data_str, test_name)
+
     # look if body is json structure
-    if 'application/json' in data_str:
-        json_response = 1            
-        t = data_str.find('\r\n\r\n')
-        if t is not -1:
-            json_body = data_str[t + 4:]
-            if len(json_body) < 1 or json_body[0] != '{' or json_body[-1] != '}':
+    if 'application/json' in data_str:      
+            json_body_str = data_str[t + 4:]
+            if len(json_body_str) < 2 or json_body_str[0] != '{' or json_body_str[-1] != '}':
+                # test failed: not proper json structure in the body -> log info
                 test_failed(data_str, test_name)
-                # test failed: not proper json structure in the body
                 return
-            #json_obj = 
-
-
-    
-             
-    
+            json_body_dic = json.load(json_body_str)
+            # test decoded json structure -> log info
+            if test_json_body(json_body_dic):
+                # test fail: Something wrong with json structure -> log info
+                test_failed(data_str, test_name)
+                return
+    else:
+        # no plain text body responses yet
+        # TODO
+        return           
 
 class TestTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
