@@ -7,8 +7,6 @@
 #include "marlin_client.h"
 #include "display.h"
 
-#include "window_logo.h"
-
 #ifdef LCDSIM
     #include "window_lcdsim.h"
 #else //LCDSIM
@@ -196,6 +194,9 @@ static void dialog_close_cb(dialog_t dialog) {
     if (gui_get_nesting() > 1)
         return; //todo notify octoprint
     if (dialog == DLG_serial_printing) {
+        if (screen_get_curr() == pscreen_menu_tune)
+            screen_close();
+
         if (screen_get_curr() == pscreen_printing_serial)
             screen_close();
     }
@@ -244,7 +245,6 @@ void gui_run(void) {
     screen_register(pscreen_splash);
     screen_register(pscreen_watchdog);
 
-    WINDOW_CLS_LOGO = window_register_class((window_class_t *)&window_class_logo);
 #ifdef LCDSIM
     WINDOW_CLS_LCDSIM = window_register_class((window_class_t *)&window_class_lcdsim);
     screen_register(pscreen_marlin);
