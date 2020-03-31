@@ -1,193 +1,12 @@
 from ipaddress import ip_address
-from datetime import datetime
 import socketserver  # import socketserver preinstalled module
 import http.server
 import argparse
-import time
-import json
+import connect_test_funcs as test
 
-HTTP_OK = "HTTP/1.0 200 OK\r\n"
-
-#       IF YOU ADD SOME TEST:
-#           add path to the test to TEST_PATHS list below
-#           check example.txt if your json test is compatible with this test sctipt
-
-
-# paths to json test files
-TEST_PATHS = ["tests/lowlvl_gcode.json", 'tests/lowlvl_gcodes.json']
-
-time_start = 0.00
-next_delay = 5.00       # we can set a wait time before executing another test
-
-test_cnt = 1            # test count
-test_curr = 0           # current test
-json_telemetry = {}     # telemetry json object loaded at the beggining of the test
-json_obj = {}           # json object variable (currently loaded json test object)
-
-# generic creation of the response header
-def create_header(header_obj):
-    ret = []
-    ret.append(HTTP_OK)
-    # appends whatever header we currently want
-    if 'token' in header_obj:
-        ret.append("Printer-Token: " + str(header_obj['token']) + '\r\n')
-    if 'c-length' in header_obj:
-        ret.append("Content-Length: " + str(header_obj['c-length']) + '\r\n')
-    if 'c-type' in header_obj:
-        ret.append("Content-Type: " + header_obj['c-type'] + '\r\n')
-    if 'c-id' in header_obj:
-        ret.append("Command-Id: " + str(header_obj['c-id']) + '\r\n')
-    ret.append('\r\n')
-    ret_fin = ''.join(ret)
-    return ret_fin
-
-def create_high_lvl(body_obj):
-    pass
-
-# creates low level requests like plain gcodes
-# 
-def create_low_lvl(body_obj):
-    repeat = 1
-    ret = []
-    if 'command' in body_obj:
-        if 'repeat' in body_obj:
-            repeat = body_obj['repeat']
-        for x in range(0, repeat):
-            ret.append(body_obj['command'])
-            if x + 1 < repeat:
-                ret.append('\n')
-
-    if 'commands' in body_obj:
-        size = body_obj['commands'].size
-        for x in range(0, size):
-            ret.append(body_obj['commands'][x])
-            if x + 1 < size:
-                ret.append('\n')
-    ret_fin = ''.join(ret)
-    return ret_fin
-
-# generic creation of the test request
-def create_request(json_obj):
-    header_obj = json_obj['test']['request']['header']
-    ret_list = []
-    ret_list.append(create_header(header_obj))
-
-    body_obj = json_obj['test']['request']['body']
-    cmd_type = body_obj['type']
-
-    # low level gcodes
-    if 'low' in cmd_type:
-        ret_list.append(create_low_lvl(body_obj))
-    # high level gcodes
-    #elif 'high' is in cmd_type:
-    #    ret.append(create_high_lvl(body_obj))
-    else:
-        pass
-    
-    ret = ''.join(ret_list)
-    return ret    
-
-# loads test from json file
-def test_load():
-    global json_obj, test_curr, next_delay, test_name
-
-    file_json = open(TEST_PATHS[test_curr], "r")
-    json_obj = json.load(file_json)
-
-    next_delay = 0.00 
-    if 'delay' in json_obj['test']:
-        next_delay = json_obj['test']['delay']
-
-    ret_str = create_request(json_obj)
-
-    if (test_curr + 1) >= test_cnt:
-        test_curr = 0
-    else:
-        test_curr += 1
-
-    return ret_str
-
-# telemetry is tested in every cycle
-# in case of failiure, error is logged in error output file "connect_tests_resutls.txt"
-def test_telemetry(data):
-    global json_telemetry
-    for item in json_telemetry["result"]["header"]:
-        if str(item) not in data:
-            test_failed(data, "Telemetry")
-            return
-    for item in json_telemetry["result"]["body"]:
-        if str(item) not in data:
-            test_failed(data, "Telemetry")
-            return
-
-# if test fails it logs the info in error output file "connect_tests_results.txt"
-def test_failed(data, name):
-    now = datetime.now()
-    file_results = open("connect_tests_results.txt", "a")
-    if not file_results.mode == "a":
-        print("Faild to write to \"connect_tests_res.txt\"")
-    else:
-        file_results.write(str(now) + " Wrong response data of test: " + name + "\n" + data + "\n\n")
-        file_results.close()
-
-# testing json structure decoded from printer's response
-#   res_body = decoded json structure
-def test_json_body(res_body):
-    # loaded json test structure
-    global json_body
-    test_body = json_body['test']['result']['body']
-    if 'event' in test_body:
-        if test_body['event'] != res_body['event'] or type(test_body['event']) != type('str'):
-            return 1
-    if 'command_id' in test_body:
-        if test_body['commmand_id'] != res_body['command_id'] or type(test_body['command_id']) != type(1):
-            return 1
-    
-    # ADD ANOTHER TEST
-    
-    return 0
-
-# test the response from printer
-def test_printers_response(data_str):
-    global json_obj
-    json_response = 0
-
-    test_name = "Unknown"
-    if 'name' in json_obj['test']:
-        test_name = json_obj['test']['name']
-
-    for item in json_obj['test']['result']['header']:
-        if str(item) not in data_str:
-            # test fail: keyword not found -> log info
-            test_failed(data_str, test_name)
-            return
-
-    if 'body' not in json_obj['test']:
-        # test success: only header response expected
-        return
-
-    t = data_str.find('\r\n\r\n')
-    if t is not -1:
-        # test fail: body not found -> log info
-        test_failed(data_str, test_name)
-
-    # look if body is json structure
-    if 'application/json' in data_str:      
-            json_body_str = data_str[t + 4:]
-            if len(json_body_str) < 2 or json_body_str[0] != '{' or json_body_str[-1] != '}':
-                # test failed: not proper json structure in the body -> log info
-                test_failed(data_str, test_name)
-                return
-            json_body_dic = json.load(json_body_str)
-            # test decoded json structure -> log info
-            if test_json_body(json_body_dic):
-                # test fail: Something wrong with json structure -> log info
-                test_failed(data_str, test_name)
-                return
-    else:
-        # no plain text body responses yet
-        # TODO
-        return           
+#   IF YOU WANT TO ADD SOME TEST:
+#       create json test structure with proper syntax in tests.json > "tests" array
+#       add testing solution in test_json_body() at connect_test_funcs.py
 
 class TestTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -195,29 +14,22 @@ class TestTCPHandler(socketserver.BaseRequestHandler):
         global test_curr, next_delay, time_start
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
-        data_str = str(self.data)
+        # remove b' xxx ' in the string
+        data_str = str(self.data)[2:-1]
         # some tests starts as a response to 
         if "/p/telemetry" in data_str:
             # testing telemetry in every cycle
-            test_telemetry(data_str)
-
-            time_point = time.perf_counter()
-            # gcode tests require some time to complete
-            # next_delay can be set in json file
-            if time_point - time_start >= next_delay:
-                # passes next test test's request
-                ret_data = test_load()
-                time_start = time_point
-            else:
-                ret_data = HTTP_OK + "\r\n"
-
+            test.test_telemetry(data_str)
+            # returns test data or HTTP_OK depending on next_delay
+            ret_data = test.generate_response()
+            # send response to printer
             self.request.sendall(ret_data.encode('utf-8'))
         else:
-            test_printers_response(data_str)
+            # start testing
+            test.test_printers_response(data_str)
 
 def main():
     
-    global tests, test_cnt, test_desc, test_keywords, json_telemetry
     parser = argparse.ArgumentParser(description='starts http server for test')
     parser.add_argument('ip_address',
                     metavar="host_ip",
@@ -225,21 +37,10 @@ def main():
                     help='host ip address')
     args = parser.parse_args()
 
-    time_start = time.perf_counter()
-
-    # loads telemetry file
-    file_telemetry = open('tests/telemetry.json', "r")
-    json_telemetry = json.load(file_telemetry)
-
-    # creates or overwrites error output txt file
-    f2 = open("tests/connect_tests_results.txt", "w+")
-    if not f2.mode == "w+":
-        print("Failed to create \"connect_tests_res.txt\"")
-    f2.write("")
-    f2.close()
-
     HOST = args.ip_address
     PORT = 80
+
+    test.tests_init()
 
     print('IP address of server connected:' + str(HOST))
     httpd = socketserver.TCPServer((str(HOST), PORT), TestTCPHandler)
