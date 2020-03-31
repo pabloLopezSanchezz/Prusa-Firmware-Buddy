@@ -26,18 +26,20 @@ json_obj = {}           # json object variable (currently loaded json test objec
 
 # generic creation of the response header
 def create_header(header_obj):
-    ret = HTTP_OK
+    ret = []
+    ret.append(HTTP_OK)
     # appends whatever header we currently want
-    if 'token' is in header_obj:
-        ret.append("Printer-Token: " + header_obj['token']'\r\n')
-    if 'c-length' is in header_obj:
-        ret.append("Content-Length: " + header_obj['c-length']'\r\n')
-    if 'c-type' is in header_obj:
-        ret.append("Content-Type: " + header_obj['c-type']'\r\n')
-    if 'c-id' is in header_obj:
-        ret.append("Command-Id: " + header_obj['c-id']'\r\n')
+    if 'token' in header_obj:
+        ret.append("Printer-Token: " + str(header_obj['token']) + '\r\n')
+    if 'c-length' in header_obj:
+        ret.append("Content-Length: " + str(header_obj['c-length']) + '\r\n')
+    if 'c-type' in header_obj:
+        ret.append("Content-Type: " + header_obj['c-type'] + '\r\n')
+    if 'c-id' in header_obj:
+        ret.append("Command-Id: " + str(header_obj['c-id']) + '\r\n')
     ret.append('\r\n')
-    return ret
+    ret_fin = ''.join(ret)
+    return ret_fin
 
 def create_high_lvl(body_obj):
     pass
@@ -46,41 +48,44 @@ def create_high_lvl(body_obj):
 # 
 def create_low_lvl(body_obj):
     repeat = 1
-    ret = ""
-    if 'command' is in body_obj:
-        if 'repeat' is in body_obj:
+    ret = []
+    if 'command' in body_obj:
+        if 'repeat' in body_obj:
             repeat = body_obj['repeat']
         for x in range(0, repeat):
             ret.append(body_obj['command'])
             if x + 1 < repeat:
                 ret.append('\n')
 
-    if 'commands' is in body_obj:
+    if 'commands' in body_obj:
         size = body_obj['commands'].size
         for x in range(0, size):
             ret.append(body_obj['commands'][x])
             if x + 1 < size:
                 ret.append('\n')
-    return ret
+    ret_fin = ''.join(ret)
+    return ret_fin
 
 # generic creation of the test request
 def create_request(json_obj):
     header_obj = json_obj['test']['request']['header']
-    ret = create_header(header_obj)
+    ret_list = []
+    ret_list.append(create_header(header_obj))
 
     body_obj = json_obj['test']['request']['body']
     cmd_type = body_obj['type']
 
     # low level gcodes
-    if 'low' is in cmd_type:
-        ret.append(create_low_lvl(body_obj))
+    if 'low' in cmd_type:
+        ret_list.append(create_low_lvl(body_obj))
     # high level gcodes
     #elif 'high' is in cmd_type:
     #    ret.append(create_high_lvl(body_obj))
     else:
         pass
     
-    return ret       
+    ret = ''.join(ret_list)
+    return ret    
 
 # loads test from json file
 def test_load():
@@ -132,10 +137,10 @@ def test_json_body(res_body):
     global json_body
     test_body = json_body['test']['result']['body']
     if 'event' in test_body:
-        if test_body['event'] != res_body['event']:
+        if test_body['event'] != res_body['event'] or type(test_body['event']) != type('str'):
             return 1
     if 'command_id' in test_body:
-        if test_body['commmand_id'] != res_body['command_id']
+        if test_body['commmand_id'] != res_body['command_id'] or type(test_body['command_id']) != type(1):
             return 1
     
     # ADD ANOTHER TEST
