@@ -1,6 +1,8 @@
 import time
 import json
 from ipaddress import ip_address
+import logging
+import sys
 
 HTTP_OK = "HTTP/1.0 200 OK\r\n"
 
@@ -9,7 +11,6 @@ next_delay = 5.00       # we can set a wait time before executing another test
 
 test_cnt = 2            # test count
 test_curr = 0           # current test
-json_telemetry = {}     # telemetry json object loaded at the beggining of the test
 json_obj = {}           # json object variable (currently loaded json test object)
 json_test = {}          # current json test
 
@@ -28,23 +29,19 @@ def generate_response():
     return ret_data
 
 def tests_init():
-    global time_start, json_obj, json_telemetry
+    global time_start, json_obj
 
     time_start = time.perf_counter()
     # loads telemetry file
     file_json = open('tests.json', "r")
     json_whole_obj = json.load(file_json)
+    file_json.close()
 
     # set json pointers
     json_obj = json_whole_obj['tests']
-    json_telemetry = json_whole_obj['telemetry']
 
-    # creates or overwrites error output txt file
-    f2 = open("connect_tests_results.txt", "w+")
-    if not f2.mode == "w+":
-        print("Failed to create \"connect_tests_res.txt\"")
-    f2.write("")
-    f2.close()
+    # logging
+    logging.basicConfig(filename='connect_tests/errors.log', filemode='w', level=logging.ERROR)
 
 def find_json_structure(data_str):
     t = data_str.find('{')
@@ -141,9 +138,9 @@ def test_load():
 # telemetry is tested in every cycle
 # in case of failiure, error is logged in error output file "connect_tests_resutls.txt"
 def test_telemetry(data):
-    global json_telemetry
-    for item in json_telemetry["result"]["header"]:
-        if str(item) not in data:
+    telemetry_keywords = ["POST", "/p/telemetry", "HTTP/1.0", "01234567899876543210", "application/json"]
+    for item in telemetry_keywords:
+        if item not in data:
             test_failed(data, "Telemetry")
             return
 
@@ -152,35 +149,29 @@ def test_telemetry(data):
         test_failed(data, "Telemetry")
         return
 
-    body_obj = json_telemetry["result"]["body"]
-    if type(response_dic['temp_nozzle']) != type(body_obj['temp_nozzle']):
+    if not isinstance(response_dic['temp_nozzle'], int):
         test_failed(data, "Telemetry")
         return
-    if type(response_dic['temp_bed']) != type(body_obj['temp_bed']):
+    if not isinstance(response_dic['temp_bed'], int):
         test_failed(data, "Telemetry")
         return
-    if type(response_dic['material']) != type(body_obj['material']):
+    if not isinstance(response_dic['material'], str):
         test_failed(data, "Telemetry")
         return
-    if type(response_dic['pos_z_mm']) != type(body_obj['pos_z_mm']):
+    if not isinstance(response_dic['pos_z_mm'], float):
         test_failed(data, "Telemetry")
         return
-    if type(response_dic['printing_speed']) != type(body_obj['printing_speed']):
+    if not isinstance(response_dic['printing_speed'], int):
         test_failed(data, "Telemetry")
         return
-    if type(response_dic['flow_factor']) != type(body_obj['flow_factor']):
+    if not isinstance(response_dic['flow_factor'], int):
         test_failed(data, "Telemetry")
         return
 
 # if test fails it logs the info in error output file "connect_tests_results.txt"
 def test_failed(data, name):
     now = datetime.now()
-    file_results = open("tests/connect_tests_results.txt", "a")
-    if not file_results.mode == "a":
-        print("Faild to write to \"connect_tests_res.txt\"")
-    else:
-        file_results.write(str(now) + " Wrong response data of test: " + name + "\n" + data + "\n\n")
-        file_results.close()
+    logging.error(str(now) + " :: Test " + name + " failed:\ndata")
 
 # testing json structure decoded from printer's response
 #   res_body = decoded json structure

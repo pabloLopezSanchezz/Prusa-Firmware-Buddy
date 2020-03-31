@@ -1,29 +1,4 @@
 {
-    "telemetry":
-    {
-        "result": 
-        {
-            "header": 
-            [
-                "POST",
-                "/p/telemetry",
-                "HTTP/1.0",
-                "01234567899876543210",
-                "application/json"
-            ]
-        ,
-            "body": 
-            {
-                "temp_nozzle": 12,
-                "temp_bed": 12,
-                "material": "PLA",
-                "pos_z_mm": 0.95,
-                "printing_speed": 100,
-                "flow_factor": 100
-            }
-        }
-    }
-    ,
     "tests": 
     [
         {
