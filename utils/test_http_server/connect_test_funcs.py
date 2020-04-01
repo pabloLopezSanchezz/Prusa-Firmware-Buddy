@@ -33,7 +33,7 @@ def tests_init():
 
     time_start = time.perf_counter()
     # loads telemetry file
-    file_json = open('tests.json', "r")
+    file_json = open('connect_tests/tests.json', "r")
     json_whole_obj = json.load(file_json)
     file_json.close()
 
@@ -108,7 +108,7 @@ def create_request(test):
     if 'low' in cmd_type:
         ret_list.append(create_low_lvl(body_obj))
     # high level gcodes
-    #elif 'high' is in cmd_type:
+    # elif 'high' is in cmd_type:
     #    ret.append(create_high_lvl(body_obj))
     else:
         pass
@@ -118,7 +118,7 @@ def create_request(test):
 
 # loads test from json file
 def test_load():
-    global json_obj, json_test, next_delay, test_name, test_curr
+    global json_obj, json_test, next_delay, test_curr
 
     json_test = json_obj[test_curr]
 
@@ -171,19 +171,19 @@ def test_telemetry(data):
 # if test fails it logs the info in error output file "connect_tests_results.txt"
 def test_failed(data, name):
     now = datetime.now()
-    logging.error(str(now) + " :: Test " + name + " failed:\ndata")
+    logging.error(str(now) + " :: Test " + name + " failed:\n" + data)
 
 # testing json structure decoded from printer's response
-#   res_body = decoded json structure
+#   res_body = decoded json structure in dictionary
 def test_json_body(res_body):
     # loaded json test structure
-    global json_body
-    test_body = json_body['test']['result']['body']
+    global json_test
+    test_body = json_test['result']['body']
     if 'event' in test_body:
-        if test_body['event'] != res_body['event'] or type(test_body['event']) != type('str'):
+        if not isinstance(res_body['event'], str) or test_body['event'] not in res_body['event']:
             return 1
     if 'command_id' in test_body:
-        if test_body['commmand_id'] != res_body['command_id'] or type(test_body['command_id']) != type(1):
+        if not isinstance(res_body['command_id'], int) or test_body['commmand_id'] not in res_body['command_id']:
             return 1
     
     # ADD ANOTHER TEST
@@ -192,20 +192,20 @@ def test_json_body(res_body):
 
 # test the response from printer
 def test_printers_response(data_str):
-    global json_obj
+    global json_test
     json_response = 0
 
     test_name = "Unknown"
-    if 'name' in json_obj['test']:
-        test_name = json_obj['test']['name']
+    if 'name' in json_test:
+        test_name = json_test['name']
 
-    for item in json_obj['test']['result']['header']:
+    for item in json_test['result']['header']:
         if str(item) not in data_str:
             # test fail: keyword not found -> log info
             test_failed(data_str, test_name)
             return
 
-    if 'body' not in json_obj['test']:
+    if 'body' not in json_test:
         # test success: only header response expected
         return
 

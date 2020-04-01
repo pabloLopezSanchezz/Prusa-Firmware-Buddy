@@ -1,5 +1,5 @@
 from ipaddress import ip_address
-import socketserver  # import socketserver preinstalled module
+import socketserver
 import http.server
 import argparse
 import connect_test_funcs as test
@@ -10,11 +10,9 @@ import connect_test_funcs as test
 
 class TestTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
-        # global vars
-        global test_curr, next_delay, time_start
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
-        # remove b' xxx ' in the string
+        # remove "b'xxx'" in the string
         data_str = str(self.data)[2:-1]
         # some tests starts as a response to 
         if "/p/telemetry" in data_str:
