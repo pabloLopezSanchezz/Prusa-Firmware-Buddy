@@ -2,7 +2,7 @@
     "tests": 
     [
         {
-            "switch": "on",
+            "switch": "off",
             "name": "Low level GCODE",
             "delay": 5,
             "request":
@@ -41,7 +41,7 @@
         }
         ,
         {
-            "switch": "on",
+            "switch": "off",
             "name": "Low level GCODEs",
             "delay": 15,
             "request":
