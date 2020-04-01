@@ -132,6 +132,7 @@ set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI")
 set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
 set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL")
 set(PRINTERS_WITH_INIT_TRINAMIC_FROM_MARLIN_ONLY "XL" "IXL" "MANIPULATOR" "PICKER" "EXTRACTOR")
+set(PRINTERS_WITH_ADVANCED_PAUSE "MINI" "MK4" "IXL" "XL")
 set(WUI YES)
 
 if(${PRINTER} IN_LIST PRINTERS_WITH_FILAMENT_SENSOR_YES)
@@ -460,100 +461,104 @@ target_link_libraries(
 
 target_sources(
   firmware
-  PRIVATE $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/startup/startup_stm32f407xx_boot.s>
-          $<$<STREQUAL:${BOOTLOADER},NO>:src/startup/startup_stm32f407xx.s>
-          src/lwip.c
-          src/usbd_cdc_if.c
-          src/usb_device.c
-          src/freertos.c
-          src/freertos_openocd.c
-          src/usbh_diskio.c
-          src/ethernetif.c
-          src/main_${PRINTER}.c
-          src/usbd_desc.c
-          $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/system_stm32f4xx_boot.c>
-          $<$<STREQUAL:${BOOTLOADER},NO>:src/system_stm32f4xx.c>
-          src/stm32f4xx_hal_msp.c
-          src/stm32f4xx_it.c
-          src/fatfs.c
-          src/usb_host.c
-          src/usbh_conf.c
-          src/usbd_conf.c
-          src/stm32f4xx_hal_timebase_tim.c
-          $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/common/filament_sensor_hx711.c>
-          $<$<STREQUAL:${FILAMENT_SENSOR},YES>:src/common/filament_sensor.c>
-          $<$<BOOL:${FILAMENT_SENSOR}>:src/common/thread_measurement.c>
-          src/common/diag.c
-          src/common/eeprom.cpp
-          src/common/eeprom_loadsave.c
-          src/common/marlin_vars.c
-          src/common/marlin_host.c
-          src/common/sim_bed.c
-          src/common/sys.cpp
-          src/common/sim_nozzle.c
-          src/common/hwio_a3ides_2209_02.c
-          src/common/putslave.c
-          src/common/safe_state.c
-          src/common/variant8.cpp
-          src/common/dbg.c
-          src/common/dump.c
-          src/common/marlin_client.c
-          src/common/bsod.c
-          src/common/adc.c
-          src/common/uartslave.c
-          src/common/version.c
-          src/common/marlin_events.c
-          src/common/marlin_errors.c
-          src/common/metric.c
-          src/common/metric_handlers.c
-          src/common/uartrxbuff.c
-          src/common/loadcell_hx711.c
-          src/common/loadcell_endstops.cpp
-          src/common/Marlin_CardReader.cpp
-          src/common/appmain.cpp
-          src/common/app_metrics.cpp
-          src/common/sim_heater.cpp
-          src/common/marlin_server.cpp
-          src/common/sim_motion.cpp
-          src/common/st25dv64k.c
-          $<$<STREQUAL:${INIT_TRINAMIC_FROM_MARLIN_ONLY},NO>:src/common/trinamic.cpp>
-          src/common/w25x.c
-          src/common/gcode_file.cpp
-          src/common/gcode_thumb_decoder.cpp
-          src/common/print_utils.cpp
-          src/common/base64_stream_decoder.cpp
-          src/common/support_utils.cpp
-          src/common/errors.c
-          src/common/lang.c
-          src/common/crc32.c
-          src/common/ini_handler.c
-          $<$<STREQUAL:${PRINTER},MINI>:src/common/minda_broken_cable_detection.c>
-          $<$<STREQUAL:${PRINTER},MINI>:src/common/MindaRedscreen.c>
-          src/marlin_stubs/M330.cpp
-          src/marlin_stubs/M876.cpp
-          src/marlin_stubs/gcode.cpp
-          src/marlin_stubs/pause/G27.cpp
-          src/marlin_stubs/pause/M125.cpp
-          src/marlin_stubs/pause/M600.cpp
-          src/marlin_stubs/pause/M603.cpp
-          src/marlin_stubs/pause/M701_M702.cpp
-          src/marlin_stubs/pause/pause.cpp
-          src/gui/filament.cpp
+  PRIVATE
+    $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/startup/startup_stm32f407xx_boot.s>
+    $<$<STREQUAL:${BOOTLOADER},NO>:src/startup/startup_stm32f407xx.s>
+    src/lwip.c
+    src/usbd_cdc_if.c
+    src/usb_device.c
+    src/freertos.c
+    src/freertos_openocd.c
+    src/usbh_diskio.c
+    src/ethernetif.c
+    src/main_${PRINTER}.c
+    src/usbd_desc.c
+    $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/system_stm32f4xx_boot.c>
+    $<$<STREQUAL:${BOOTLOADER},NO>:src/system_stm32f4xx.c>
+    src/stm32f4xx_hal_msp.c
+    src/stm32f4xx_it.c
+    src/fatfs.c
+    src/usb_host.c
+    src/usbh_conf.c
+    src/usbd_conf.c
+    src/stm32f4xx_hal_timebase_tim.c
+    $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/common/filament_sensor_hx711.c>
+    $<$<STREQUAL:${FILAMENT_SENSOR},YES>:src/common/filament_sensor.cpp>
+    $<$<BOOL:${FILAMENT_SENSOR}>:src/common/thread_measurement.c>
+    src/common/diag.c
+    src/common/eeprom.cpp
+    src/common/eeprom_loadsave.c
+    src/common/marlin_vars.c
+    src/common/marlin_host.c
+    src/common/sim_bed.c
+    src/common/sys.cpp
+    src/common/sim_nozzle.c
+    src/common/hwio_a3ides_2209_02.c
+    src/common/putslave.c
+    src/common/safe_state.c
+    src/common/variant8.cpp
+    src/common/dbg.c
+    src/common/dump.c
+    src/common/marlin_client.c
+    src/common/bsod.c
+    src/common/adc.c
+    src/common/uartslave.c
+    src/common/version.c
+    src/common/marlin_events.c
+    src/common/marlin_errors.c
+    src/common/metric.c
+    src/common/metric_handlers.c
+    src/common/uartrxbuff.c
+    src/common/loadcell_hx711.c
+    src/common/loadcell_endstops.cpp
+    src/common/Marlin_CardReader.cpp
+    src/common/appmain.cpp
+    src/common/app_metrics.cpp
+    src/common/sim_heater.cpp
+    src/common/marlin_server.cpp
+    src/common/sim_motion.cpp
+    src/common/st25dv64k.c
+    $<$<STREQUAL:${INIT_TRINAMIC_FROM_MARLIN_ONLY},NO>:src/common/trinamic.cpp>
+    src/common/w25x.c
+    src/common/gcode_file.cpp
+    src/common/gcode_thumb_decoder.cpp
+    src/common/print_utils.cpp
+    src/common/base64_stream_decoder.cpp
+    src/common/support_utils.cpp
+    src/common/errors.c
+    src/common/lang.c
+    src/common/client_response.cpp
+    src/common/crc32.c
+    src/common/ini_handler.c
+    $<$<STREQUAL:${PRINTER},MINI>:src/common/minda_broken_cable_detection.c>
+    $<$<STREQUAL:${PRINTER},MINI>:src/common/MindaRedscreen.c>
+    src/marlin_stubs/M330.cpp
+    src/marlin_stubs/M876.cpp
+    src/marlin_stubs/gcode.cpp
+    src/marlin_stubs/pause/G27.cpp
+    src/marlin_stubs/pause/M125.cpp
+    $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_PAUSE}>:src/marlin_stubs/pause/M600.cpp>
+    src/marlin_stubs/pause/M603.cpp
+    $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_PAUSE}>:src/marlin_stubs/pause/M701_M702.cpp>
+    $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_PAUSE}>:src/marlin_stubs/pause/pause.cpp>
+    src/gui/filament.cpp
   )
 
 if(GUI)
   target_sources(
     firmware
     PRIVATE src/gui/screen_menu_filament.c
-            src/gui/dialogs/window_dlg_change.c
-            src/gui/dialogs/window_dlg_loadunload_shared.c
-            src/gui/dialogs/window_dlg_statemachine.c
-            src/gui/dialogs/window_dlg_load.c
+            src/gui/dialogs/Dialog_C_wrapper.cpp
+            src/gui/dialogs/IDialog.cpp
+            src/gui/dialogs/DialogFactory.cpp
+            src/gui/dialogs/DialogHandler.cpp
+            src/gui/dialogs/DialogStateful.cpp
+            src/gui/dialogs/DialogRadioButton.cpp
+            src/gui/dialogs/DialogLoadUnload.cpp
+            src/gui/dialogs/window_dlg_load_unload.c
             src/gui/dialogs/window_dlg_wait.c
             src/gui/dialogs/window_dlg_popup.c
-            src/gui/dialogs/window_dlg_purge.c
             src/gui/dialogs/window_dlg_preheat.c
-            src/gui/dialogs/window_dlg_unload.c
             src/gui/screen_menu_temperature.c
             src/gui/guimain.c
             src/gui/resource.c
