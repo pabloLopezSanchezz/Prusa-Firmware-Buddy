@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 import json
 from ipaddress import ip_address
 import logging
@@ -171,7 +172,7 @@ def test_telemetry(data):
 # if test fails it logs the info in error output file "connect_tests_results.txt"
 def test_failed(data, name):
     now = datetime.now()
-    logging.error(str(now) + " :: Test " + name + " failed:\n" + data)
+    logging.error(str(now) + " :: Test " + name + " failed:\n" + data + "\n")
 
 # testing json structure decoded from printer's response
 #   res_body = decoded json structure in dictionary
