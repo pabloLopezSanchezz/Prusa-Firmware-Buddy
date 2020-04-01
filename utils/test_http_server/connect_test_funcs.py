@@ -10,10 +10,11 @@ HTTP_OK = "HTTP/1.0 200 OK\r\n"
 time_start = 0.00
 next_delay = 5.00       # we can set a wait time before executing another test
 
-test_cnt = 2            # test count
+test_cnt = 0            # test count
 test_curr = 0           # current test
 json_obj = {}           # json object variable (currently loaded json test object)
 json_test = {}          # current json test
+off_test_cnt = 0        # number of swichted off tests
 
 def generate_response():
     global time_start, next_delay
@@ -23,14 +24,18 @@ def generate_response():
     # next_delay can be set in json file
     if time_point - time_start >= next_delay:
         # passes next test test's request
-        ret_data = test_load()
+        test_str = test_load()
+        if len(test_str) == 0:
+            ret_data = HTTP_OK + "\r\n"
+        else:
+            ret_data = test_str
         time_start = time_point
     else:
         ret_data = HTTP_OK + "\r\n"
     return ret_data
 
 def tests_init():
-    global time_start, json_obj
+    global time_start, json_obj, test_cnt
 
     time_start = time.perf_counter()
     # loads telemetry file
@@ -40,6 +45,7 @@ def tests_init():
 
     # set json pointers
     json_obj = json_whole_obj['tests']
+    test_cnt = len(json_obj)
 
     # logging
     logging.basicConfig(filename='connect_tests/errors.log', filemode='w', level=logging.ERROR)
@@ -119,20 +125,39 @@ def create_request(test):
 
 # loads test from json file
 def test_load():
-    global json_obj, json_test, next_delay, test_curr
+    global json_obj, json_test, next_delay, test_curr, off_test_cnt, test_cnt
 
-    json_test = json_obj[test_curr]
+    next_delay = 0.00
 
-    next_delay = 0.00 
+    if off_test_cnt == test_cnt:
+        return ""
+
+    loaded = 0
+    while not loaded:
+        if 'switch' in json_obj[test_curr]:
+            if 'off' in json_obj[test_curr]['switch']:
+                off_test_cnt += 1
+            else:
+                json_test = json_obj[test_curr]
+                loaded = 1
+        else:
+            json_test = json_obj[test_curr]
+            loaded = 1
+
+        if off_test_cnt == test_cnt:
+            print("All tests switched off")
+            return ""
+        
+        if (test_curr + 1) >= test_cnt :
+            test_curr = 0
+            off_test_cnt = 0
+        else:
+            test_curr += 1
+ 
     if 'delay' in json_test:
         next_delay = json_test['delay']
 
     ret_str = create_request(json_test)
-
-    if (test_curr + 1) >= len(json_obj):
-        test_curr = 0
-    else:
-        test_curr += 1
 
     return ret_str
 
