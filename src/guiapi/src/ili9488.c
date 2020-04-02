@@ -68,7 +68,8 @@ uint16_t ili9488_y = 0;  // current y coordinate (RASET)
 uint16_t ili9488_cx = 0; //
 uint16_t ili9488_cy = 0; //
 
-uint8_t ili9488_buff[ILI9488_COLS * 3 * 8]; //16 lines buffer, 3 bytes for pixel color
+#define ILI9488_BUFF_ROWS 8
+uint8_t ili9488_buff[ILI9488_COLS * 3 * ILI9488_BUFF_ROWS]; // 3 bytes for pixel color
 
 rect_ui16_t ili9488_clip = { 0, 0, ILI9488_COLS, ILI9488_ROWS };
 
@@ -349,7 +350,7 @@ void ili9488_clear(color_t clr) {
     uint32_t clr666 = _COLOR_666(clr);
     uint8_t *p_byte = (uint8_t *)ili9488_buff;
 
-    for (i = 0; i < ILI9488_COLS * 16; i++) {
+    for (i = 0; i < ILI9488_COLS * ILI9488_BUFF_ROWS; i++) {
         *((uint32_t *)p_byte) = clr666;
         p_byte += 3; // increase the address by 3 because the color has 3 bytes
     }
@@ -358,8 +359,8 @@ void ili9488_clear(color_t clr) {
     ili9488_cmd_caset(0, ILI9488_COLS - 1);
     ili9488_cmd_raset(0, ILI9488_ROWS - 1);
     ili9488_cmd_ramwr(0, 0);
-    for (i = 0; i < ILI9488_ROWS / 16; i++)
-        ili9488_wr(ili9488_buff, 3 * ILI9488_COLS * 16);
+    for (i = 0; i < ILI9488_ROWS / ILI9488_BUFF_ROWS; i++)
+        ili9488_wr(ili9488_buff, sizeof(ili9488_buff));
     ili9488_set_cs();
     //	ili9488_test_miso();
 }
