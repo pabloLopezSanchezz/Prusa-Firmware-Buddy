@@ -269,6 +269,7 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
                     int len = atoi(content_len_num);
                     if ((len >= 0) && ((u32_t)len < HTTPC_CONTENT_LEN_INVALID)) {
                         *content_length = (u32_t)len;
+                        header_info.content_lenght = (u32_t)len;
                     }
                 }
             }
@@ -451,34 +452,38 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
         return ERR_ARG;
     }
 
-    if (HTTPC_BUFF_SZ < p->tot_len) {
+    if ((HTTPC_BUFF_SZ < p->tot_len) || (HTTPC_BUFF_SZ < header_info.content_lenght)) {
         cmd_status = CMD_REJT_SIZE;
         pbuf_free(p);
         return ERR_OK;
     }
-    header_info.content_lenght = p->tot_len;
+
     while (len_copied < p->tot_len) {
 
         char *payload = p->payload;
         // check if empty
         if (payload[0] == 0) {
+            pbuf_free(p);
             return ERR_ARG;
         }
 
         len_copied += pbuf_copy_partial(p, httpc_resp_buffer, p->tot_len, 0);
-
-        if (len_copied != p->len) {
-            return ERR_ARG;
+        if (len_copied != p->tot_len) {
+            p = p->next;
         }
-        struct pbuf *p_next = p->next;
-        pbuf_free(p);
-        p = p_next;
-        if (NULL == p_next) {
-            httpc_resp_buffer[(const u16_t)p->tot_len] = 0; // end of line added
+
+        if (NULL == p) {
             break;
         }
     }
 
+    pbuf_free(p);
+
+    if (len_copied < header_info.content_lenght) {
+        return ERR_ARG;
+    }
+
+    httpc_resp_buffer[header_info.content_lenght] = 0; // end of line added
     cmd_status = parse_http_reply(httpc_resp_buffer, len_copied, &header_info);
     result = HTTPC_RESULT_OK;
     httpc_close(req, result, req->rx_status, ERR_OK);
