@@ -26,7 +26,6 @@ osMutexId(wui_thread_mutex_id);         // Mutex ID
 
 typedef struct {
     uint32_t flags;
-    marlin_vars_t *wui_marlin_vars;
     char request[MAX_WUI_REQUEST_LEN];
     uint8_t request_len;
 } web_client_t;
@@ -34,13 +33,15 @@ typedef struct {
 web_client_t wui;
 wui_vars_t wui_vars;
 
+static marlin_vars_t *wui_marlin_vars;
+
 static void wui_queue_cycle(void);
 static int process_wui_request(void);
 
 static void device_state_change() {
 
     if (marlin_event(MARLIN_EVT_DevStateChange)) {
-        wui_vars.device_state = wui.wui_marlin_vars->device_state;
+        wui_vars.device_state = wui_marlin_vars->device_state;
         switch (wui_vars.device_state) {
         case DEVICE_STATE_IDLE:
 
@@ -65,14 +66,14 @@ static void device_state_change() {
 
 void update_wui_vars(void) {
     osMutexWait(wui_thread_mutex_id, osWaitForever);
-    wui_vars.pos[Z_AXIS_POS] = wui.wui_marlin_vars->pos[Z_AXIS_POS];
-    wui_vars.temp_nozzle = wui.wui_marlin_vars->temp_nozzle;
-    wui_vars.temp_bed = wui.wui_marlin_vars->temp_bed;
-    wui_vars.print_speed = wui.wui_marlin_vars->print_speed;
-    wui_vars.flow_factor = wui.wui_marlin_vars->flow_factor;
-    wui_vars.print_dur = wui.wui_marlin_vars->print_duration;
-    wui_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
-    wui_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
+    wui_vars.pos[Z_AXIS_POS] = wui_marlin_vars->pos[Z_AXIS_POS];
+    wui_vars.temp_nozzle = wui_marlin_vars->temp_nozzle;
+    wui_vars.temp_bed = wui_marlin_vars->temp_bed;
+    wui_vars.print_speed = wui_marlin_vars->print_speed;
+    wui_vars.flow_factor = wui_marlin_vars->flow_factor;
+    wui_vars.print_dur = wui_marlin_vars->print_duration;
+    wui_vars.sd_precent_done = wui_marlin_vars->sd_percent_done;
+    wui_vars.sd_printing = wui_marlin_vars->sd_printing;
 
     if (marlin_event(MARLIN_EVT_GFileChange)) {
         marlin_get_printing_gcode_name(wui_vars.gcode_name);
@@ -87,12 +88,12 @@ void StartWebServerTask(void const *argument) {
     osSemaphoreDef(wuiSema);
     tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(wuiSema), 1);
     wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
-    wui.wui_marlin_vars = marlin_client_init(); // init the client
-    if (wui.wui_marlin_vars) {
-        wui.wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
+    wui_marlin_vars = marlin_client_init(); // init the client
+    if (wui_marlin_vars) {
+        wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
         update_wui_vars();
     }
-    wui.wui_marlin_vars->device_state = DEVICE_STATE_IDLE;
+    wui_marlin_vars->device_state = DEVICE_STATE_IDLE;
     wui.flags = wui.request_len = 0;
 
     MX_LWIP_Init();
@@ -101,7 +102,7 @@ void StartWebServerTask(void const *argument) {
         ethernetif_link(&eth0);
         wui_queue_cycle();
 
-        if (wui.wui_marlin_vars) {
+        if (wui_marlin_vars) {
             marlin_client_loop();
             update_wui_vars();
         }
