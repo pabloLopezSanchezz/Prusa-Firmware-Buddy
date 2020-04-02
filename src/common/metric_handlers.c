@@ -150,7 +150,7 @@ static void syslog_handler(metric_point_t *point) {
     static uint32_t buffer_oldest_timestamp = 0;
     static uint32_t buffer_newest_timestamp = 0;
     static char buffer_has_header = false;
-    static char buffer[256];
+    static char buffer[1024] __attribute__((section(".ccmram")));
     static int buffer_used = 0;
 
     if (!buffer_has_header) {
