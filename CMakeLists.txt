@@ -493,6 +493,7 @@ target_sources(
     src/common/sim_bed.c
     src/common/sys.cpp
     src/common/sim_nozzle.c
+    src/common/heap.c
     src/common/hwio_a3ides_2209_02.c
     src/common/putslave.c
     src/common/safe_state.c
