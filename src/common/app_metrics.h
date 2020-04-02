@@ -3,5 +3,6 @@
 namespace Buddy {
 namespace Metrics {
     void RecordMarlinVariables();
+    void RecordRuntimeStats();
 }
 }
