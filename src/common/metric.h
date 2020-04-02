@@ -43,6 +43,7 @@ typedef enum {
     METRIC_VALUE_FLOAT = 0x01,
     METRIC_VALUE_INTEGER = 0x02,
     METRIC_VALUE_STRING = 0x03,
+    METRIC_VALUE_CUSTOM = 0x04, // multiple values formatted via customized line protocol
 } metric_value_type_t;
 
 /// A metric definition.
@@ -116,10 +117,13 @@ typedef struct {
         int value_int;
 
         /// String value (if metric.type == METRIC_VALUE_STRING)
-        char value_str[32];
+        char value_str[48];
+
+        /// Custom value (if metric.type == METRIC_VALUE_CUSTOM)
+        char value_custom[48];
 
         /// Error message (if recording.error == true)
-        char error_msg[32];
+        char error_msg[48];
     };
 } metric_point_t;
 
@@ -166,6 +170,9 @@ void metric_record_string(metric_t *metric, const char *fmt, ...);
 
 /// Record an event (metric.type has to be METRIC_VALUE_EVENT)
 void metric_record_event(metric_t *metric);
+
+/// Record a custom event (metric.type has to be METRIC_VALUE_CUSTOM)
+void metric_record_custom(metric_t *metric, const char *fmt, ...);
 
 /// Records an error for a given metric.
 void metric_record_error(metric_t *metric, const char *fmt, ...);

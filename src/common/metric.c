@@ -144,6 +144,17 @@ void metric_record_string(metric_t *metric, const char *fmt, ...) {
     point_enqueue(recording);
 }
 
+void metric_record_custom(metric_t *metric, const char *fmt, ...) {
+    metric_point_t *recording = point_check_and_prepare(metric, METRIC_VALUE_CUSTOM);
+    if (!recording)
+        return;
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf_P(recording->value_custom, sizeof(recording->value_custom), fmt, args);
+    va_end(args);
+    point_enqueue(recording);
+}
+
 void metric_record_event(metric_t *metric) {
     metric_point_t *recording = point_check_and_prepare(metric, METRIC_VALUE_EVENT);
     if (!recording)
