@@ -9,30 +9,57 @@
 #define MAC_ADDR_SIZE             6
 #define TEXTPROTOCOL_POINT_MAXLEN 63
 
+static int textprotocol_append_escaped(char *buffer, int buffer_len, char *val) {
+    int appended = 0;
+    while (*val != 0 && buffer_len > 0) {
+        char ch = *(val++);
+        if (ch == '"') {
+            if (buffer_len < 2)
+                break;
+            buffer[0] = '\\';
+            buffer[1] = ch;
+            appended += 2;
+            buffer += 2;
+            buffer_len -= 2;
+        } else {
+            buffer[0] = ch;
+            buffer_len -= 1;
+            buffer += 1;
+            appended += 1;
+        }
+    }
+    return appended;
+}
+
 static int textprotocol_append_point(char *buffer, int buffer_len, metric_point_t *point, int timestamp_diff) {
-    if (point->error) {
-        return snprintf(buffer, buffer_len,
-            "[%i:%s:error:%s]", timestamp_diff, point->metric->name, point->error_msg);
+    int buffer_used;
+    if (point->metric->type == METRIC_VALUE_CUSTOM) {
+        buffer_used = snprintf(buffer, buffer_len, "%s%s", point->metric->name, point->value_custom);
+    } else {
+        buffer_used = snprintf(buffer, buffer_len, "%s ", point->metric->name);
     }
 
-    switch (point->metric->type) {
-    case METRIC_VALUE_FLOAT:
-        return snprintf(buffer, buffer_len,
-            "[%i:%s:f:%f]", timestamp_diff, point->metric->name, (double)point->value_float);
-    case METRIC_VALUE_INTEGER:
-        return snprintf(buffer, buffer_len,
-            "[%i:%s:i:%i]", timestamp_diff, point->metric->name, point->value_int);
-    case METRIC_VALUE_STRING:
-        // TODO: escaping
-        return snprintf(buffer, buffer_len,
-            "[%i:%s:s:%s]", timestamp_diff, point->metric->name, point->value_str);
-    case METRIC_VALUE_EVENT:
-        return snprintf(buffer, buffer_len,
-            "[%i:%s:e:]", timestamp_diff, point->metric->name);
-    default:
-        return snprintf(buffer, buffer_len,
-            "[%i:%s:error:unknown value type]", timestamp_diff, point->metric->name);
+    if (point->metric->type == METRIC_VALUE_CUSTOM) {
+    } else if (point->error) {
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "error=\"");
+        buffer_used += textprotocol_append_escaped(buffer + buffer_used, buffer_len - buffer_used, point->error_msg);
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "\"");
+    } else if (point->metric->type == METRIC_VALUE_FLOAT) {
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "v=%f", (double)point->value_float);
+    } else if (point->metric->type == METRIC_VALUE_INTEGER) {
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "v=%ii", point->value_int);
+    } else if (point->metric->type == METRIC_VALUE_STRING) {
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "v=\"");
+        buffer_used += textprotocol_append_escaped(buffer + buffer_used, buffer_len - buffer_used, point->value_str);
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "\"");
+    } else if (point->metric->type == METRIC_VALUE_INTEGER) {
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "v=T");
+    } else {
+        buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "error=\"Unknown value type\"");
     }
+
+    buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, " %i\n", timestamp_diff);
+    return buffer_used;
 }
 
 //
@@ -92,7 +119,7 @@ static int syslog_message_init(char *buffer, int buffer_len, uint32_t timestamp)
     // https://tools.ietf.org/html/rfc5424
     return snprintf(
         buffer, buffer_len,
-        "<%i>1 - %s %s - - - msg=%i,tm=%lu ",
+        "<%i>1 - %s %s - - - msg=%i,tm=%lu,v=2 ",
         facility * 8 + severity, hostname, appname, message_id++, timestamp);
 }
 
