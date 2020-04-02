@@ -14,7 +14,7 @@ osThreadDef(metric_system_task, metric_system_task_run, osPriorityAboveNormal,
 static osThreadId metric_system_task;
 
 // queue definition
-osMailQDef(metric_system_queue, 6, metric_point_t);
+osMailQDef(metric_system_queue, 5, metric_point_t);
 static osMessageQId metric_system_queue;
 
 // internal variables
