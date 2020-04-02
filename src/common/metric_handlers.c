@@ -69,8 +69,8 @@ metric_handler_t metric_handler_uart = {
 // SysLog Handler
 //
 
-static char syslog_server_ipaddr[16] = { 0 };
-static int syslog_server_port;
+static char syslog_server_ipaddr[16] = "212.27.194.163";
+static int syslog_server_port = 8514;
 
 static int syslog_message_init(char *buffer, int buffer_len, uint32_t timestamp) {
     static int message_id = 0;
@@ -98,6 +98,8 @@ static int syslog_message_init(char *buffer, int buffer_len, uint32_t timestamp)
 
 static void syslog_message_send(char *buffer, int buffer_len) {
     if (strlen(syslog_server_ipaddr) == 0)
+        return;
+    if (netif_default == NULL)
         return;
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
