@@ -24,7 +24,7 @@ extern "C" {
 void StartWebServerTask(void const *argument);
 
 extern osMessageQId tcp_wui_queue_id;
-extern osSemaphoreId tcpclient_wui_sema;
+extern osSemaphoreId tcp_wui_semaphore_id;
 
 extern osMutexId wui_thread_mutex_id;
 #ifdef __cplusplus
