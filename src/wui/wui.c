@@ -18,6 +18,7 @@
 #define MAX_WUI_REQUEST_LEN    100
 #define MAX_MARLIN_REQUEST_LEN 100
 #define WUI_FLG_PEND_REQ       0x0001
+#define TCP_WUI_QUEUE_SIZE     64
 
 osMessageQId tcp_wui_queue_id = 0;
 osSemaphoreId tcp_wui_semaphore_id = 0; // semaphore handle
@@ -83,8 +84,8 @@ void update_wui_vars(void) {
 }
 
 void StartWebServerTask(void const *argument) {
-    osMessageQDef(wuiQueue, 64, uint8_t);
-    tcp_wui_queue_id = osMessageCreate(osMessageQ(wuiQueue), NULL);
+    osMessageQDef(tcp_wui_queue, TCP_WUI_QUEUE_SIZE, uint32_t);
+    tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
     osSemaphoreDef(wuiSema);
     tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(wuiSema), 1);
     wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
