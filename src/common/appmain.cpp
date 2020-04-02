@@ -96,6 +96,7 @@ void app_setup(void) {
 
 void app_idle(void) {
     Buddy::Metrics::RecordMarlinVariables();
+    Buddy::Metrics::RecordRuntimeStats();
     osDelay(0); // switch to other threads - without this is UI slow during printing
 }
 
