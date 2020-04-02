@@ -1,6 +1,10 @@
 #include "app_metrics.h"
 #include "metric.h"
 #include "version.h"
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
+#include "malloc.h"
+#include "heap.h"
 
 #include "../Marlin/src/module/temperature.h"
 #include "../Marlin/src/module/planner.h"
@@ -12,19 +16,37 @@ extern metric_t metric_probe_z;
 extern metric_t metric_probe_z_raw;
 #endif
 
+void Buddy::Metrics::RecordRuntimeStats() {
+    static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 1 * 1000, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_string(&fw_version, "%s", project_version_full);
+
+    static metric_t stack = METRIC("stack", METRIC_VALUE_CUSTOM, 0, METRIC_HANDLER_ENABLE_ALL);
+    static TaskStatus_t task_statuses[11];
+    static uint32_t last_recorded_ticks = 0;
+    if (HAL_GetTick() - last_recorded_ticks > 3000) {
+        int count = uxTaskGetSystemState(task_statuses, sizeof(task_statuses) / sizeof(task_statuses[1]), NULL);
+        for (int idx = 0; idx < count; idx++) {
+            size_t s = malloc_usable_size(task_statuses[idx].pxStackBase);
+            metric_record_custom(&stack, ",n=%.7s t=%i,m=%hu", task_statuses[idx].pcTaskName, s, task_statuses[idx].usStackHighWaterMark);
+        }
+        last_recorded_ticks = HAL_GetTick();
+    }
+
+    static metric_t heap = METRIC("heap", METRIC_VALUE_CUSTOM, 503, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_custom(&heap, " free=%ii,total=%ii", xPortGetFreeHeapSize(), heap_total_size);
+}
+
 void Buddy::Metrics::RecordMarlinVariables() {
 #if HAS_BED_PROBE
     metric_register(&metric_probe_z);
     metric_register(&metric_probe_z_raw);
 #endif
-    static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 60 * 1000, METRIC_HANDLER_ENABLE_ALL);
-    metric_record_string(&fw_version, "%s", project_version_full);
-
     static metric_t is_printing = METRIC("is_printing", METRIC_VALUE_INTEGER, 5000, METRIC_HANDLER_ENABLE_ALL);
     metric_record_integer(&is_printing, printingIsActive() ? 1 : 0);
 
 #if HAS_TEMP_HEATBREAK
-    static metric_t heatbreak = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
+    static metric_t heatbreak
+        = METRIC("temp_hbr", METRIC_VALUE_FLOAT, 1000 - 8, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&heatbreak, thermalManager.degHeatbreak());
 #endif
 

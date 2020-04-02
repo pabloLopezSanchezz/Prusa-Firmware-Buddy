@@ -439,9 +439,9 @@
     //#define  DEFAULT_Kd 56.23
 
     // RING
-    #define DEFAULT_Kp 13.93
-    #define DEFAULT_Ki 0.81
-    #define DEFAULT_Kd 59.62
+    #define DEFAULT_Kp 17.00
+    #define DEFAULT_Ki 1.00
+    #define DEFAULT_Kd 115.00
 
 // MakerGear
 //#define DEFAULT_Kp 7.0
@@ -502,7 +502,7 @@
 
     //24V Prusa MK3 bed
     #define DEFAULT_bedKp 126.13
-    #define DEFAULT_bedKi 4.3
+    #define DEFAULT_bedKi 4.30
     #define DEFAULT_bedKd 924.76
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
@@ -568,6 +568,14 @@
 //===========================================================================
 
 // @section homing
+
+//! Move in opposite direction as first homing move
+//! useful for sensor-less homing to avoid clicking noise
+//! implemented only for Cartesian kinematics
+#define MOVE_BACK_BEFORE_HOMING
+#if ENABLED(MOVE_BACK_BEFORE_HOMING)
+    #define MOVE_BACK_BEFORE_HOMING_DISTANCE 1.92f
+#endif
 
 // Specify here all the endstop connectors that are connected to any endstop or probe.
 // Almost all printers will be using one per axis. Probes will use one or more of the
@@ -700,7 +708,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_FEEDRATE \
-    { 200, 200, 12, 60 }
+    { 200, 200, 12, 40 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -726,7 +734,7 @@
 //
 // Use Junction Deviation instead of traditional Jerk Limiting
 //
-#define CLASSIC_JERK
+//#define CLASSIC_JERK
 #if DISABLED(CLASSIC_JERK)
     #define JUNCTION_DEVIATION_MM 0.02 // (mm) Distance from real junction edge
 #endif
@@ -755,7 +763,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-//#define S_CURVE_ACCELERATION
+#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -926,7 +934,7 @@
 #define Z_CLEARANCE_MULTI_PROBE 0.7 // Z Clearance between multiple probes
 #define Z_AFTER_PROBING 2 // Z position after probing is done 2
 
-#define Z_PROBE_LOW_POINT -1 // Farthest distance below the trigger-point to go before stopping
+#define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
 
 // For M851 give a range for adjusting the Z probe offset
 #define Z_PROBE_OFFSET_RANGE_MIN -20
@@ -1207,8 +1215,7 @@
 
 //#define MESH_EDIT_GFX_OVERLAY   // Display a graphics overlay while editing the mesh
 
-    #define MESH_INSET 0 // Set Mesh bounds as an inset region of the bed
-    #define GRID_MAX_POINTS_X 5 // Don't use more than 15 points per axis, implementation limited.
+    #define GRID_MAX_POINTS_X 7 // Don't use more than 15 points per axis, implementation limited.
     #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
     #define UBL_MESH_EDIT_MOVES_Z // Sophisticated users prefer no movement of nozzle

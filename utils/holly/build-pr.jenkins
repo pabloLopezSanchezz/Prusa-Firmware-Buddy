@@ -16,6 +16,7 @@ pipeline {
                         [printer: "mini", build_type: "release", bootloader: "empty"],
                         [printer: "mk4", build_type: "release", bootloader: "no"],
                         [printer: "mk4", build_type: "release", bootloader: "empty"],
+                        [printer: "mk4", build_type: "release", bootloader: "yes"],
                         [printer: "xl", build_type: "release", bootloader: "no"],
                         [printer: "xl", build_type: "release", bootloader: "empty"],
                         [printer: "ixl", build_type: "release", bootloader: "empty"],
@@ -63,7 +64,9 @@ pipeline {
                                     --generate-dfu \
                                     --no-store-output \
                                     --version-suffix=${variant_full_suffix} \
-                                    --version-suffix-short=${short_suffix} ${options}
+                                    --version-suffix-short=${short_suffix} ${options} \
+                                    --version-suffix=${full_suffix} \
+                                    --version-suffix-short=${short_suffix}
                             """
                         }
                     }

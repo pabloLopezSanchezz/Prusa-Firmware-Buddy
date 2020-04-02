@@ -100,11 +100,15 @@
         // This feature can be disabled on demand using set_fsensor_disable, or loadcell.FSdisable
         // Also keep in mind that we have 12 mm maximum from trigger point to drive gear
         #define FILAMENT_SENSOR_HX711_POOL_INT 60
-
     #endif
 
-    #define LOADCELL_PIN_DOUT PB5 // data signal pin
-    #define LOADCELL_PIN_SCK  PE0 // clock signal pin
+    #if (PRINTER_TYPE == PRINTER_PRUSA_MK4) // TODO: condition based on board
+        #define LOADCELL_PIN_DOUT PB5       // data signal pin
+        #define LOADCELL_PIN_SCK  PE0       // clock signal pin
+    #else
+        #define LOADCELL_PIN_DOUT PE0 // data signal pin
+        #define LOADCELL_PIN_SCK  PB5 // clock signal pin
+    #endif
 
 // loadcell latency test - pulse to PC13
 //#define LOADCELL_LATENCY_TEST

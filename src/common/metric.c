@@ -14,7 +14,7 @@ osThreadDef(metric_system_task, metric_system_task_run, osPriorityAboveNormal,
 static osThreadId metric_system_task;
 
 // queue definition
-osMailQDef(metric_system_queue, 6, metric_point_t);
+osMailQDef(metric_system_queue, 5, metric_point_t);
 static osMessageQId metric_system_queue;
 
 // internal variables
@@ -140,6 +140,17 @@ void metric_record_string(metric_t *metric, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vsnprintf_P(recording->value_str, sizeof(recording->value_str), fmt, args);
+    va_end(args);
+    point_enqueue(recording);
+}
+
+void metric_record_custom(metric_t *metric, const char *fmt, ...) {
+    metric_point_t *recording = point_check_and_prepare(metric, METRIC_VALUE_CUSTOM);
+    if (!recording)
+        return;
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf_P(recording->value_custom, sizeof(recording->value_custom), fmt, args);
     va_end(args);
     point_enqueue(recording);
 }
