@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "stm32f4xx_hal.h"
 #include "gpio.h"
+#include "bsod.h"
 
 #ifdef ILI9488_USE_RTOS
     #include "cmsis_os.h"
@@ -659,6 +660,7 @@ void ili9488_draw_icon(point_ui16_t pt, uint16_t id_res, color_t clr0, uint8_t r
 
     #include <png.h>
 
+uint8_t png_mem_pool[49152] __attribute__((section(".ccmram")));
 void *png_mem_ptr0 = 0;
 uint32_t png_mem_total = 0;
 void *png_mem_ptrs[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -666,16 +668,14 @@ uint32_t png_mem_sizes[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 uint32_t png_mem_cnt = 0;
 
 png_voidp _pngmalloc(png_structp pp, png_alloc_size_t size) {
-    //	return malloc(size);
-    //	return pvPortMalloc(size);
-    if (png_mem_ptr0 == 0)
-        //png_mem_ptr0 = pvPortMalloc(0xc000); //48k
-        png_mem_ptr0 = (void *)0x10000000; //ccram
+    if (png_mem_ptr0 == NULL) {
+        png_mem_ptr0 = (void *)png_mem_pool;
+    }
+    if (png_mem_total + size >= sizeof(png_mem_pool)) {
+        general_error("pngmalloc", "out of memory");
+    }
     int i;
     void *p = ((uint8_t *)png_mem_ptr0) + png_mem_total;
-    //	if (p == 0)
-    //		while (1);
-    //	else
     {
         for (i = 0; i < 10; i++)
             if (png_mem_ptrs[i] == 0)
@@ -689,7 +689,6 @@ png_voidp _pngmalloc(png_structp pp, png_alloc_size_t size) {
 }
 
 void _pngfree(png_structp pp, png_voidp mem) {
-    //	free(mem);
     int i;
 
     for (i = 0; i < 10; i++)
@@ -700,7 +699,6 @@ void _pngfree(png_structp pp, png_voidp mem) {
             png_mem_total -= size;
             png_mem_cnt--;
         }
-    //	vPortFree(mem);
 }
 
 void ili9488_draw_png_ex(point_ui16_t pt, FILE *pf, color_t clr0, uint8_t rop) {
