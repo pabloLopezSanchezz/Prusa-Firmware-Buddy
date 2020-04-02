@@ -19,7 +19,7 @@
 #define MAX_MARLIN_REQUEST_LEN 100
 #define WUI_FLG_PEND_REQ       0x0001
 
-osMessageQId tcpclient_wui_queue = 0; // char input queue (uint8_t)
+osMessageQId tcp_wui_queue_id = 0;    // char input queue (uint8_t)
 osSemaphoreId tcpclient_wui_sema = 0; // semaphore handle
 osMutexDef(wui_thread_mutex);         // Declare mutex
 osMutexId(wui_thread_mutex_id);       // Mutex ID
@@ -83,7 +83,7 @@ void update_web_vars(void) {
 
 void StartWebServerTask(void const *argument) {
     osMessageQDef(wuiQueue, 64, uint8_t);
-    tcpclient_wui_queue = osMessageCreate(osMessageQ(wuiQueue), NULL);
+    tcp_wui_queue_id = osMessageCreate(osMessageQ(wuiQueue), NULL);
     osSemaphoreDef(wuiSema);
     tcpclient_wui_sema = osSemaphoreCreate(osSemaphore(wuiSema), 1);
     wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
@@ -123,7 +123,7 @@ static void wui_queue_cycle() {
         }
     }
 
-    while ((ose = osMessageGet(tcpclient_wui_queue, 0)).status == osEventMessage) {
+    while ((ose = osMessageGet(tcp_wui_queue_id, 0)).status == osEventMessage) {
         ch = (char)((uint8_t)(ose.value.v));
         switch (ch) {
         case '\r':

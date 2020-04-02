@@ -11,7 +11,7 @@
 //#define HTTP_DUBAI_HACK
 
 #ifdef HTTP_DUBAI_HACK
-#include "version.h"
+    #include "version.h"
 #endif
 
 #define MAX_ACK_SIZE 16
@@ -32,7 +32,7 @@ void send_request_to_wui(const char *request) {
     uint16_t helper = 0;
 
     osSemaphoreWait(tcpclient_wui_sema, osWaitForever); // lock
-    if ((queue = tcpclient_wui_queue) != 0)             // queue valid
+    if ((queue = tcp_wui_queue_id) != 0)                // queue valid
     {
         while (req_len) {
             int end, i;
