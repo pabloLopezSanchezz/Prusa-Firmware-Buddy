@@ -6,6 +6,7 @@
 #define X_AXIS_POS 0
 #define Y_AXIS_POS 1
 #define Z_AXIS_POS 2
+
 typedef struct {
     char gcode_name[GCODE_NAME_MAX_LEN + 1];
     float pos[4];
@@ -17,7 +18,8 @@ typedef struct {
     uint8_t sd_precent_done;
     uint8_t sd_printing;
     uint8_t device_state;
-} web_vars_t;
-extern web_vars_t web_vars;
+} wui_vars_t;
+
+extern wui_vars_t wui_vars;
 
 #endif //WUI_VARS_H

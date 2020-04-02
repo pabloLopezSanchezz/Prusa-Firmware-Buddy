@@ -30,9 +30,9 @@ typedef struct {
     char request[MAX_WUI_REQUEST_LEN];
     uint8_t request_len;
 } web_client_t;
-web_vars_t web_vars;
 
 web_client_t wui;
+wui_vars_t wui_vars;
 
 static void wui_queue_cycle(void);
 static int process_wui_request(void);
@@ -40,8 +40,8 @@ static int process_wui_request(void);
 static void device_state_change() {
 
     if (marlin_event(MARLIN_EVT_DevStateChange)) {
-        web_vars.device_state = wui.wui_marlin_vars->device_state;
-        switch (web_vars.device_state) {
+        wui_vars.device_state = wui.wui_marlin_vars->device_state;
+        switch (wui_vars.device_state) {
         case DEVICE_STATE_IDLE:
 
             break;
@@ -63,19 +63,19 @@ static void device_state_change() {
     }
 }
 
-void update_web_vars(void) {
+void update_wui_vars(void) {
     osMutexWait(wui_thread_mutex_id, osWaitForever);
-    web_vars.pos[Z_AXIS_POS] = wui.wui_marlin_vars->pos[Z_AXIS_POS];
-    web_vars.temp_nozzle = wui.wui_marlin_vars->temp_nozzle;
-    web_vars.temp_bed = wui.wui_marlin_vars->temp_bed;
-    web_vars.print_speed = wui.wui_marlin_vars->print_speed;
-    web_vars.flow_factor = wui.wui_marlin_vars->flow_factor;
-    web_vars.print_dur = wui.wui_marlin_vars->print_duration;
-    web_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
-    web_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
+    wui_vars.pos[Z_AXIS_POS] = wui.wui_marlin_vars->pos[Z_AXIS_POS];
+    wui_vars.temp_nozzle = wui.wui_marlin_vars->temp_nozzle;
+    wui_vars.temp_bed = wui.wui_marlin_vars->temp_bed;
+    wui_vars.print_speed = wui.wui_marlin_vars->print_speed;
+    wui_vars.flow_factor = wui.wui_marlin_vars->flow_factor;
+    wui_vars.print_dur = wui.wui_marlin_vars->print_duration;
+    wui_vars.sd_precent_done = wui.wui_marlin_vars->sd_percent_done;
+    wui_vars.sd_printing = wui.wui_marlin_vars->sd_printing;
 
     if (marlin_event(MARLIN_EVT_GFileChange)) {
-        marlin_get_printing_gcode_name(web_vars.gcode_name);
+        marlin_get_printing_gcode_name(wui_vars.gcode_name);
     }
 
     osMutexRelease(wui_thread_mutex_id);
@@ -90,7 +90,7 @@ void StartWebServerTask(void const *argument) {
     wui.wui_marlin_vars = marlin_client_init(); // init the client
     if (wui.wui_marlin_vars) {
         wui.wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
-        update_web_vars();
+        update_wui_vars();
     }
     wui.wui_marlin_vars->device_state = DEVICE_STATE_IDLE;
     wui.flags = wui.request_len = 0;
@@ -103,7 +103,7 @@ void StartWebServerTask(void const *argument) {
 
         if (wui.wui_marlin_vars) {
             marlin_client_loop();
-            update_web_vars();
+            update_wui_vars();
         }
 #ifdef BUDDY_ENABLE_CONNECT
         buddy_http_client_loop();

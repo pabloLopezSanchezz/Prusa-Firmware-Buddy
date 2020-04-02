@@ -20,7 +20,7 @@
 #define CMD_LIMIT               10 // number of commands accepted in low level command response
 
 // for data exchange between wui thread and HTTP thread
-static web_vars_t web_vars_copy;
+static wui_vars_t wui_vars_copy;
 // for storing /api/* data
 static struct fs_file api_file;
 
@@ -28,18 +28,18 @@ const char *get_update_str(void) {
 
     osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);
     if (status == osOK) {
-        web_vars_copy = web_vars;
+        wui_vars_copy = wui_vars;
     }
     osMutexRelease(wui_thread_mutex_id);
 
-    int32_t actual_nozzle = (int32_t)(web_vars_copy.temp_nozzle);
-    int32_t actual_heatbed = (int32_t)(web_vars_copy.temp_bed);
-    double z_pos_mm = (double)web_vars_copy.pos[Z_AXIS_POS];
-    uint16_t print_speed = (uint16_t)(web_vars_copy.print_speed);
-    uint16_t flow_factor = (uint16_t)(web_vars_copy.flow_factor);
+    int32_t actual_nozzle = (int32_t)(wui_vars_copy.temp_nozzle);
+    int32_t actual_heatbed = (int32_t)(wui_vars_copy.temp_bed);
+    double z_pos_mm = (double)wui_vars_copy.pos[Z_AXIS_POS];
+    uint16_t print_speed = (uint16_t)(wui_vars_copy.print_speed);
+    uint16_t flow_factor = (uint16_t)(wui_vars_copy.flow_factor);
     const char *filament_material = filaments[get_filament()].name;
 
-    if (!web_vars_copy.sd_printing) {
+    if (!wui_vars_copy.sd_printing) {
         return char_streamer("{"
                              "\"temp_nozzle\":%d,"
                              "\"temp_bed\":%d,"
@@ -54,15 +54,15 @@ const char *get_update_str(void) {
 
     uint8_t percent_done;
     char time_2_end[9], print_time[13];
-    if (is_percentage_valid(web_vars_copy.print_dur)) {
+    if (is_percentage_valid(wui_vars_copy.print_dur)) {
         percent_done = progress_get_percentage();
-        progress_format_time2end(time_2_end, web_vars_copy.print_speed);
+        progress_format_time2end(time_2_end, wui_vars_copy.print_speed);
     } else {
         strlcpy(time_2_end, "N/A", 4);
-        percent_done = web_vars_copy.sd_precent_done;
+        percent_done = wui_vars_copy.sd_precent_done;
     }
 
-    print_dur_to_string(print_time, web_vars_copy.print_dur);
+    print_dur_to_string(print_time, wui_vars_copy.print_dur);
 
     return char_streamer("{"
                          "\"temp_nozzle\":%d,"
@@ -78,7 +78,7 @@ const char *get_update_str(void) {
                          "}",
         actual_nozzle, actual_heatbed, filament_material,
         z_pos_mm, print_speed, flow_factor,
-        percent_done, print_time, time_2_end, web_vars_copy.gcode_name);
+        percent_done, print_time, time_2_end, wui_vars_copy.gcode_name);
 }
 
 #if 0
