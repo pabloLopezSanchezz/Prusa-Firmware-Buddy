@@ -681,24 +681,23 @@ void buddy_httpc_handler() {
         client_interval = xTaskGetTickCount();
         init_tick = true;
     }
-
-    if ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY) {
-        if (!httpc_req_active) {
-            buddy_http_client_req(&req);
-            httpc_req_active = true;
-        }
-        client_interval = xTaskGetTickCount();
-    } else {
+    // check for any events to sent
+    osEvent httpc_event = osMessageGet(wui_httpc_queue_id, 0);
+    if (httpc_event.status == osEventMessage) {
         if (!httpc_req_active) {
             httpc_req_t *rptr;
-            osEvent httpc_event;
-            httpc_event = osMessageGet(wui_httpc_queue_id, 0);
-            if (httpc_event.status == osEventMessage) {
-                rptr = httpc_event.value.p;
-                buddy_http_client_req(rptr);
+            rptr = httpc_event.value.p;
+            buddy_http_client_req(rptr);
+            httpc_req_active = true;
+            osPoolFree(httpc_req_mpool_id, rptr); // free memory allocated for message
+        }
+    } else {
+        if ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY) {
+            if (!httpc_req_active) {
+                buddy_http_client_req(&req);
                 httpc_req_active = true;
-                osPoolFree(httpc_req_mpool_id, rptr); // free memory allocated for message
             }
+            client_interval = xTaskGetTickCount();
         }
     }
 }
