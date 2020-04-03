@@ -27,6 +27,10 @@ extern osMessageQId tcp_wui_queue_id;
 extern osSemaphoreId tcp_wui_semaphore_id;
 extern osMutexId wui_thread_mutex_id;
 
+typedef struct {
+    char gcode_cmd[100];
+} wui_cmd_t;
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

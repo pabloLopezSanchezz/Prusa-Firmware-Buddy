@@ -18,6 +18,9 @@
 
 static char buffer[MAX_REQ_BODY_SIZE] = "";
 
+extern osMessageQId tcp_wui_mpool_id;
+extern osSemaphoreId tcp_wui_semaphore_id;
+
 static int json_cmp(const char *json, jsmntok_t *tok, const char *s) {
     if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start && strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
         return 0;
@@ -31,37 +34,18 @@ void send_request_to_wui(const char *request) {
     const char *curr_ptr = request;
     uint16_t helper = 0;
 
-    osSemaphoreWait(tcp_wui_semaphore_id, osWaitForever); // lock
-    if ((queue = tcp_wui_queue_id) != 0)                  // queue valid
+    osSemaphoreWait(tcp_wui_semaphore_id, osWaitForever);
+    if (0 != tcp_wui_queue_id) // queue valid
     {
-        while (req_len) {
-            int end, i;
-            uint32_t q_space = osMessageAvailableSpace(queue);
-            if (q_space >= 1) {
-                if (q_space < req_len) {
-                    end = q_space;
-                    req_len -= q_space;
-                    helper = q_space;
-                } else {
-                    end = req_len;
-                    req_len = 0;
-                }
-                for (i = 0; i < end; i++) {
-                    osMessagePut(queue, curr_ptr[i], 0);
-                }
-                if (req_len == 0 && curr_ptr[i - 1] != '\n') {
-                    osMessagePut(queue, '\n', 0);
-                }
-                curr_ptr = curr_ptr + helper;
-                helper = 0;
-            } else {
-                osSemaphoreRelease(tcp_wui_semaphore_id); // unlock
-                osDelay(10);
-                osSemaphoreWait(tcp_wui_semaphore_id, osWaitForever); //lock
-            }
-        }
+        uint32_t q_space = osMessageAvailableSpace(tcp_wui_queue_id);
+
+        wui_cmd_t *mptr;
+        mptr = osPoolAlloc(tcp_wui_mpool_id);
+        strlcpy(mptr->gcode_cmd, request, 100);
+        osMessagePut(tcp_wui_queue_id, (uint32_t)mptr, osWaitForever); // Send Message
+        osDelay(100);
     }
-    osSemaphoreRelease(tcp_wui_semaphore_id); //unlock
+    osSemaphoreRelease(tcp_wui_semaphore_id);
 }
 
 void http_json_parser(char *json, uint32_t len) {

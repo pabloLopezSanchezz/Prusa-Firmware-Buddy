@@ -20,8 +20,12 @@
 #define WUI_FLG_PEND_REQ       0x0001
 #define TCP_WUI_QUEUE_SIZE     64
 
-osMessageQId tcp_wui_queue_id = 0;
 osSemaphoreId tcp_wui_semaphore_id = 0;
+osMessageQDef(tcp_wui_queue, TCP_WUI_QUEUE_SIZE, uint32_t);
+osMessageQId tcp_wui_queue_id = 0;
+osPoolDef(tcp_wui_mpool, TCP_WUI_QUEUE_SIZE, wui_cmd_t);
+osPoolId tcp_wui_mpool_id;
+
 osMutexDef(wui_thread_mutex);   // Mutex object for exchanging WUI thread TCP thread
 osMutexId(wui_thread_mutex_id); // Mutex ID
 
@@ -36,7 +40,7 @@ static marlin_vars_t *wui_marlin_vars;
 wui_vars_t wui_vars; // global vriable for data relevant to WUI
 
 static void wui_queue_cycle(void);
-static int process_wui_request(void);
+static int process_wui_request(char *);
 
 #if 0
 static void device_state_change() {
@@ -84,12 +88,13 @@ void update_wui_vars(void) {
 }
 
 void StartWebServerTask(void const *argument) {
-    // message queue for commands from tcp thread to wui main loop
-    osMessageQDef(tcp_wui_queue, TCP_WUI_QUEUE_SIZE, uint32_t);
-    tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
     // semaphore for filling tcp - wui message qeue
-    osSemaphoreDef(wuiSema);
-    tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(wuiSema), 1);
+    osSemaphoreDef(tcp_wui_semaphore);
+    tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(tcp_wui_semaphore), 1);
+    // message queue for commands from tcp thread to wui main loop
+    tcp_wui_mpool_id = osPoolCreate(osPool(tcp_wui_mpool)); // create memory pool
+    tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
+
     // mutex for passing marlin variables to tcp thread
     wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
     // marlin client initialization
@@ -122,57 +127,33 @@ void StartWebServerTask(void const *argument) {
 }
 
 static void wui_queue_cycle() {
-    osEvent ose;
-    char ch;
+    osEvent wui_event = osMessageGet(tcp_wui_queue_id, 0);
+    if (wui_event.status == osEventMessage) {
 
-    if (wui_req.flags & WUI_FLG_PEND_REQ) {
-        if (process_wui_request()) {
-            wui_req.flags &= ~WUI_FLG_PEND_REQ;
-            wui_req.request_len = 0;
-        }
-    }
-
-    while ((ose = osMessageGet(tcp_wui_queue_id, 0)).status == osEventMessage) {
-        ch = (char)((uint8_t)(ose.value.v));
-        switch (ch) {
-        case '\r':
-        case '\n':
-            ch = 0;
-            break;
-        }
-        if (wui_req.request_len < MAX_WUI_REQUEST_LEN)
-            wui_req.request[wui_req.request_len++] = ch;
-        else {
-            //TOO LONG
-            wui_req.request_len = 0;
-        }
-        if ((ch == 0) && (wui_req.request_len > 1)) {
-            if (process_wui_request()) {
-                wui_req.request_len = 0;
-            } else {
-                wui_req.flags |= WUI_FLG_PEND_REQ;
-                break;
-            }
-        }
+        wui_cmd_t *rptr;
+        rptr = wui_event.value.p;
+        process_wui_request(&rptr->gcode_cmd);
+        osPoolFree(tcp_wui_mpool_id, rptr); // free memory allocated for message
     }
 }
-static int process_wui_request() {
 
-    if (strncmp(wui_req.request, "!cip ", 5) == 0) {
+static int process_wui_request(char *request) {
+
+    if (strncmp(request, "!cip ", 5) == 0) {
         uint32_t ip;
-        if (sscanf(wui_req.request + 5, "%lu", &ip)) {
+        if (sscanf(request + 5, "%lu", &ip)) {
             eeprom_set_var(EEVAR_CONNECT_IP4, variant8_ui32(ip));
         }
-    } else if (strncmp(wui_req.request, "!ck ", 4) == 0) {
-        variant8_t token = variant8_pchar(wui_req.request + 4, 0, 0);
+    } else if (strncmp(request, "!ck ", 4) == 0) {
+        variant8_t token = variant8_pchar(request + 4, 0, 0);
         eeprom_set_var(EEVAR_CONNECT_TOKEN, token);
         //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
-    } else if (strncmp(wui_req.request, "!cn ", 4) == 0) {
-        variant8_t hostname = variant8_pchar(wui_req.request + 4, 0, 0);
+    } else if (strncmp(request, "!cn ", 4) == 0) {
+        variant8_t hostname = variant8_pchar(request + 4, 0, 0);
         eeprom_set_var(EEVAR_LAN_HOSTNAME, hostname);
         //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
     } else {
-        marlin_wui_gcode(wui_req.request);
+        marlin_wui_gcode(request);
     }
     return 1;
 }
