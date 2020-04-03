@@ -190,7 +190,7 @@ static HTTPC_COMMAND_STATUS parse_low_level_cmd(const char *request, httpc_heade
 }
 
 HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_header_info *h_info_ptr) {
-    HTTPC_COMMAND_STATUS cmd_status;
+    HTTPC_COMMAND_STATUS cmd_status = CMD_UNKNOWN;
     if (0 == h_info_ptr->command_id) {
         return CMD_REJT_CMD_ID;
     }

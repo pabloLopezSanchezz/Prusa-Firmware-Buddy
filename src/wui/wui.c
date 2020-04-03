@@ -21,9 +21,9 @@
 #define TCP_WUI_QUEUE_SIZE     64
 
 osMessageQId tcp_wui_queue_id = 0;
-osSemaphoreId tcp_wui_semaphore_id = 0; // semaphore handle
-osMutexDef(wui_thread_mutex);           // Mutex object for exchanging WUI thread TCP thread
-osMutexId(wui_thread_mutex_id);         // Mutex ID
+osSemaphoreId tcp_wui_semaphore_id = 0;
+osMutexDef(wui_thread_mutex);   // Mutex object for exchanging WUI thread TCP thread
+osMutexId(wui_thread_mutex_id); // Mutex ID
 
 typedef struct {
     uint32_t flags;
@@ -103,6 +103,9 @@ void StartWebServerTask(void const *argument) {
 
     MX_LWIP_Init();
     http_server_init();
+#ifdef BUDDY_ENABLE_CONNECT
+    buddy_httpc_handler_init();
+#endif // BUDDY_ENABLE_CONNECT
     for (;;) {
         ethernetif_link(&eth0);
         wui_queue_cycle();
@@ -112,7 +115,7 @@ void StartWebServerTask(void const *argument) {
             update_wui_vars();
         }
 #ifdef BUDDY_ENABLE_CONNECT
-        buddy_http_client_loop();
+        buddy_httpc_handler();
 #endif // BUDDY_ENABLE_CONNECT
         osDelay(100);
     }

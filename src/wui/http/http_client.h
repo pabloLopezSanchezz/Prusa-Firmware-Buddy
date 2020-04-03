@@ -13,9 +13,11 @@ extern "C" {
 #endif
 
 typedef enum {
-    REQ_TELEMETRY,
+    REQ_TELEMETRY, // Telemetry request
     REQ_EVENT,
-} HTTP_CLIENT_REQ_TYPE;
+    REQ_STATE_CHANGE,
+    REQ_ACK, // acknowledgement of command reception
+} HTTPC_REQ_TYPE;
 
 typedef enum {
     TYPE_INVALID,
@@ -41,9 +43,18 @@ typedef struct {
     HTTPC_CONTENT_TYPE content_type;
 } httpc_header_info;
 
-wui_err buddy_http_client_req(HTTP_CLIENT_REQ_TYPE reqest_type);
+typedef struct {
+    HTTPC_REQ_TYPE req_type;
+    uint32_t cmd_id;
+    HTTPC_COMMAND_STATUS cmd_status;
+} httpc_req_t;
 
-void buddy_http_client_loop();
+wui_err buddy_http_client_req(httpc_req_t *request);
+
+void send_request_to_httpc(httpc_req_t request);
+
+void buddy_httpc_handler();
+void buddy_httpc_handler_init();
 
 #ifdef __cplusplus
 }
