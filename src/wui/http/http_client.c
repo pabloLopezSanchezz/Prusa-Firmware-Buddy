@@ -539,14 +539,14 @@ const char *get_ack_str(httpc_req_t *request) {
     if (EVENT_REJECTED == request->connect_event_type) {
         const char *reason = cmd_status_str[request->cmd_status].name;
         return char_streamer("{"
-                             "\"event\":%s,"
+                             "\"event\":\"%s\","
                              "\"command_id\":%d,"
-                             "\"reason\":\"%s"
+                             "\"reason\":\"%s\""
                              "}",
             event_name, request->cmd_id, reason);
     } else if (EVENT_ACCEPTED == request->connect_event_type) {
         return char_streamer("{"
-                             "\"event\":%s,"
+                             "\"event\":\"%s\","
                              "\"command_id\":%d"
                              "}",
             event_name, request->cmd_id);
