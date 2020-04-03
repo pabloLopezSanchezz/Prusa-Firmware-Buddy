@@ -84,11 +84,15 @@ void update_wui_vars(void) {
 }
 
 void StartWebServerTask(void const *argument) {
+    // message queue for commands from tcp thread to wui main loop
     osMessageQDef(tcp_wui_queue, TCP_WUI_QUEUE_SIZE, uint32_t);
     tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
+    // semaphore for filling tcp - wui message qeue
     osSemaphoreDef(wuiSema);
     tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(wuiSema), 1);
+    // mutex for passing marlin variables to tcp thread
     wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
+    // marlin client initialization
     wui_marlin_vars = marlin_client_init(); // init the client
     if (wui_marlin_vars) {
         wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
