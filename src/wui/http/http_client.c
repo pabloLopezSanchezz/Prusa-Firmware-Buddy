@@ -42,6 +42,23 @@ osMessageQId wui_httpc_queue_id = 0;
 osPoolDef(httpc_req_mpool, WUI_HTTPC_Q_SZ, httpc_req_t);
 osPoolId httpc_req_mpool_id;
 
+static const httpc_cmd_status_str_t cmd_status_str[] = {
+    { "General", CMD_REJT_GEN },
+    { "Packet size overflow", CMD_REJT_SIZE },                  // The response data size is larger than supported
+    { "error in the command structure", CMD_REJT_CMD_STRUCT },  // error in the command structure
+    { "error with Command-Id", CMD_REJT_CMD_ID },               // error with Command-Id
+    { "error with Content-Type", CMD_REJT_CDNT_TYPE },          // error with Content-Type
+    { "number of gcodes exceeds limit", CMD_REJT_GCODES_LIMI }, // number of gcodes in x-gcode request exceeded
+};
+
+static const httpc_con_event_str_t conn_event_str[] = {
+    { "ACCEPTED", EVENT_ACCEPTED },
+    { "REJECTED", EVENT_REJECTED },
+    { "FINISHED", EVENT_FINISHED },
+    { "STATE_CHANGED", EVENT_STATE_CHANGED },
+    { "INFO", EVENT_INFO },
+};
+
 /**
  * @ingroup httpc
  * HTTP client result codes
@@ -503,13 +520,31 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
         request.cmd_id = header_info.command_id;
         request.cmd_status = cmd_status;
         request.req_type = REQ_ACK;
+        if (CMD_ACCEPTED != cmd_status) {
+            request.connect_event_type = EVENT_REJECTED;
+        } else {
+            request.connect_event_type = EVENT_ACCEPTED;
+        }
+
         send_request_to_httpc(request);
     }
 
     return ERR_OK;
 }
 
-static void create_http_header(char *http_header_str, uint32_t content_length, HTTPC_REQ_TYPE reqest_type) {
+const char *get_ack_str(httpc_req_t *request) {
+    const char *event_name = conn_event_str[request->connect_event_type].name;
+    const char *reason = cmd_status_str[request->cmd_status].name;
+
+    return char_streamer("{"
+                         "\"event\":%s,"
+                         "\"command_id\":%d,"
+                         "\"reason\":\"%s"
+                         "}",
+        event_name, request->cmd_id, reason);
+}
+
+static void create_http_header(char *http_header_str, uint32_t content_length, httpc_req_t *request) {
     char printer_token[CONNECT_TOKEN_SIZE + 1]; // extra space of end of line
     variant8_t printer_token_ptr = eeprom_get_var(EEVAR_CONNECT_TOKEN);
     strlcpy(printer_token, printer_token_ptr.pch, CONNECT_TOKEN_SIZE + 1);
@@ -518,14 +553,14 @@ static void create_http_header(char *http_header_str, uint32_t content_length, H
     char uri[STR_SIZE_MAX] = { 0 };
     char content_type[STR_SIZE_MAX] = { 0 };
 
-    switch (reqest_type) {
+    switch (request->req_type) {
     case REQ_TELEMETRY:
         strlcpy(uri, "/p/telemetry", STR_SIZE_MAX);
         strlcpy(content_type, "application/json", STR_SIZE_MAX);
         break;
     case REQ_ACK:
         strlcpy(uri, "/p/event", STR_SIZE_MAX);
-        strlcpy(content_type, "text/plain", STR_SIZE_MAX);
+        strlcpy(content_type, "application/json", STR_SIZE_MAX);
         break;
     default:
         break;
@@ -533,15 +568,15 @@ static void create_http_header(char *http_header_str, uint32_t content_length, H
     snprintf(http_header_str, HEADER_MAX_SIZE - 1, "POST %s HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Length: %lu\r\nContent-Type: %s\r\n\r\n", uri, printer_token, content_length, content_type);
 }
 
-static uint32_t get_reqest_body(char *http_body_str, HTTPC_REQ_TYPE reqest_type) {
+static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
 
     uint32_t content_length = 0;
-    switch (reqest_type) {
+    switch (request->req_type) {
     case REQ_TELEMETRY:
         content_length = strlcpy(http_body_str, get_update_str(), BODY_MAX_SIZE);
         break;
     case REQ_ACK:
-        content_length = strlcpy(http_body_str, "Acknowledgment", BODY_MAX_SIZE);
+        content_length = strlcpy(http_body_str, get_ack_str(request), BODY_MAX_SIZE);
         break;
     default:
         break;
@@ -549,12 +584,12 @@ static uint32_t get_reqest_body(char *http_body_str, HTTPC_REQ_TYPE reqest_type)
     return content_length;
 }
 
-static const char *create_http_request(HTTPC_REQ_TYPE reqest_type) {
+static const char *create_http_request(httpc_req_t *request) {
     char header[HEADER_MAX_SIZE];
     char body[BODY_MAX_SIZE];
 
-    uint32_t content_length = get_reqest_body(body, reqest_type);
-    create_http_header(header, content_length, reqest_type);
+    uint32_t content_length = get_reqest_body(body, request);
+    create_http_header(header, content_length, request);
     snprintf(httpc_req_buffer, HTTPC_BUFF_SZ, "%s%s", header, body);
     return (const char *)&httpc_req_buffer;
 }
@@ -572,7 +607,7 @@ wui_err buddy_http_client_req(httpc_req_t *request) {
     host_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
     strlcpy(host_ip4_str, ip4addr_ntoa(&host_ip4), IP4_ADDR_STR_SIZE);
 
-    header_plus_data = create_http_request(request->req_type);
+    header_plus_data = create_http_request(request);
     if (!header_plus_data) {
         return ERR_ARG;
     }
