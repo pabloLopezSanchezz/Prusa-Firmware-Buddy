@@ -533,15 +533,25 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 }
 
 const char *get_ack_str(httpc_req_t *request) {
-    const char *event_name = conn_event_str[request->connect_event_type].name;
-    const char *reason = cmd_status_str[request->cmd_status].name;
 
-    return char_streamer("{"
-                         "\"event\":%s,"
-                         "\"command_id\":%d,"
-                         "\"reason\":\"%s"
-                         "}",
-        event_name, request->cmd_id, reason);
+    const char *event_name = conn_event_str[request->connect_event_type].name;
+
+    if (EVENT_REJECTED == request->connect_event_type) {
+        const char *reason = cmd_status_str[request->cmd_status].name;
+        return char_streamer("{"
+                             "\"event\":%s,"
+                             "\"command_id\":%d,"
+                             "\"reason\":\"%s"
+                             "}",
+            event_name, request->cmd_id, reason);
+    } else if (EVENT_ACCEPTED == request->connect_event_type) {
+        return char_streamer("{"
+                             "\"event\":%s,"
+                             "\"command_id\":%d"
+                             "}",
+            event_name, request->cmd_id);
+    }
+    return "fw error";
 }
 
 static void create_http_header(char *http_header_str, uint32_t content_length, httpc_req_t *request) {
