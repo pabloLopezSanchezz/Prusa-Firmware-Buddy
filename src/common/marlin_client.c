@@ -759,6 +759,7 @@ void _process_client_message(marlin_client_t *client, variant8_t msg) {
         case MARLIN_EVT_StoreSettings:
         case MARLIN_EVT_SafetyTimerExpired:
         case MARLIN_EVT_GFileChange:
+        case MARLIN_EVT_DevStateChange:
             break;
         }
 #ifdef DBG_EVT_MSK
