@@ -67,7 +67,8 @@ static int process_wui_request(char *request) {
         eeprom_set_var(EEVAR_LAN_HOSTNAME, hostname);
         //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
     } else {
-        marlin_wui_gcode(request);
+        _dbg("sending command to marlin");
+        marlin_gcode(request);
     }
     return 1;
 }
@@ -80,6 +81,7 @@ static void wui_queue_cycle() {
         wui_cmd_t *rptr;
         rptr = wui_event.value.p;
         if (NULL != wui_event.value.p) {
+            _dbg("command in wui queue");
             process_wui_request(rptr->gcode_cmd);
         }
         osStatus status = osPoolFree(tcp_wui_mpool_id, rptr); // free memory allocated for message
@@ -112,7 +114,7 @@ void StartWebServerTask(void const *argument) {
     http_server_init();
 
 #ifdef BUDDY_ENABLE_CONNECT
-    buddy_httpc_handler_init();
+//    buddy_httpc_handler_init();
 #endif // BUDDY_ENABLE_CONNECT
 
     for (;;) {
@@ -126,7 +128,7 @@ void StartWebServerTask(void const *argument) {
         }
 
 #ifdef BUDDY_ENABLE_CONNECT
-        buddy_httpc_handler();
+        //     buddy_httpc_handler();
 #endif // BUDDY_ENABLE_CONNECT
 
         osDelay(100);
