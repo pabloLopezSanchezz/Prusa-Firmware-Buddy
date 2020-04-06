@@ -221,6 +221,7 @@ httpc_free_state(httpc_state_t *req) {
 static err_t
 httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, err_t err) {
     httpc_req_active = false;
+    _dbg("closed httpc connection");
     if (req != NULL) {
         if (req->conn_settings != NULL) {
             if (req->conn_settings->result_fn != NULL) {
@@ -704,7 +705,7 @@ static wui_err buddy_http_client_req(httpc_req_t *request) {
 }
 
 void buddy_httpc_handler() {
-    _dbg("httpc handler invoked");
+
     if (eeprom_get_var(EEVAR_CONNECT_IP4).ui32 == 0) {
         return;
     }

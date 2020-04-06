@@ -7,6 +7,7 @@
 #include <string.h>
 #include "eeprom.h"
 #include "ip4_addr.h"
+#include "dbg.h"
 
 //#define HTTP_DUBAI_HACK
 
@@ -38,6 +39,8 @@ void send_request_to_wui(const char *request) {
             strlcpy(mptr->gcode_cmd, request, 100);
             osMessagePut(tcp_wui_queue_id, (uint32_t)mptr, osWaitForever); // Send Message
             osDelay(100);
+        } else {
+            _dbg("message queue to wui full");
         }
     }
     osSemaphoreRelease(tcp_wui_semaphore_id);
