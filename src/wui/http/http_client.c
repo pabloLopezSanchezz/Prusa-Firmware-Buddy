@@ -15,6 +15,7 @@
 #include "lwip/altcp.h"
 #include "lwip.h"
 #include "marlin_vars.h"
+#include "dbg.h"
 
 #define CLIENT_CONNECT_DELAY      1000 // 1000 = 1 Sec.
 #define CONNECT_SERVER_PORT       80
@@ -676,9 +677,7 @@ wui_err buddy_http_client_req(httpc_req_t *request) {
 }
 
 void buddy_httpc_handler() {
-    httpc_req_t req;
-    req.req_type = REQ_TELEMETRY;
-
+    _dbg("httpc handler invoked");
     if (eeprom_get_var(EEVAR_CONNECT_IP4).ui32 == 0) {
         return;
     }
@@ -687,37 +686,47 @@ void buddy_httpc_handler() {
         return;
     }
 
-    if (!init_tick) {
-        client_interval = xTaskGetTickCount();
-        init_tick = true;
-    }
-    // check for any events to sent
-    osEvent httpc_event = osMessageGet(wui_httpc_queue_id, 0);
-    if (httpc_event.status == osEventMessage) {
-        if (!httpc_req_active) {
+    if (!httpc_req_active) {
+        // check for any events to sent
+        osEvent httpc_event = osMessageGet(wui_httpc_queue_id, 0);
+        if (httpc_event.status == osEventMessage) {
+            _dbg("sending event");
             httpc_req_t *rptr;
             rptr = httpc_event.value.p;
-            buddy_http_client_req(rptr);
-            httpc_req_active = true;
-            osPoolFree(httpc_req_mpool_id, rptr); // free memory allocated for message
-        }
-    } else {
-        if ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY) {
-            if (!httpc_req_active) {
-                buddy_http_client_req(&req);
+            if (NULL != httpc_event.value.p) {
+                buddy_http_client_req(rptr);
                 httpc_req_active = true;
             }
-            client_interval = xTaskGetTickCount();
+            osStatus status = osPoolFree(httpc_req_mpool_id, rptr); // free memory allocated for message
+            if (osOK != status) {
+                _dbg("wui_queue_pool free error: %d", status);
+            }
+
+        } else {
+            if ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY) {
+                _dbg("sending telemtry");
+                httpc_req_t req;
+                req.req_type = REQ_TELEMETRY;
+                buddy_http_client_req(&req);
+                httpc_req_active = true;
+                client_interval = xTaskGetTickCount();
+            }
         }
     }
 }
 
 void buddy_httpc_handler_init() {
-    // semaphore for filling wui - httpc message queue
+    // semaphore initalization
     osSemaphoreDef(wui_httpc_semaphore);
     wui_httpc_semaphore_id = osSemaphoreCreate(osSemaphore(wui_httpc_semaphore), 1);
+    // memory pool initalization
     httpc_req_mpool_id = osPoolCreate(osPool(httpc_req_mpool));              // create memory pool
     wui_httpc_queue_id = osMessageCreate(osMessageQ(wui_httpc_queue), NULL); // create msg queue
+    // for periodic telemetry request
+    if (!init_tick) {
+        client_interval = xTaskGetTickCount();
+        init_tick = true;
+    }
 }
 
 void send_request_to_httpc(httpc_req_t reqest) {

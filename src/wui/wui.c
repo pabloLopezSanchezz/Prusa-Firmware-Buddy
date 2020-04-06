@@ -14,6 +14,7 @@
 #include "http_client.h"
 #include "eeprom.h"
 #include <string.h>
+#include "dbg.h"
 
 #define MAX_WUI_REQUEST_LEN    100
 #define MAX_MARLIN_REQUEST_LEN 100
@@ -29,47 +30,10 @@ osPoolId tcp_wui_mpool_id;
 osMutexDef(wui_thread_mutex);   // Mutex object for exchanging WUI thread TCP thread
 osMutexId(wui_thread_mutex_id); // Mutex ID
 
-typedef struct {
-    uint32_t flags;
-    char request[MAX_WUI_REQUEST_LEN];
-    uint8_t request_len;
-} wui_web_request_t;
-
-static wui_web_request_t wui_req;
 static marlin_vars_t *wui_marlin_vars;
 wui_vars_t wui_vars; // global vriable for data relevant to WUI
 
-static void wui_queue_cycle(void);
-static int process_wui_request(char *);
-
-#if 0
-static void device_state_change() {
-
-    if (marlin_event(MARLIN_EVT_DevStateChange)) {
-        wui_vars.device_state = wui_marlin_vars->device_state;
-        switch (wui_vars.device_state) {
-        case DEVICE_STATE_IDLE:
-
-            break;
-        case DEVICE_STATE_ERROR:
-
-        case DEVICE_STATE_PRINTING:
-
-            break;
-        case DEVICE_STATE_PAUSED:
-
-            break;
-        case DEVICE_STATE_FINISHED:
-
-            break;
-        default:
-
-            break;
-        }
-    }
-}
-#endif
-void update_wui_vars(void) {
+static void update_wui_vars(void) {
     osMutexWait(wui_thread_mutex_id, osWaitForever);
     wui_vars.pos[Z_AXIS_POS] = wui_marlin_vars->pos[Z_AXIS_POS];
     wui_vars.temp_nozzle = wui_marlin_vars->temp_nozzle;
@@ -85,56 +49,6 @@ void update_wui_vars(void) {
     }
 
     osMutexRelease(wui_thread_mutex_id);
-}
-
-void StartWebServerTask(void const *argument) {
-    // semaphore for filling tcp - wui message qeue
-    osSemaphoreDef(tcp_wui_semaphore);
-    tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(tcp_wui_semaphore), 1);
-    // message queue for commands from tcp thread to wui main loop
-    tcp_wui_mpool_id = osPoolCreate(osPool(tcp_wui_mpool)); // create memory pool
-    tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
-
-    // mutex for passing marlin variables to tcp thread
-    wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
-    // marlin client initialization
-    wui_marlin_vars = marlin_client_init(); // init the client
-    if (wui_marlin_vars) {
-        wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
-        update_wui_vars();
-    }
-    wui_marlin_vars->device_state = DEVICE_STATE_IDLE;
-    wui_req.flags = wui_req.request_len = 0;
-
-    MX_LWIP_Init();
-    http_server_init();
-#ifdef BUDDY_ENABLE_CONNECT
-    buddy_httpc_handler_init();
-#endif // BUDDY_ENABLE_CONNECT
-    for (;;) {
-        ethernetif_link(&eth0);
-        wui_queue_cycle();
-
-        if (wui_marlin_vars) {
-            marlin_client_loop();
-            update_wui_vars();
-        }
-#ifdef BUDDY_ENABLE_CONNECT
-        buddy_httpc_handler();
-#endif // BUDDY_ENABLE_CONNECT
-        osDelay(100);
-    }
-}
-
-static void wui_queue_cycle() {
-    osEvent wui_event = osMessageGet(tcp_wui_queue_id, 0);
-    if (wui_event.status == osEventMessage) {
-
-        wui_cmd_t *rptr;
-        rptr = wui_event.value.p;
-        process_wui_request(&rptr->gcode_cmd);
-        osPoolFree(tcp_wui_mpool_id, rptr); // free memory allocated for message
-    }
 }
 
 static int process_wui_request(char *request) {
@@ -156,4 +70,65 @@ static int process_wui_request(char *request) {
         marlin_wui_gcode(request);
     }
     return 1;
+}
+
+static void wui_queue_cycle() {
+
+    osEvent wui_event = osMessageGet(tcp_wui_queue_id, 0);
+
+    if (wui_event.status == osEventMessage) {
+        wui_cmd_t *rptr;
+        if (NULL != wui_event.value.p) {
+            rptr = wui_event.value.p;
+            process_wui_request(&rptr->gcode_cmd);
+        }
+        osStatus status = osPoolFree(tcp_wui_mpool_id, rptr); // free memory allocated for message
+        if (osOK != status) {
+            _dbg("wui_queue_pool free error: %d", status);
+        }
+    }
+}
+
+void StartWebServerTask(void const *argument) {
+    // semaphore for filling tcp - wui message qeue
+    osSemaphoreDef(tcp_wui_semaphore);
+    tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(tcp_wui_semaphore), 1);
+    // message queue for commands from tcp thread to wui main loop
+    tcp_wui_mpool_id = osPoolCreate(osPool(tcp_wui_mpool)); // create memory pool
+    tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
+
+    // mutex for passing marlin variables to tcp thread
+    wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
+
+    // marlin client initialization
+    wui_marlin_vars = marlin_client_init(); // init the client
+    // force update variables when starts
+    if (wui_marlin_vars) {
+        wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
+        update_wui_vars();
+    }
+    // LwIP related initalizations
+    MX_LWIP_Init();
+    http_server_init();
+
+#ifdef BUDDY_ENABLE_CONNECT
+    buddy_httpc_handler_init();
+#endif // BUDDY_ENABLE_CONNECT
+
+    for (;;) {
+
+        ethernetif_link(&eth0); // handles Ethernet link plug/un-plug events
+        wui_queue_cycle();      // checks for commands to WUI
+
+        if (wui_marlin_vars) {
+            marlin_client_loop();
+            update_wui_vars();
+        }
+
+#ifdef BUDDY_ENABLE_CONNECT
+        buddy_httpc_handler();
+#endif // BUDDY_ENABLE_CONNECT
+
+        osDelay(100);
+    }
 }
