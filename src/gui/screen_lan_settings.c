@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "dns.h"
 
 #define MAC_ADDR_START    0x1FFF781A //MM:MM:MM:SS:SS:SS
 #define MAC_ADDR_SIZE     6
@@ -52,6 +53,8 @@ static void _get_ip4_addrs(void) {
             config.lan_ip4_addr.addr = netif_ip4_addr(&eth0)->addr;
             config.lan_ip4_msk.addr = netif_ip4_netmask(&eth0)->addr;
             config.lan_ip4_gw.addr = netif_ip4_gw(&eth0)->addr;
+            config.dns1_ip4.addr = dns_getserver(0)->addr;
+            config.dns2_ip4.addr = dns_getserver(1)->addr;
             return;
         }
     }
@@ -59,11 +62,15 @@ static void _get_ip4_addrs(void) {
         config.lan_ip4_addr.addr = 0;
         config.lan_ip4_msk.addr = 0;
         config.lan_ip4_gw.addr = 0;
+        config.dns1_ip4.addr = 0;
+        config.dns2_ip4.addr = 0;
         return;
     }
     config.lan_ip4_addr.addr = eeprom_get_var(EEVAR_LAN_IP4_ADDR).ui32;
     config.lan_ip4_msk.addr = eeprom_get_var(EEVAR_LAN_IP4_MSK).ui32;
     config.lan_ip4_gw.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
+    config.dns1_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
+    config.dns2_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
 }
 
 /** Puts wanted net info in the string.
@@ -76,9 +83,13 @@ static void stringify_netinfo(char *param_str, uint8_t flg) {
     static char ip4_addr_str[IP4_ADDR_STR_SIZE];
     static char ip4_msk_str[IP4_ADDR_STR_SIZE];
     static char ip4_gw_str[IP4_ADDR_STR_SIZE];
+    static char ip4_dns1_str[IP4_ADDR_STR_SIZE];
+    static char ip4_dns2_str[IP4_ADDR_STR_SIZE];
     strlcpy(ip4_addr_str, ip4addr_ntoa(&(config.lan_ip4_addr)), IP4_ADDR_STR_SIZE);
     strlcpy(ip4_msk_str, ip4addr_ntoa(&(config.lan_ip4_msk)), IP4_ADDR_STR_SIZE);
     strlcpy(ip4_gw_str, ip4addr_ntoa(&(config.lan_ip4_gw)), IP4_ADDR_STR_SIZE);
+    strlcpy(ip4_dns1_str, ip4addr_ntoa(&(config.dns1_ip4)), IP4_ADDR_STR_SIZE);
+    strlcpy(ip4_dns2_str, ip4addr_ntoa(&(config.dns2_ip4)), IP4_ADDR_STR_SIZE);
 
     if (flg) {
         char save_hostname[LAN_HOSTNAME_MAX_LEN + 1];
@@ -93,11 +104,13 @@ static void stringify_netinfo(char *param_str, uint8_t flg) {
         variant8_done(&connect_token);
         config.connect_ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
         strlcpy(ip4_connect_str, ip4addr_ntoa(&(config.connect_ip4)), IP4_ADDR_STR_SIZE);
-        snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\n\n[connect]\naddress=%s\ntoken=%s\n",
-            config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str, ip4_connect_str, save_connect_token);
+        snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\ndns1=%s\ndns2=%s\n\n[connect]\naddress=%s\ntoken=%s\n",
+            config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str,
+            ip4_dns1_str, ip4_dns2_str, ip4_connect_str, save_connect_token);
 #else
-        snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\n",
-            config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str);
+        snprintf(param_str, MAX_INI_SIZE, "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\ndns1=%s\ndns2=%s\n",
+            config.lan_flag & LAN_EEFLG_TYPE ? LAN_type_opt[1] : LAN_type_opt[0], save_hostname, ip4_addr_str, ip4_msk_str, ip4_gw_str,
+            ip4_dns1_str, ip4_dns2_str);
 #endif // BUDDY_ENABLE_CONNECT
     } else {
         snprintf(plan_str, 150, "IPv4 Address:\n  %s      \nIPv4 Netmask:\n  %s      \nIPv4 Gateway:\n  %s      \nMAC Address:\n  %s",
@@ -182,24 +195,20 @@ static void _change_any_to_static(void) {
     }
     config.lan_flag |= LAN_EEFLG_TYPE;
     eeprom_set_var(EEVAR_LAN_FLAG, variant8_ui8(config.lan_flag));
-#ifdef DNS_MODULE_ON
-    ip4_addr_t ip4_dns1, ip4_dns2;
-#endif //DNS_MODULE_ON
     config.lan_ip4_addr.addr = eeprom_get_var(EEVAR_LAN_IP4_ADDR).ui32;
     config.lan_ip4_msk.addr = eeprom_get_var(EEVAR_LAN_IP4_MSK).ui32;
     config.lan_ip4_gw.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
-#ifdef DNS_MODULE_ON
-    ip4_dns1.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
-    ip4_dns2.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
-#endif //DNS_MODULE_ON
+
+    config.dns1_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
+    config.dns2_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
+
     netifapi_netif_set_addr(&eth0,
         (const ip4_addr_t *)&config.lan_ip4_addr,
         (const ip4_addr_t *)&config.lan_ip4_msk,
         (const ip4_addr_t *)&config.lan_ip4_gw);
-#ifdef DNS_MODULE_ON
-    dns_setserver(0, (const ip4_addr_t *)&ip4_dns1);
-    dns_setserver(1, (const ip4_addr_t *)&ip4_dns2);
-#endif //DNS_MODULE_ON
+
+    dns_setserver(0, (const ip4_addr_t *)&(config.dns1_ip4));
+    dns_setserver(1, (const ip4_addr_t *)&(config.dns2_ip4));
     if (netif_is_link_up(&eth0) && !(config.lan_flag & LAN_EEFLG_ONOFF)) {
         netifapi_netif_set_up(&eth0);
     }
@@ -222,37 +231,45 @@ static int ini_load_handler(void *user, const char *section, const char *name, c
     if (MATCH("lan_ip4", "type")) {
         if (strncmp(value, "DHCP", 4) == 0 || strncmp(value, "dhcp", 4) == 0) {
             tmp_config->lan_flag &= ~LAN_EEFLG_TYPE;
-            tmp_config->set_flag |= NETVAR_SETFLG_LAN_FLAGS;
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_LAN_FLAGS);
         } else if (strncmp(value, "STATIC", 6) == 0 || strncmp(value, "static", 6) == 0) {
             tmp_config->lan_flag |= LAN_EEFLG_TYPE;
-            tmp_config->set_flag |= NETVAR_SETFLG_LAN_FLAGS;
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_LAN_FLAGS);
         }
     } else if (MATCH("lan_ip4", "hostname")) {
         strlcpy(tmp_config->hostname, value, LAN_HOSTNAME_MAX_LEN + 1);
         tmp_config->hostname[LAN_HOSTNAME_MAX_LEN] = '\0';
-        tmp_config->set_flag |= NETVAR_SETFLG_HOSTNAME;
+        tmp_config->set_flag |= NETVAR_MSK(NETVAR_HOSTNAME);
     } else if (MATCH("lan_ip4", "address")) {
         if (ip4addr_aton(value, &tmp_config->lan_ip4_addr)) {
-            tmp_config->set_flag |= NETVAR_SETFLG_LAN_IP4_ADDR;
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_LAN_IP4_ADDR);
         }
     } else if (MATCH("lan_ip4", "mask")) {
         if (ip4addr_aton(value, &tmp_config->lan_ip4_msk)) {
-            tmp_config->set_flag |= NETVAR_SETFLG_LAN_IP4_MSK;
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_LAN_IP4_MSK);
         }
     } else if (MATCH("lan_ip4", "gateway")) {
         if (ip4addr_aton(value, &tmp_config->lan_ip4_gw)) {
-            tmp_config->set_flag |= NETVAR_SETFLG_LAN_IP4_GW;
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_LAN_IP4_GW);
+        }
+    } else if (MATCH("lan_ip4", "dns1")) {
+        if (ip4addr_aton(value, &tmp_config->dns1_ip4)) {
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_DNS1);
+        }
+    } else if (MATCH("lan_ip4", "dns2")) {
+        if (ip4addr_aton(value, &tmp_config->dns2_ip4)) {
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_DNS2);
         }
     }
 #ifdef BUDDY_ENABLE_CONNECT
     else if (MATCH("connect", "address")) {
         if (ip4addr_aton(value, &tmp_config->connect_ip4)) {
-            tmp_config->set_flag |= NETVAR_SETFLG_CONNECT_IP4;
+            tmp_config->set_flag |= NETVAR_MSK(NETVAR_CONNECT_IP4);
         }
     } else if (MATCH("connect", "token")) {
         strlcpy(tmp_config->connect_token, value, CONNECT_TOKEN_SIZE + 1);
         tmp_config->connect_token[CONNECT_TOKEN_SIZE] = '\0';
-        tmp_config->set_flag |= NETVAR_SETFLG_CONNECT_TOKEN;
+        tmp_config->set_flag |= NETVAR_MSK(NETVAR_CONNECT_TOKEN);
     }
 #endif // BUDDY_ENABLE_CONNECT
     else {
@@ -265,38 +282,39 @@ static uint8_t _load_config(void) {
 
     networkconfig_t tmp_config;
     tmp_config.lan_flag = config.lan_flag;
-    tmp_config.set_flag = 0;
+    tmp_config.set_flag = tmp_config.dns1_ip4.addr = tmp_config.dns2_ip4.addr = 0;
 
     if (ini_load_file(ini_load_handler, &tmp_config) == 0) {
         return 0;
     }
 
     if (!(tmp_config.lan_flag & LAN_EEFLG_TYPE)) {
-        if (tmp_config.set_flag & NETVAR_SETFLG_HOSTNAME) {
+        if (tmp_config.set_flag & NETVAR_MSK(NETVAR_HOSTNAME)) {
             strlcpy(interface_hostname, tmp_config.hostname, LAN_HOSTNAME_MAX_LEN + 1);
             eth0.hostname = interface_hostname;
             variant8_t hostname = variant8_pchar(interface_hostname, 0, 0);
             eeprom_set_var(EEVAR_LAN_HOSTNAME, hostname);
         }
-        if (tmp_config.set_flag & NETVAR_SETFLG_LAN_FLAGS) {
+        if (tmp_config.set_flag & NETVAR_MSK(NETVAR_LAN_FLAGS)) {
             _change_static_to_dhcp();
         }
 #ifdef BUDDY_ENABLE_CONNECT
-        if (tmp_config.set_flag & NETVAR_SETFLG_CONNECT_TOKEN) {
+        if (tmp_config.set_flag & NETVAR_MSK(NETVAR_CONNECT_TOKEN)) {
             variant8_t token = variant8_pchar(tmp_config.connect_token, 0, 0);
             eeprom_set_var(EEVAR_CONNECT_TOKEN, token);
             //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
         }
-        if (tmp_config.set_flag & NETVAR_SETFLG_CONNECT_IP4) {
+        if (tmp_config.set_flag & NETVAR_MSK(NETVAR_CONNECT_IP4)) {
             eeprom_set_var(EEVAR_CONNECT_IP4, variant8_ui32(tmp_config.connect_ip4.addr));
         }
 #endif // BUDDY_ENABLE_CONNECT
     } else {
-        if ((tmp_config.set_flag & (NETVAR_SETFLG_LAN_IP4_ADDR | NETVAR_SETFLG_LAN_IP4_MSK | NETVAR_SETFLG_LAN_IP4_GW))
-            != (NETVAR_SETFLG_LAN_IP4_ADDR | NETVAR_SETFLG_LAN_IP4_MSK | NETVAR_SETFLG_LAN_IP4_GW)) {
+        if ((tmp_config.set_flag & NETVAR_STATIC_LAN_ADDRS) != NETVAR_STATIC_LAN_ADDRS ||
+            ((tmp_config.set_flag & NETVAR_MSK(NETVAR_DNS1)) == 0 && (tmp_config.set_flag & NETVAR_MSK(NETVAR_DNS2)) == 0 ) || 
+            (tmp_config.dns1_ip4.addr == 0 && tmp_config.dns2_ip4.addr == 0)) {
             return 0;
         } else {
-            if (tmp_config.set_flag & NETVAR_SETFLG_HOSTNAME) {
+            if (tmp_config.set_flag & NETVAR_MSK(NETVAR_HOSTNAME)) {
                 strlcpy(interface_hostname, tmp_config.hostname, LAN_HOSTNAME_MAX_LEN + 1);
                 eth0.hostname = interface_hostname;
                 variant8_t hostname = variant8_pchar(tmp_config.hostname, 0, 0);
@@ -304,12 +322,12 @@ static uint8_t _load_config(void) {
                 //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
             }
 #ifdef BUDDY_ENABLE_CONNECT
-            if (tmp_config.set_flag & NETVAR_SETFLG_CONNECT_TOKEN) {
+            if (tmp_config.set_flag & NETVAR_MSK(NETVAR_CONNECT_TOKEN)) {
                 variant8_t token = variant8_pchar(tmp_config.connect_token, 0, 0);
                 eeprom_set_var(EEVAR_CONNECT_TOKEN, token);
                 //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
             }
-            if (tmp_config.set_flag & NETVAR_SETFLG_CONNECT_IP4) {
+            if (tmp_config.set_flag & NETVAR_MSK(NETVAR_CONNECT_IP4)) {
                 eeprom_set_var(EEVAR_CONNECT_IP4, variant8_ui32(tmp_config.connect_ip4.addr));
             }
 #endif // BUDDY_ENABLE_CONNECT
@@ -317,6 +335,8 @@ static uint8_t _load_config(void) {
             eeprom_set_var(EEVAR_LAN_IP4_MSK, variant8_ui32(tmp_config.lan_ip4_msk.addr));
             eeprom_set_var(EEVAR_LAN_IP4_GW, variant8_ui32(tmp_config.lan_ip4_gw.addr));
 
+            eeprom_set_var(EEVAR_LAN_IP4_DNS1, variant8_ui32(tmp_config.dns1_ip4.addr));
+            eeprom_set_var(EEVAR_LAN_IP4_DNS2, variant8_ui32(tmp_config.dns2_ip4.addr));
             _change_any_to_static();
         }
     }
