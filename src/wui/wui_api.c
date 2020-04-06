@@ -16,13 +16,10 @@
 #include "stdarg.h"
 
 #define BDY_WUI_API_BUFFER_SIZE 512
-#define BDY_NO_FS_FLAGS         0  // no flags for fs_open
 #define CMD_LIMIT               10 // number of commands accepted in low level command response
 
 // for data exchange between wui thread and HTTP thread
 static wui_vars_t wui_vars_copy;
-// for storing /api/* data
-static struct fs_file api_file;
 
 void get_telemetry_data(char *data, const uint32_t buf_len) {
 
@@ -41,8 +38,8 @@ void get_telemetry_data(char *data, const uint32_t buf_len) {
 
     if (!wui_vars_copy.sd_printing) {
         snprintf(data, buf_len, "{"
-                                "\"temp_nozzle\":%d,"
-                                "\"temp_bed\":%d,"
+                                "\"temp_nozzle\":%ld,"
+                                "\"temp_bed\":%ld,"
                                 "\"material\":\"%s\","
                                 "\"pos_z_mm\":%.2f,"
                                 "\"printing_speed\":%d,"
@@ -65,8 +62,8 @@ void get_telemetry_data(char *data, const uint32_t buf_len) {
     print_dur_to_string(print_time, wui_vars_copy.print_dur);
 
     snprintf(data, buf_len, "{"
-                            "\"temp_nozzle\":%d,"
-                            "\"temp_bed\":%d,"
+                            "\"temp_nozzle\":%ld,"
+                            "\"temp_bed\":%ld,"
                             "\"material\":\"%s\","
                             "\"pos_z_mm\":%.2f,"
                             "\"printing_speed\":%d,"
@@ -79,35 +76,6 @@ void get_telemetry_data(char *data, const uint32_t buf_len) {
         actual_nozzle, actual_heatbed, filament_material,
         z_pos_mm, print_speed, flow_factor,
         percent_done, print_time, time_2_end, wui_vars_copy.gcode_name);
-}
-
-//static void wui_api_telemetry(struct fs_file *file) {
-//
-//    const char *ptr = get_telemetry_data();
-//
-//    uint16_t response_len = strlen(ptr);
-//    file->len = response_len;
-//    file->data = ptr;
-//    file->index = response_len;
-//    file->pextension = NULL;
-//    file->flags = BDY_NO_FS_FLAGS; // http server adds response header
-//}
-
-struct fs_file *wui_api_main(const char *uri) {
-
-    api_file.len = 0;
-    api_file.data = NULL;
-    api_file.index = 0;
-    api_file.pextension = NULL;
-    api_file.flags = BDY_NO_FS_FLAGS; // http server adds response header
-    char *t_string = "/api/telemetry";
-    uint32_t t_string_len = strlen(t_string);
-
-    if (!strncmp(uri, t_string, t_string_len) && (strlen(uri) == t_string_len)) {
-        //wui_api_telemetry(&api_file);
-        return &api_file;
-    }
-    return NULL;
 }
 
 static HTTPC_COMMAND_STATUS parse_high_level_cmd(char *json, uint32_t len) {

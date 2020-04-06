@@ -594,7 +594,7 @@ static void create_http_header(char *http_header_str, uint32_t content_length, h
         strlcpy(content_type, "application/json", STR_SIZE_MAX);
         break;
     case REQ_ACK:
-        strlcpy(uri, "/p/event", STR_SIZE_MAX);
+        strlcpy(uri, "/p/events", STR_SIZE_MAX);
         strlcpy(content_type, "application/json", STR_SIZE_MAX);
         break;
     default:

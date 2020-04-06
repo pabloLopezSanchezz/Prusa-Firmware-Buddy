@@ -16,8 +16,6 @@
 
 #define MAX_ACK_SIZE 16
 
-static char buffer[MAX_REQ_BODY_SIZE] = "";
-
 extern osMessageQId tcp_wui_mpool_id;
 extern osSemaphoreId tcp_wui_semaphore_id;
 
@@ -29,10 +27,6 @@ static int json_cmp(const char *json, jsmntok_t *tok, const char *s) {
 }
 
 void send_request_to_wui(const char *request) {
-    size_t req_len = strlen(request);
-    osMessageQId queue = 0;
-    const char *curr_ptr = request;
-    uint16_t helper = 0;
 
     osSemaphoreWait(tcp_wui_semaphore_id, osWaitForever);
     if (0 != tcp_wui_queue_id) // queue valid
@@ -145,12 +139,4 @@ uint32_t httpc_json_parser(char *json, uint32_t len, char *cmd_str) {
         }
     }
     return ret_code;
-}
-
-const char *char_streamer(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buffer, MAX_REQ_BODY_SIZE, format, args);
-    va_end(args);
-    return (const char *)&buffer;
 }

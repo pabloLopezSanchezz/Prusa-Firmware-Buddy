@@ -123,10 +123,12 @@
 #define WUI_API_ROOT_STR_LEN 5
 
 #define MSG_BUFFSIZE           1500
+#define RESPONSE_BODY_SIZE     512
 #define MAX_MARLIN_REQUEST_LEN 100
 #define POST_URL_STR_MAX_LEN   50
 
 static char request_buf[MSG_BUFFSIZE];
+static char response_body_buf[RESPONSE_BODY_SIZE];
 static bool post_request_valid = false;
 
 /***************************************************************/
@@ -2603,6 +2605,38 @@ void http_set_cgi_handlers(const tCGI *cgis, int num_handlers) {
     #endif /* LWIP_HTTPD_CGI */
 
 /*******   Customization ***************************************/
+
+static struct fs_file api_file; // for storing /api/* data
+
+static void wui_api_telemetry(struct fs_file *file) {
+
+    get_telemetry_data(response_body_buf, RESPONSE_BODY_SIZE);
+
+    uint16_t response_len = strlen(response_body_buf);
+    file->len = response_len;
+    file->data = response_body_buf;
+    file->index = response_len;
+    file->pextension = NULL;
+    file->flags = 0; // no flags for fs_open
+}
+
+static struct fs_file *wui_api_main(const char *uri) {
+
+    api_file.len = 0;
+    api_file.data = NULL;
+    api_file.index = 0;
+    api_file.pextension = NULL;
+    api_file.flags = 0; // no flags for fs_open
+    char *t_string = "/api/telemetry";
+    uint32_t t_string_len = strlen(t_string);
+    memset(response_body_buf, 0, RESPONSE_BODY_SIZE);
+    if (!strncmp(uri, t_string, t_string_len) && (strlen(uri) == t_string_len)) {
+        wui_api_telemetry(&api_file);
+        return &api_file;
+    }
+    return NULL;
+}
+
 /** Try to find the file specified by uri and, if found, initialize hs
  * accordingly.
  *
@@ -2683,7 +2717,7 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09) {
         if (0 == strncmp(uri, post_prefix, strnlen(post_prefix, RESP_CODE_BUFF_LEN))) { // POST response
             strlcpy(post_response_code, uri + RESP_CODE_BUFF_LEN, RESP_CODE_BUFF_LEN);
         } else {
-            strlcpy(uri, "404", LWIP_HTTPD_URI_BUF_LEN); // really file not found
+            strlcpy((char *)uri, "404", LWIP_HTTPD_URI_BUF_LEN); // really file not found
         }
     }
 

@@ -78,8 +78,8 @@ static void wui_queue_cycle() {
 
     if (wui_event.status == osEventMessage) {
         wui_cmd_t *rptr;
+        rptr = wui_event.value.p;
         if (NULL != wui_event.value.p) {
-            rptr = wui_event.value.p;
             process_wui_request(rptr->gcode_cmd);
         }
         osStatus status = osPoolFree(tcp_wui_mpool_id, rptr); // free memory allocated for message
