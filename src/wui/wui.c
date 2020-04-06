@@ -21,9 +21,9 @@
 #define TCP_WUI_QUEUE_SIZE     64
 
 osMessageQId tcp_wui_queue_id = 0;
-osSemaphoreId tcp_wui_semaphore_id = 0; // semaphore handle
-osMutexDef(wui_thread_mutex);           // Mutex object for exchanging WUI thread TCP thread
-osMutexId(wui_thread_mutex_id);         // Mutex ID
+osSemaphoreId tcp_wui_semaphore_id = 0;
+osMutexDef(wui_thread_mutex);   // Mutex object for exchanging WUI thread TCP thread
+osMutexId(wui_thread_mutex_id); // Mutex ID
 
 typedef struct {
     uint32_t flags;
@@ -84,11 +84,15 @@ void update_wui_vars(void) {
 }
 
 void StartWebServerTask(void const *argument) {
+    // message queue for commands from tcp thread to wui main loop
     osMessageQDef(tcp_wui_queue, TCP_WUI_QUEUE_SIZE, uint32_t);
     tcp_wui_queue_id = osMessageCreate(osMessageQ(tcp_wui_queue), NULL);
+    // semaphore for filling tcp - wui message qeue
     osSemaphoreDef(wuiSema);
     tcp_wui_semaphore_id = osSemaphoreCreate(osSemaphore(wuiSema), 1);
+    // mutex for passing marlin variables to tcp thread
     wui_thread_mutex_id = osMutexCreate(osMutex(wui_thread_mutex));
+    // marlin client initialization
     wui_marlin_vars = marlin_client_init(); // init the client
     if (wui_marlin_vars) {
         wui_marlin_vars = marlin_update_vars(MARLIN_VAR_MSK_WUI);
@@ -99,6 +103,9 @@ void StartWebServerTask(void const *argument) {
 
     MX_LWIP_Init();
     http_server_init();
+#ifdef BUDDY_ENABLE_CONNECT
+    buddy_httpc_handler_init();
+#endif // BUDDY_ENABLE_CONNECT
     for (;;) {
         ethernetif_link(&eth0);
         wui_queue_cycle();
@@ -108,7 +115,7 @@ void StartWebServerTask(void const *argument) {
             update_wui_vars();
         }
 #ifdef BUDDY_ENABLE_CONNECT
-        buddy_http_client_loop();
+        buddy_httpc_handler();
 #endif // BUDDY_ENABLE_CONNECT
         osDelay(100);
     }
