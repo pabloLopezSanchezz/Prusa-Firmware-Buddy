@@ -24,7 +24,7 @@ static wui_vars_t wui_vars_copy;
 // for storing /api/* data
 static struct fs_file api_file;
 
-const char *get_update_str(void) {
+void get_telemetry_data(char *data, const uint32_t buf_len) {
 
     osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);
     if (status == osOK) {
@@ -40,14 +40,14 @@ const char *get_update_str(void) {
     const char *filament_material = filaments[get_filament()].name;
 
     if (!wui_vars_copy.sd_printing) {
-        return char_streamer("{"
-                             "\"temp_nozzle\":%d,"
-                             "\"temp_bed\":%d,"
-                             "\"material\":\"%s\","
-                             "\"pos_z_mm\":%.2f,"
-                             "\"printing_speed\":%d,"
-                             "\"flow_factor\":%d"
-                             "}",
+        snprintf(data, buf_len, "{"
+                                "\"temp_nozzle\":%d,"
+                                "\"temp_bed\":%d,"
+                                "\"material\":\"%s\","
+                                "\"pos_z_mm\":%.2f,"
+                                "\"printing_speed\":%d,"
+                                "\"flow_factor\":%d"
+                                "}",
             actual_nozzle, actual_heatbed, filament_material,
             z_pos_mm, print_speed, flow_factor);
     }
@@ -64,64 +64,34 @@ const char *get_update_str(void) {
 
     print_dur_to_string(print_time, wui_vars_copy.print_dur);
 
-    return char_streamer("{"
-                         "\"temp_nozzle\":%d,"
-                         "\"temp_bed\":%d,"
-                         "\"material\":\"%s\","
-                         "\"pos_z_mm\":%.2f,"
-                         "\"printing_speed\":%d,"
-                         "\"flow_factor\":%d,"
-                         "\"progress\":%d,"
-                         "\"print_dur\":\"%s\","
-                         "\"time_est\":\"%s\","
-                         "\"project_name\":\"%s\""
-                         "}",
+    snprintf(data, buf_len, "{"
+                            "\"temp_nozzle\":%d,"
+                            "\"temp_bed\":%d,"
+                            "\"material\":\"%s\","
+                            "\"pos_z_mm\":%.2f,"
+                            "\"printing_speed\":%d,"
+                            "\"flow_factor\":%d,"
+                            "\"progress\":%d,"
+                            "\"print_dur\":\"%s\","
+                            "\"time_est\":\"%s\","
+                            "\"project_name\":\"%s\""
+                            "}",
         actual_nozzle, actual_heatbed, filament_material,
         z_pos_mm, print_speed, flow_factor,
         percent_done, print_time, time_2_end, wui_vars_copy.gcode_name);
 }
 
-#if 0
-const char *get_event_ack_str(uint8_t id, connect_event_t * evt){
-    const char * ptr = 0;
-    if(id == MSG_EVENTS_REJ){
-        ptr = char_streamer("{"
-                         "\"event\":\"%s\","
-                         "\"command_id\":%d,"
-                         "\"reason\":\"%s\""
-                         "}",
-                         evt->state, evt->command_id, evt->reason);
-    } else if(id == MSG_EVENTS_ACC){
-        ptr = char_streamer("{"
-                         "\"event\":\"%s\","
-                         "\"command_id\":%d"
-                         "}",
-                         evt->state, evt->command_id);
-    }
-
-    return ptr;
-}
-
-const char *get_event_state_changed_str(connect_event_t * evt){
-
-    return char_streamer("{"
-                         "\"event\":\"STATE_CHANGED\","
-                         "\"state\":\"%s\""
-                         "}",
-                         evt->state);
-}
-#endif
-static void wui_api_telemetry(struct fs_file *file) {
-
-    const char *ptr = get_update_str();
-
-    uint16_t response_len = strlen(ptr);
-    file->len = response_len;
-    file->data = ptr;
-    file->index = response_len;
-    file->pextension = NULL;
-    file->flags = BDY_NO_FS_FLAGS; // http server adds response header
-}
+//static void wui_api_telemetry(struct fs_file *file) {
+//
+//    const char *ptr = get_telemetry_data();
+//
+//    uint16_t response_len = strlen(ptr);
+//    file->len = response_len;
+//    file->data = ptr;
+//    file->index = response_len;
+//    file->pextension = NULL;
+//    file->flags = BDY_NO_FS_FLAGS; // http server adds response header
+//}
 
 struct fs_file *wui_api_main(const char *uri) {
 
@@ -134,7 +104,7 @@ struct fs_file *wui_api_main(const char *uri) {
     uint32_t t_string_len = strlen(t_string);
 
     if (!strncmp(uri, t_string, t_string_len) && (strlen(uri) == t_string_len)) {
-        wui_api_telemetry(&api_file);
+        //wui_api_telemetry(&api_file);
         return &api_file;
     }
     return NULL;

@@ -68,10 +68,6 @@ typedef struct {
     HTTPC_COMMAND_STATUS cmd_status;
 } httpc_req_t;
 
-wui_err buddy_http_client_req(httpc_req_t *request);
-
-void send_request_to_httpc(httpc_req_t request);
-
 void buddy_httpc_handler();
 void buddy_httpc_handler_init();
 
