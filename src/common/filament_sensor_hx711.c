@@ -15,11 +15,14 @@
 #include "stm32f4xx_hal.h"
 #include "gpio.h"
 #include "eeprom.h"
-#include "FreeRTOS.h"       //must apper before include task.h
-#include "task.h"           //critical sections
-#include "cmsis_os.h"       //osDelay
-#include "marlin_client.h"  //enable/disable fs in marlin
-#include "loadcell_hx711.h" //HX711 implementation
+#include "FreeRTOS.h"      //must apper before include task.h
+#include "task.h"          //critical sections
+#include "cmsis_os.h"      //osDelay
+#include "marlin_client.h" //enable/disable fs in marlin
+#include "metric.h"
+#include "config.h"
+
+static metric_t metric_fsensor_raw = METRIC("fsensor_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
 
 static volatile fsensor_t state = FS_NOT_INICIALIZED;
 static volatile fsensor_t last_state = FS_NOT_INICIALIZED;
@@ -36,6 +39,8 @@ typedef struct {
 } status_t;
 
 static status_t status = { 0, M600_on_edge };
+
+static fsensor_t fsensor_state;
 
 /*---------------------------------------------------------------------------*/
 //local functions
@@ -168,26 +173,9 @@ void fs_cycle() {
     if (state == FS_DISABLED)
         return;
 
-    //sensor is enabled
-    /*if (status.meas_cycle == 0) {
-        _cycle0();
-    } else {
-        _cycle1();
-    }
-*/
     int had_filament = state == FS_HAS_FILAMENT ? 1 : 0;
 
-    switch (fsensor_probe) {
-    case HX711_has_filament:
-        _set_state(FS_HAS_FILAMENT);
-        break;
-    case HX711_no_filament:
-        _set_state(FS_NO_FILAMENT);
-        break;
-    case HX711_disconnected:
-        _set_state(FS_NOT_CONNECTED);
-        break;
-    }
+    _set_state(fsensor_state);
 
     if (status.M600_sent == 0 && state == FS_NO_FILAMENT) {
         switch (status.send_M600_on) {
@@ -207,5 +195,17 @@ void fs_cycle() {
     //clear M600_sent status if marlin is paused
     if (marlin_update_vars(MARLIN_VAR_MSK(MARLIN_VAR_WAITUSER))->wait_user) {
         status.M600_sent = 0;
+    }
+}
+
+void fs_process_sample(int32_t fs_raw_value) {
+    metric_record_integer(&metric_fsensor_raw, fs_raw_value);
+
+    if (fs_raw_value <= FILAMENT_SENSOR_HX711_LOW) {
+        fsensor_state = FS_NO_FILAMENT;
+    } else if (fs_raw_value < 2000) {
+        fsensor_state = FS_NOT_CONNECTED;
+    } else {
+        fsensor_state = FS_HAS_FILAMENT;
     }
 }

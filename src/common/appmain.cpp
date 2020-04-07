@@ -15,7 +15,9 @@
 #include "cpu_utils.h"
 
 #ifdef LOADCELL_HX711
-    #include "loadcell_hx711.h"
+    #include "loadcell.h"
+    #include "hx711.h"
+    #include "filament_sensor.h"
 #endif //LOADCELL_HX711
 
 #ifdef SIM_HEATER
@@ -89,8 +91,12 @@ void app_setup(void) {
     //DBG("after init_tmc (%ld ms)", HAL_GetTick());
 
 #ifdef LOADCELL_HX711
-    osDelay(20);
-    loadcell_tare();
+    hx711.Configure(LOADCELL_PIN_DOUT, LOADCELL_PIN_SCK);
+    loadcell.SetScale(eeprom_get_var(EEVAR_LOADCELL_SCALE).flt);
+    loadcell.SetThreshold(eeprom_get_var(EEVAR_LOADCELL_THRS).flt);
+    loadcell.SetHysteresis(eeprom_get_var(EEVAR_LOADCELL_HYST).flt);
+    loadcell.ConfigureSignalEvent(osThreadGetId(), 0x0A);
+    loadcell.SetHighPrecisionEnabled(false);
 #endif //LOADCELL_HX711
 }
 
@@ -116,13 +122,6 @@ void app_run(void) {
     marlin_server_idle_cb = app_idle;
 
     adc_init();
-
-#ifdef LOADCELL_HX711
-    loadcell_init(LOADCELL_PIN_DOUT, LOADCELL_PIN_SCK);
-    loadcell_scale = eeprom_get_var(EEVAR_LOADCELL_SCALE).flt;     // scale (calibration value grams/raw)
-    loadcell_threshold = eeprom_get_var(EEVAR_LOADCELL_THRS).flt;  // threshold for probe in grams
-    loadcell_hysteresis = eeprom_get_var(EEVAR_LOADCELL_HYST).flt; // hysteresis for probe in grams
-#endif                                                             //LOADCELL_HX711
 
 #ifdef SIM_HEATER
     sim_heater_init();
@@ -216,6 +215,37 @@ void app_cdc_rx(uint8_t *buffer, uint32_t length) {
     USBSerial_put_rx_data(buffer, length);
 }
 
+#ifdef LOADCELL_HX711
+void hx711_irq() {
+    if (!hx711.IsValueReady())
+        return;
+
+    static int sample_counter = 0;
+    int32_t raw_value;
+    HX711::Channel next_channel;
+
+    sample_counter += 1;
+
+    if (!(loadcell.IsHighPrecisionEnabled()) && sample_counter % 13 == 0) {
+        next_channel = hx711.CHANNEL_B_GAIN_32;
+    } else {
+        next_channel = hx711.CHANNEL_A_GAIN_128;
+    }
+
+    raw_value = hx711.ReadValue(next_channel);
+
+    if (next_channel == hx711.CHANNEL_A_GAIN_128) {
+        loadcell.ProcessSample(raw_value);
+    } else {
+        next_channel = hx711.CHANNEL_A_GAIN_128;
+        raw_value = hx711.ReadValue(next_channel);
+        if (loadcell.IsSignalConfigured()) {
+            fs_process_sample(raw_value);
+        }
+    }
+}
+#endif //LOADCELL_HX711
+
 void adc_tick_1ms(void) {
     adc_cycle();
 #ifdef SIM_HEATER
@@ -227,79 +257,7 @@ void adc_tick_1ms(void) {
     }
 #endif //SIM_HEATER
 #ifdef LOADCELL_HX711
-    static int8_t cnt_loadcell = 0;
-    #ifdef FILAMENT_SENSOR_HX711
-    static uint8_t cnt_fsensorHX711 = 0;
-    #endif
-
-    #ifdef HX711_ESP_DEBUG
-    if (++cnt_loadcell > 2) {
-        gpio_set(PC13, 0);
-    }
-    #endif
-
-    if (++cnt_loadcell >= 13) // loadcell sampling freq = 76.9Hz
-    {
-        // HX711 sampling
-    #ifdef FILAMENT_SENSOR_HX711
-        if (cnt_fsensorHX711 < FILAMENT_SENSOR_HX711_POOL_INT) // Pooling interval for filament sensor (every Nth measurement of load cell, the filament sensor gets updated)
-        {
-    #endif
-            // Load cell update routine (Channel A)
-            if (gpio_get(LOADCELL_PIN_DOUT) == 0) // Check ready status
-            {
-    // Set data for channel A, and read load cell data and check result
-    #ifdef HX711_ESP_DEBUG
-                gpio_set(PC13, 1);
-    #endif
-                hx711_cycle(0);
-                cnt_loadcell = 0; // Reset loadcell(HX711 update counter)
-    #ifdef FILAMENT_SENSOR_HX711
-                cnt_fsensorHX711++; // Iterate filament sensor counter
-    #endif
-            } else {
-                // Measurement FAIL - HX711 busy
-                cnt_loadcell--; // Decrement counter to try measure again in next round
-            }
-    #ifdef FILAMENT_SENSOR_HX711
-        } else {
-            // Fiament sensor update routine (Channel B)
-            if (cnt_fsensorHX711 == FILAMENT_SENSOR_HX711_POOL_INT) {
-                // First cycle to update filament sensor
-                if (gpio_get(LOADCELL_PIN_DOUT) == 0) // Check ready status
-                {
-        // Set data for channel B, and read load cell data
-        #ifdef HX711_ESP_DEBUG
-                    gpio_set(PC13, 1);
-        #endif
-                    hx711_cycle(1);
-                    cnt_loadcell = 0;   // Reset loadcell(HX711 update counter) We need to wait 50 ms before next measurement to let output settle after channel switch
-                    cnt_fsensorHX711++; // Iterate filament sensor counter
-                } else {
-                    // Measurement FAIL - HX711 busy
-                    cnt_loadcell--; // Decrement counter to try measure again in next round
-                }
-            }
-            if (cnt_fsensorHX711 == FILAMENT_SENSOR_HX711_POOL_INT + 1) {
-                // Second cycle to update filament sensor
-                if (gpio_get(LOADCELL_PIN_DOUT) == 0) // Check ready status
-                {
-        // Return data for channel A, and read filament sensor data data
-        #ifdef HX711_ESP_DEBUG
-                    gpio_set(PC13, 1);
-        #endif
-                    hx711_cycle(2);
-                    cnt_loadcell = 0;     // Reset loadcell(HX711 update counter) We need to wait 50 ms before next measurement to let output settle after channel switch
-                    cnt_fsensorHX711 = 0; // Reset filament sensor counter
-
-                } else {
-                    // Measurement FAIL - HX711 busy
-                    cnt_loadcell--; // Decrement counter to try measure again in next round
-                }
-            }
-        }
-    #endif
-    }
+    hx711_irq();
 #endif //LOADCELL_HX711
 
 #ifdef SIM_MOTION

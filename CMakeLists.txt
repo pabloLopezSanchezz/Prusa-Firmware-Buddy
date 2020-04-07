@@ -496,6 +496,7 @@ target_sources(
     src/common/sys.cpp
     src/common/sim_nozzle.c
     src/common/heap.c
+    src/common/hx711.cpp
     src/common/putslave.c
     src/common/safe_state.c
     src/common/variant8.cpp
@@ -511,7 +512,7 @@ target_sources(
     src/common/metric.c
     src/common/metric_handlers.c
     src/common/uartrxbuff.c
-    src/common/loadcell_hx711.c
+    src/common/loadcell.cpp
     src/common/loadcell_endstops.cpp
     src/common/Marlin_CardReader.cpp
     src/common/appmain.cpp
@@ -594,7 +595,7 @@ if(GUI)
             src/gui/screen_lan_settings.c
             src/gui/screen_qr_info.cpp
             src/gui/screen_qr_error.cpp
-            $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/gui/test/screen_test_HX711.c>
+            $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/gui/test/screen_test_HX711.cpp>
             src/gui/test/screen_test.c
             src/gui/test/screen_test_disp_mem.c
             src/gui/test/screen_test_gui.c

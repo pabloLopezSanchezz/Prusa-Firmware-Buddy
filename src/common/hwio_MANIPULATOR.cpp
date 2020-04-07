@@ -13,7 +13,6 @@
 #include "sim_bed.h"
 #include "sim_motion.h"
 #include "Arduino.h"
-#include "loadcell_hx711.h"
 #include "timer_defaults.h"
 #include "hwio_pindef.h"
 #include "filament_sensor.h"
