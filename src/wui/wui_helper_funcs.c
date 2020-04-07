@@ -68,6 +68,7 @@ void http_json_parser(char *json, uint32_t len) {
 #endif //HTTP_DUBAI_HACK
             strlcpy(request, json + t[i + 1].start, (t[i + 1].end - t[i + 1].start + 1));
             i++;
+            _dbg("command received: %s", request);
             send_request_to_wui(request);
         } else if (json_cmp(json, &t[i], "connect_ip") == 0) {
             strlcpy(request, json + t[i + 1].start, t[i + 1].end - t[i + 1].start + 1);

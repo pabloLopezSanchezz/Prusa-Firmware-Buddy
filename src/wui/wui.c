@@ -67,7 +67,7 @@ static int process_wui_request(char *request) {
         eeprom_set_var(EEVAR_LAN_HOSTNAME, hostname);
         //variant8_done() is not called because variant_pchar with init flag 0 doesnt hold its memory
     } else {
-        _dbg("sending command to marlin");
+        _dbg("sending command: %s to marlin", request);
         marlin_gcode(request);
     }
     return 1;

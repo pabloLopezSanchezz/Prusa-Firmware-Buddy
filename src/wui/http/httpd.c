@@ -122,15 +122,14 @@
 #include "dbg.h"
 #define WUI_API_ROOT_STR_LEN 5
 
-#define MSG_BUFFSIZE           1500
+#define POST_REQUEST_BUFFSIZE  1500
 #define RESPONSE_BODY_SIZE     512
 #define MAX_MARLIN_REQUEST_LEN 100
 #define POST_URL_STR_MAX_LEN   50
 
-static char request_buf[MSG_BUFFSIZE];
+static char request_buf[POST_REQUEST_BUFFSIZE];
 static char response_body_buf[RESPONSE_BODY_SIZE];
-static bool post_request_valid = false;
-
+static httpd_post_status_t post_status;
 /***************************************************************/
 
 #if LWIP_TCP && LWIP_CALLBACK_API
@@ -369,19 +368,32 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
     _dbg("HTTP post begin");
     _dbg("http_request_len: %d", http_request_len);
     _dbg("content length: %d", content_len);
+    memset(request_buf, 0, POST_REQUEST_BUFFSIZE); // reset receive buffer
+    post_status.post_data_len = content_len;
+    post_status.post_type = POST_UNKNOWN;
+    post_status.post_vald = false;
+    post_status.bytes_copied = 0;
 
     if (hs != NULL) {
         if (!memcmp(uri, "/api/g-code", 11)) {
-            post_request_valid = true;
-            return ERR_OK;
+            post_status.post_type = POST_API_GCODE;
         } else if (!memcmp(uri, "/admin.html", 11)) {
-            post_request_valid = true;
-            return ERR_OK;
+            post_status.post_type = POST_ADMIN;
         } else if (!memcmp(uri, "/FileUpload", 11)) {
-            post_request_valid = true;
+            post_status.post_type = POST_FILE_UPLOAD;
+        }
+    }
+    // validate the post request
+    if (POST_UNKNOWN != post_status.post_type) {
+        if ((POST_REQUEST_BUFFSIZE > post_status.post_data_len) && (POST_FILE_UPLOAD != post_status.post_type)) {
+            post_status.post_vald = true;
+            return ERR_OK;
+        } else if (POST_FILE_UPLOAD == post_status.post_type) {
+            post_status.post_vald = true;
             return ERR_OK;
         }
     }
+
     // unsupported if reached here
     snprintf(response_uri, 10, "POST404");
     return ERR_VAL;
@@ -398,17 +410,18 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p) {
         if (NULL != p->payload) {
             request_buf[0] = 0;
             u16_t ret = pbuf_copy_partial(p, request_buf, p->len, 0);
+            post_status.bytes_copied = post_status.bytes_copied + ret;
             if (p->len == ret) {
                 ret_code = ERR_OK;
-                post_request_valid = true;
+                post_status.post_vald = true;
             } else {
                 ret_code = ERR_VAL;
-                post_request_valid = false;
+                post_status.post_vald = false;
             }
         }
 
     } else {
-        post_request_valid = false;
+        post_status.post_vald = false;
     }
 
     if (p != NULL) {
@@ -420,17 +433,23 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p) {
 void httpd_post_finished(void *connection, char *response_uri,
     u16_t response_uri_len) {
     _dbg("post finished callback");
+    _dbg("received data length: %d", post_status.bytes_copied);
     _dbg("response uri length: %d", response_uri_len);
 
-    if (true == post_request_valid) {
-        if (request_buf[0] != 0) {
-            http_json_parser(request_buf, strlen(request_buf));
-
-            strlcpy(response_uri, "POST200", response_uri_len);
-            request_buf[0] = 0;
-
+    if (true == post_status.post_vald) {
+        if (POST_FILE_UPLOAD == post_status.post_type) {
+            // ignored now
         } else {
-            strlcpy(response_uri, "POST500", response_uri_len);
+            if ((post_status.bytes_copied == post_status.post_data_len) && (post_status.bytes_copied < POST_REQUEST_BUFFSIZE)) {
+                request_buf[post_status.bytes_copied] = 0; // end of line placed
+                http_json_parser(request_buf, strlen(request_buf));
+
+                strlcpy(response_uri, "POST200", response_uri_len);
+                request_buf[0] = 0;
+
+            } else {
+                strlcpy(response_uri, "POST500", response_uri_len);
+            }
         }
     } else {
         strlcpy(response_uri, "POST400", response_uri_len); // bad request
