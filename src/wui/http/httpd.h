@@ -44,6 +44,7 @@
 #include "httpd_opts.h"
 #include "lwip/err.h"
 #include "lwip/pbuf.h"
+#include "stdbool.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -184,6 +185,20 @@ void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
     #define HTTPD_SSI_TAG_UNKNOWN 0xFFFF
 
 #endif /* LWIP_HTTPD_SSI */
+
+typedef enum {
+    POST_UNKNOWN,
+    POST_API_GCODE,
+    POST_ADMIN,
+    POST_FILE_UPLOAD,
+} HTTPD_POST_TYPE;
+
+typedef struct {
+    HTTPD_POST_TYPE post_type;
+    uint32_t post_data_len;
+    uint32_t bytes_copied;
+    bool post_vald;
+} httpd_post_status_t;
 
 #if LWIP_HTTPD_SUPPORT_POST
 

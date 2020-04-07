@@ -15,20 +15,25 @@
 #include "lwip/altcp.h"
 #include "lwip.h"
 #include "marlin_vars.h"
+#include "dbg.h"
+#include "wui_api.h"
 
 #define CLIENT_CONNECT_DELAY      1000 // 1000 = 1 Sec.
-#define CONNECT_SERVER_PORT       80
+#define CONNECT_SERVER_PORT       8000
 #define IP4_ADDR_STR_SIZE         16
-#define HEADER_MAX_SIZE           256
-#define BODY_MAX_SIZE             512
+#define REQ_HEADER_MAX_SIZE       256
+#define REQ_BODY_MAX_SIZE         512
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 #define HTTPC_POLL_INTERVAL       1   // tcp_poll call interval (1 = 0.5 s)
 #define HTTPC_POLL_TIMEOUT        3   // number of tcp_poll calls before quiting the current connection request (total time = HTTPC_POLL_TIMEOUT*HTTPC_POLL_INTERVAL)
-#define HTTPC_BUFF_SZ             512 // buffer size for http client requests
-#define WUI_HTTPC_Q_SZ            32  // WUI HTTPC queue size
+#define HTTPC_RESPONSE_BUFF_SZ    512 // buffer size for http response from server on client request
+#define HTTPC_REQUEST_BUFF_SZ     (REQ_HEADER_MAX_SIZE + REQ_BODY_MAX_SIZE)
+#define WUI_HTTPC_Q_SZ            32 // WUI HTTPC queue size
 
-static char httpc_req_buffer[HTTPC_BUFF_SZ + 1] = "";  // buffer to make the request for HTTP request
-static char httpc_resp_buffer[HTTPC_BUFF_SZ + 1] = ""; // buffer to work with the response of HTTP request
+static char httpc_req_header[REQ_HEADER_MAX_SIZE];
+static char httpc_req_body[REQ_BODY_MAX_SIZE];
+static char httpc_req_buffer[HTTPC_REQUEST_BUFF_SZ + 1] = "";   // buffer to make the request for HTTP request
+static char httpc_resp_buffer[HTTPC_RESPONSE_BUFF_SZ + 1] = ""; // buffer to work with the response of HTTP request
 static bool httpc_req_active = false;
 static uint32_t client_interval = 0;
 static bool init_tick = false;
@@ -158,6 +163,26 @@ typedef struct _httpc_state {
 #endif
 } httpc_state_t;
 
+static void send_request_to_httpc(httpc_req_t reqest) {
+
+    osSemaphoreWait(wui_httpc_semaphore_id, osWaitForever);
+    if (0 != wui_httpc_queue_id) // queue valid
+    {
+        uint32_t q_space = osMessageAvailableSpace(wui_httpc_queue_id);
+        if (0 < q_space) {
+
+            httpc_req_t *mptr;
+            mptr = osPoolAlloc(httpc_req_mpool_id);
+            *mptr = reqest;
+            osMessagePut(wui_httpc_queue_id, (uint32_t)mptr, osWaitForever); // Send Message
+            osDelay(100);
+        } else {
+            _dbg("httpc memory pool full!");
+        }
+    }
+    osSemaphoreRelease(wui_httpc_semaphore_id);
+}
+
 /** Free http client state and deallocate all resources within */
 static err_t
 httpc_free_state(httpc_state_t *req) {
@@ -196,6 +221,7 @@ httpc_free_state(httpc_state_t *req) {
 static err_t
 httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, err_t err) {
     httpc_req_active = false;
+    _dbg("closed httpc connection");
     if (req != NULL) {
         if (req->conn_settings != NULL) {
             if (req->conn_settings->result_fn != NULL) {
@@ -473,13 +499,13 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     httpc_state_t *req = (httpc_state_t *)arg;
     httpc_result_t result;
 
-    memset(httpc_resp_buffer, 0, HTTPC_BUFF_SZ); // reset the memory
+    memset(httpc_resp_buffer, 0, HTTPC_RESPONSE_BUFF_SZ); // reset the memory
 
     if (NULL == p) {
         return ERR_ARG;
     }
 
-    if ((HTTPC_BUFF_SZ < p->tot_len) || (HTTPC_BUFF_SZ < header_info.content_lenght)) {
+    if ((HTTPC_RESPONSE_BUFF_SZ < p->tot_len) || (HTTPC_RESPONSE_BUFF_SZ < header_info.content_lenght)) {
         cmd_status = CMD_REJT_SIZE;
         pbuf_free(p);
         return ERR_OK;
@@ -532,29 +558,29 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     return ERR_OK;
 }
 
-const char *get_ack_str(httpc_req_t *request) {
+void get_ack_str(httpc_req_t *request, char *data, const uint32_t buf_len) {
 
     const char *event_name = conn_event_str[request->connect_event_type].name;
 
     if (EVENT_REJECTED == request->connect_event_type) {
         const char *reason = cmd_status_str[request->cmd_status].name;
-        return char_streamer("{"
-                             "\"event\":\"%s\","
-                             "\"command_id\":%d,"
-                             "\"reason\":\"%s\""
-                             "}",
+        snprintf(data, buf_len, "{"
+                                "\"event\":\"%s\","
+                                "\"command_id\":%ld,"
+                                "\"reason\":\"%s\""
+                                "}",
             event_name, request->cmd_id, reason);
     } else if (EVENT_ACCEPTED == request->connect_event_type) {
-        return char_streamer("{"
-                             "\"event\":\"%s\","
-                             "\"command_id\":%d"
-                             "}",
+        snprintf(data, buf_len, "{"
+                                "\"event\":\"%s\","
+                                "\"command_id\":%ld"
+                                "}",
             event_name, request->cmd_id);
     }
-    return "fw error";
 }
 
 static void create_http_header(char *http_header_str, uint32_t content_length, httpc_req_t *request) {
+    _dbg("creating request header");
     char printer_token[CONNECT_TOKEN_SIZE + 1]; // extra space of end of line
     variant8_t printer_token_ptr = eeprom_get_var(EEVAR_CONNECT_TOKEN);
     strlcpy(printer_token, printer_token_ptr.pch, CONNECT_TOKEN_SIZE + 1);
@@ -569,24 +595,26 @@ static void create_http_header(char *http_header_str, uint32_t content_length, h
         strlcpy(content_type, "application/json", STR_SIZE_MAX);
         break;
     case REQ_ACK:
-        strlcpy(uri, "/p/event", STR_SIZE_MAX);
+        strlcpy(uri, "/p/events", STR_SIZE_MAX);
         strlcpy(content_type, "application/json", STR_SIZE_MAX);
         break;
     default:
         break;
     }
-    snprintf(http_header_str, HEADER_MAX_SIZE - 1, "POST %s HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Length: %lu\r\nContent-Type: %s\r\n\r\n", uri, printer_token, content_length, content_type);
+    snprintf(http_header_str, REQ_HEADER_MAX_SIZE - 1, "POST %s HTTP/1.0\r\nPrinter-Token: %s\r\nContent-Length: %lu\r\nContent-Type: %s\r\n\r\n", uri, printer_token, content_length, content_type);
 }
 
 static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
-
+    _dbg("creating request body");
     uint32_t content_length = 0;
     switch (request->req_type) {
     case REQ_TELEMETRY:
-        content_length = strlcpy(http_body_str, get_update_str(), BODY_MAX_SIZE);
+        get_telemetry_data(httpc_req_body, REQ_BODY_MAX_SIZE);
+        content_length = strlcpy(http_body_str, httpc_req_body, REQ_BODY_MAX_SIZE);
         break;
     case REQ_ACK:
-        content_length = strlcpy(http_body_str, get_ack_str(request), BODY_MAX_SIZE);
+        get_ack_str(request, httpc_req_body, REQ_BODY_MAX_SIZE);
+        content_length = strlcpy(http_body_str, httpc_req_body, REQ_BODY_MAX_SIZE);
         break;
     default:
         break;
@@ -595,17 +623,18 @@ static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
 }
 
 static const char *create_http_request(httpc_req_t *request) {
-    char header[HEADER_MAX_SIZE];
-    char body[BODY_MAX_SIZE];
+    // reset data
+    memset(httpc_req_header, 0, REQ_HEADER_MAX_SIZE); // reset the memory
+    memset(httpc_req_body, 0, REQ_BODY_MAX_SIZE);     // reset the memory
 
-    uint32_t content_length = get_reqest_body(body, request);
-    create_http_header(header, content_length, request);
-    snprintf(httpc_req_buffer, HTTPC_BUFF_SZ, "%s%s", header, body);
+    uint32_t content_length = get_reqest_body(httpc_req_body, request);
+    create_http_header(httpc_req_header, content_length, request);
+    snprintf(httpc_req_buffer, HTTPC_REQUEST_BUFF_SZ, "%s%s", httpc_req_header, httpc_req_body);
     return (const char *)&httpc_req_buffer;
 }
 
-wui_err buddy_http_client_req(httpc_req_t *request) {
-
+static wui_err buddy_http_client_req(httpc_req_t *request) {
+    _dbg("creating client reqest");
     size_t alloc_len;
     mem_size_t mem_alloc_len;
     int req_len, req_len2;
@@ -676,8 +705,6 @@ wui_err buddy_http_client_req(httpc_req_t *request) {
 }
 
 void buddy_httpc_handler() {
-    httpc_req_t req;
-    req.req_type = REQ_TELEMETRY;
 
     if (eeprom_get_var(EEVAR_CONNECT_IP4).ui32 == 0) {
         return;
@@ -687,51 +714,45 @@ void buddy_httpc_handler() {
         return;
     }
 
-    if (!init_tick) {
-        client_interval = xTaskGetTickCount();
-        init_tick = true;
-    }
-    // check for any events to sent
-    osEvent httpc_event = osMessageGet(wui_httpc_queue_id, 0);
-    if (httpc_event.status == osEventMessage) {
-        if (!httpc_req_active) {
+    if (!httpc_req_active) {
+        // check for any events to sent
+        osEvent httpc_event = osMessageGet(wui_httpc_queue_id, 0);
+        if (httpc_event.status == osEventMessage) {
+            _dbg("sending event");
             httpc_req_t *rptr;
             rptr = httpc_event.value.p;
-            buddy_http_client_req(rptr);
-            httpc_req_active = true;
-            osPoolFree(httpc_req_mpool_id, rptr); // free memory allocated for message
-        }
-    } else {
-        if ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY) {
-            if (!httpc_req_active) {
-                buddy_http_client_req(&req);
+            if (NULL != httpc_event.value.p) {
+                buddy_http_client_req(rptr);
                 httpc_req_active = true;
             }
-            client_interval = xTaskGetTickCount();
+            osStatus status = osPoolFree(httpc_req_mpool_id, rptr); // free memory allocated for message
+            if (osOK != status) {
+                _dbg("wui_queue_pool free error: %d", status);
+            }
+
+        } else {
+            if ((xTaskGetTickCount() - client_interval) > CLIENT_CONNECT_DELAY) {
+                _dbg("sending telemtry");
+                httpc_req_t req;
+                req.req_type = REQ_TELEMETRY;
+                buddy_http_client_req(&req);
+                httpc_req_active = true;
+                client_interval = xTaskGetTickCount();
+            }
         }
     }
 }
 
 void buddy_httpc_handler_init() {
-    // semaphore for filling wui - httpc message queue
+    // semaphore initalization
     osSemaphoreDef(wui_httpc_semaphore);
     wui_httpc_semaphore_id = osSemaphoreCreate(osSemaphore(wui_httpc_semaphore), 1);
+    // memory pool initalization
     httpc_req_mpool_id = osPoolCreate(osPool(httpc_req_mpool));              // create memory pool
     wui_httpc_queue_id = osMessageCreate(osMessageQ(wui_httpc_queue), NULL); // create msg queue
-}
-
-void send_request_to_httpc(httpc_req_t reqest) {
-
-    osSemaphoreWait(wui_httpc_semaphore_id, osWaitForever);
-    if (0 != wui_httpc_queue_id) // queue valid
-    {
-        uint32_t q_space = osMessageAvailableSpace(wui_httpc_queue_id);
-
-        httpc_req_t *mptr;
-        mptr = osPoolAlloc(httpc_req_mpool_id);
-        *mptr = reqest;
-        osMessagePut(wui_httpc_queue_id, (uint32_t)mptr, osWaitForever); // Send Message
-        osDelay(100);
+    // for periodic telemetry request
+    if (!init_tick) {
+        client_interval = xTaskGetTickCount();
+        init_tick = true;
     }
-    osSemaphoreRelease(wui_httpc_semaphore_id);
 }

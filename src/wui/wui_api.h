@@ -25,8 +25,7 @@ extern "C" {
 extern marlin_vars_t webserver_marlin_vars;
 extern osMutexId wui_web_mutex_id;
 
-struct fs_file *wui_api_main(const char *uri);
-const char *get_update_str(void);
+void get_telemetry_data(char *data, const uint32_t buff_len);
 
 HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_header_info *h_info_ptr);
 
