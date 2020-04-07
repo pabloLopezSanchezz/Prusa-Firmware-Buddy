@@ -13,7 +13,7 @@
 #include "sim_bed.h"
 #include "sim_motion.h"
 #include "Arduino.h"
-#include "loadcell_hx711.h"
+#include "loadcell.h"
 #include "timer_defaults.h"
 #include "hwio_pindef.h"
 #include "filament_sensor.h"
@@ -628,7 +628,7 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             if (loadcell_probe)
                 gpio_set(PC13, 0);
         #endif //LOADCELL_LATENCY_TEST
-            return loadcell_probe;
+            return loadcell_get_state();
     #else      //LOADCELL_HX711
             return hwio_di_get_val(_DI_Z_MIN);
     #endif     //LOADCELL_HX711

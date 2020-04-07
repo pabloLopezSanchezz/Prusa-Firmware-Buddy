@@ -9,7 +9,7 @@
 #define _FILAMENT_SENSOR_H
 
 #include "stdint.h"
-
+#include "stdbool.h"
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
@@ -48,6 +48,8 @@ void fs_init_on_edge();
 void fs_init_on_level();
 void fs_init_never();
 void fs_cycle(); //call it in thread, max call speed 1MHz
+
+void fs_process_sample(int32_t fs_raw_value);
 
 //for debug
 int fs_was_M600_send();
