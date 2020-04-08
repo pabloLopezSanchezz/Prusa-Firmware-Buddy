@@ -337,6 +337,22 @@ int marlin_server_idle(void) {
             _send_notify_event(MARLIN_EVT_CommandBegin, marlin_server.command, 0);
         }
     }
+//prevent interference from fans in loadcell (temporary solution, will be removed in future)
+#ifdef LOADCELL_HX711
+    if (hwio_fans_enabled) {
+        if ((marlin_server.command == MARLIN_CMD_G28) || (marlin_server.command == MARLIN_CMD_G29))
+            hwio_fans_set_enabled(0);
+    } else {
+        if ((marlin_server.command != MARLIN_CMD_G28) && (marlin_server.command != MARLIN_CMD_G29))
+            hwio_fans_set_enabled(1);
+        else if (marlin_server.command == MARLIN_CMD_G29) {
+            if (stepper.axis_is_moving(X_AXIS) || stepper.axis_is_moving(Y_AXIS))
+                hwio_fans_start_fan1();
+            else
+                hwio_fans_stop_fan1();
+        }
+    }
+#endif //LOADCELL_HX711
     return marlin_server_cycle();
 }
 
