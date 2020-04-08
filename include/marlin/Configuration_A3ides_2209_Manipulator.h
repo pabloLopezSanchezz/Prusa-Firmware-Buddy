@@ -1272,9 +1272,30 @@
     #define Z_SAFE_HOMING_Y_POINT (21.1) // Y point for Z homing when homing all axes (G28).
 #endif
 
-// Homing speeds (mm/m)
+// Homing speeds (mm/minute)
 #define HOMING_FEEDRATE_XY (70 * 60)
-#define HOMING_FEEDRATE_Z (70 * 60)
+/**
+ * When moving upwards with
+ * M542 Economical Microstepping Driver
+ * at 24 V with 3 A RMS target current.
+ *
+ * 43.3 mm/s - 40% torque reserve to stall
+ * 48   mm/s - 20% torque reserve to stall
+ * 70   mm/s -  0% torque reserve to stall
+ *
+ * Measured current (one phase):
+ *
+ *| Feedrate [mm/s] | I RMS[A] |
+ *|            ---  | ---      |
+ *|             10  | 3.01     |
+ *|             20  | 2.99     |
+ *|             30  | 2.69     |
+ *|             40  | 1.97     |
+ *|             50  | 1.48     |
+ *|             60  | 1.34     |
+ *|             70  | 1.31     |
+ */
+#define HOMING_FEEDRATE_Z (48 * 60)
 
 // Validate that endstops are triggered on homing moves
 //#define VALIDATE_HOMING_ENDSTOPS
