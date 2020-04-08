@@ -114,7 +114,7 @@ void StartWebServerTask(void const *argument) {
     http_server_init();
 
 #ifdef BUDDY_ENABLE_CONNECT
-//    buddy_httpc_handler_init();
+    buddy_httpc_handler_init();
 #endif // BUDDY_ENABLE_CONNECT
 
     for (;;) {
@@ -128,7 +128,7 @@ void StartWebServerTask(void const *argument) {
         }
 
 #ifdef BUDDY_ENABLE_CONNECT
-        //     buddy_httpc_handler();
+        buddy_httpc_handler();
 #endif // BUDDY_ENABLE_CONNECT
 
         osDelay(100);

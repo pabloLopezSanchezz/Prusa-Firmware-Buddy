@@ -29,6 +29,7 @@
 #define HTTPC_RESPONSE_BUFF_SZ    512 // buffer size for http response from server on client request
 #define HTTPC_REQUEST_BUFF_SZ     (REQ_HEADER_MAX_SIZE + REQ_BODY_MAX_SIZE)
 #define WUI_HTTPC_Q_SZ            32 // WUI HTTPC queue size
+#define CONENT_TYPE_STR_MAX_LEN   30 // content type allowed string length
 
 static char httpc_req_header[REQ_HEADER_MAX_SIZE];
 static char httpc_req_body[REQ_BODY_MAX_SIZE];
@@ -276,28 +277,37 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 /** Wait for all headers to be received, return its length and content-length (if available) */
 static err_t
 http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
-    httpc_header_info empty_str = {};
-    header_info = empty_str;
-    u16_t end1 = pbuf_memfind(p, "\r\n\r\n", 4, 0);
-    if (end1 < (0xFFFF - 2)) {
+    header_info.valid_request = false;
+    header_info.content_type = TYPE_INVALID;
+    header_info.content_lenght = 0;
+    header_info.command_id = 0;
+
+    u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0); // checks end of header
+
+    if (header_end_pos < (0xFFFF - 2)) {
         /* all headers received */
         /* check if we have a content length (@todo: case insensitive?) */
         u16_t content_len_hdr;
+        uint32_t parse_str_len = 0;
         *content_length = HTTPC_CONTENT_LEN_INVALID;
-        *total_header_len = end1 + 4;
+        *total_header_len = header_end_pos + 4;
 
+        // parse Content-type
+        const char *str_content_type = "Content-Type: ";
+        parse_str_len = strlen(str_content_type);
         uint32_t content_type_hdr;
-        content_type_hdr = pbuf_memfind(p, "Content-Type: ", 14, 0);
+
+        content_type_hdr = pbuf_memfind(p, str_content_type, parse_str_len, 0); // 0 = search from begining
         if (content_type_hdr != 0xFFFF) {
             u16_t content_type_line_end = pbuf_memfind(p, "\r\n", 2, content_type_hdr);
             if (content_type_line_end != 0xFFFF) {
-                char content_type_str[20];
-                u16_t content_type_len = (u16_t)(content_type_line_end - content_type_hdr - 14);
-                if (20 < content_type_len) {
-                    header_info.content_type = TYPE_INVALID;
+                char content_type_str[CONENT_TYPE_STR_MAX_LEN] = {};
+                u16_t content_type_len = (u16_t)(content_type_line_end - content_type_hdr - parse_str_len);
+                if (CONENT_TYPE_STR_MAX_LEN < content_type_len) {
+                    return ERR_VAL;
                 }
-                memset(content_type_str, 0, sizeof(content_type_str));
-                if (pbuf_copy_partial(p, content_type_str, content_type_len, content_type_hdr + 14) == content_type_len) {
+
+                if (pbuf_copy_partial(p, content_type_str, content_type_len, content_type_hdr + parse_str_len) == content_type_len) {
                     char *type_json_str = "application/json";
                     char *type_xgcode_str = "text/x.gcode";
                     if (0 == strncmp(content_type_str, type_json_str, strlen(type_json_str))) {
@@ -305,20 +315,24 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
                     } else if (0 == strncmp(content_type_str, type_xgcode_str, strlen(type_xgcode_str))) {
                         header_info.content_type = TYPE_GCODE;
                     } else {
-                        header_info.content_type = TYPE_INVALID;
+                        return ERR_VAL;
                     }
                 }
             }
         }
 
-        content_len_hdr = pbuf_memfind(p, "Content-Length: ", 16, 0);
+        // prase Content-length
+        const char *str_content_len = "Content-Length: ";
+        parse_str_len = strlen(str_content_len);
+
+        content_len_hdr = pbuf_memfind(p, str_content_len, parse_str_len, 0);
         if (content_len_hdr != 0xFFFF) {
             u16_t content_len_line_end = pbuf_memfind(p, "\r\n", 2, content_len_hdr);
             if (content_len_line_end != 0xFFFF) {
                 char content_len_num[16];
-                u16_t content_len_num_len = (u16_t)(content_len_line_end - content_len_hdr - 16);
+                u16_t content_len_num_len = (u16_t)(content_len_line_end - content_len_hdr - parse_str_len);
                 memset(content_len_num, 0, sizeof(content_len_num));
-                if (pbuf_copy_partial(p, content_len_num, content_len_num_len, content_len_hdr + 16) == content_len_num_len) {
+                if (pbuf_copy_partial(p, content_len_num, content_len_num_len, content_len_hdr + parse_str_len) == content_len_num_len) {
                     int len = atoi(content_len_num);
                     if ((len >= 0) && ((u32_t)len < HTTPC_CONTENT_LEN_INVALID)) {
                         *content_length = (u32_t)len;
@@ -328,20 +342,23 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
             }
         }
 
-        u16_t command_id_hdr = pbuf_memfind(p, "Command-Id: ", 12, 0);
+        // prase Command-ld
+        const char *str_cmd_id = "Command-Id: ";
+        parse_str_len = strlen(str_cmd_id);
+
+        u16_t command_id_hdr = pbuf_memfind(p, str_cmd_id, parse_str_len, 0);
         if (command_id_hdr != 0xFFFF) {
             u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, command_id_hdr);
             if (command_id_line_end != 0xFFFF) {
                 char command_id_num[16];
-                u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - 12);
+                u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - parse_str_len);
                 memset(command_id_num, 0, sizeof(command_id_num));
-                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + 12) == command_id_num_len) {
+                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + parse_str_len) == command_id_num_len) {
                     header_info.command_id = atoi(command_id_num);
                 }
             }
-        } else {
-            header_info.command_id = 0; // Invalid Command ID
         }
+
         return ERR_OK;
     }
     return ERR_VAL;

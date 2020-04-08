@@ -8,6 +8,8 @@
 #include "wui_err.h"
 #include "wui_helper_funcs.h"
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,6 +61,7 @@ typedef struct {
     uint32_t command_id;
     uint32_t content_lenght;
     HTTPC_CONTENT_TYPE content_type;
+    bool valid_request;
 } httpc_header_info;
 
 typedef struct {
