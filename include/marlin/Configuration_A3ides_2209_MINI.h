@@ -129,12 +129,6 @@
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
 
-// The following define selects which electronics board you have.
-// Please choose the name from boards.h that matches your setup
-#ifndef MOTHERBOARD
-    #define MOTHERBOARD BOARD_RAMPS_14_EFB
-#endif
-
 // Optional custom name for your RepStrap or other custom machine
 // Displayed in the LCD "Ready" message
 //#define CUSTOM_MACHINE_NAME "3D Printer"
@@ -584,7 +578,7 @@
 // Specify here all the endstop connectors that are connected to any endstop or probe.
 // Almost all printers will be using one per axis. Probes will use one or more of the
 // extra connectors. Leave undefined any used for non-endstop and non-probe purposes.
-//#define MINDA_BROKEN_CABLE_DETECTION
+#define MINDA_BROKEN_CABLE_DETECTION
 #define USE_XMIN_PLUG
 #define USE_YMIN_PLUG
 #define USE_ZMIN_PLUG
