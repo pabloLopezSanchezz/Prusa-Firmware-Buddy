@@ -9,7 +9,7 @@
 #define DBG _dbg3 //debug level 3
 //#define DBG(...)  //disable debug
 
-#if ((MOTHERBOARD == 1823))
+#if ((MOTHERBOARD == 1823) || (MOTHERBOARD == 1850))
 
 extern TMC2209Stepper stepperX;
 extern TMC2209Stepper stepperY;

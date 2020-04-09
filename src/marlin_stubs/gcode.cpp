@@ -5,7 +5,7 @@
 #include "metric.h"
 
 #ifdef LOADCELL_HX711
-    #include "loadcell_hx711.h"
+    #include "loadcell.h"
 #endif
 
 static void record_pre_gcode_metrics();
@@ -52,9 +52,9 @@ static void record_pre_gcode_metrics() {
 
     if (parser.command_letter == 'G' && parser.codenum == 29) {
         // log loadcell settings on beginning of G29
-        metric_record_float(&loadcell_scale_m, loadcell_scale);
-        metric_record_float(&loadcell_threshold_m, loadcell_threshold);
-        metric_record_float(&loadcell_hysteresis_m, loadcell_hysteresis);
+        metric_record_float(&loadcell_scale_m, loadcell.GetScale());
+        metric_record_float(&loadcell_threshold_m, loadcell.GetThreshold());
+        metric_record_float(&loadcell_hysteresis_m, loadcell.GetHysteresis());
     }
 #endif
 }

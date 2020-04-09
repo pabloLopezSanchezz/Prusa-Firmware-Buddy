@@ -107,6 +107,12 @@ extern void hwio_beeper_notone(void);
 //cycle 1ms
 extern void hwio_update_1ms(void);
 
+//fans - used to prevent interference from fans in loadcell (temporary solution, will be removed in future)
+extern int hwio_fans_enabled;
+extern void hwio_fans_set_enabled(int enabled);
+extern void hwio_fans_start_fan1(void);
+extern void hwio_fans_stop_fan1(void);
+
 #ifdef __cplusplus
 }
 #endif //__cplusplus
