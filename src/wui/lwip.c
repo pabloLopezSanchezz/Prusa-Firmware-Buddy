@@ -58,7 +58,6 @@
 #include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/netif.h"
-#include "dns.h"
 
 #include <string.h>
 
@@ -124,27 +123,23 @@ void MX_LWIP_Init(void) {
     eth0.hostname = interface_hostname;
     /* This won't execute until user loads static lan settings at least once (default is DHCP) */
     if (ee_lan_flg & LAN_EEFLG_TYPE) {
-        ip_addr_t dns1, dns2;
+
         ipaddr.addr = eeprom_get_var(EEVAR_LAN_IP4_ADDR).ui32;
         netmask.addr = eeprom_get_var(EEVAR_LAN_IP4_MSK).ui32;
         gw.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
-        dns1.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
-        dns2.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
-        dns_setserver(0, &dns1);
-        dns_setserver(1, &dns2);
-        
+
         netif_set_addr(&eth0, &ipaddr, &netmask, &gw);
     }
-    if(!(ee_lan_flg & LAN_EEFLG_ONOFF) && netif_is_link_up(&eth0)){
+    if (!(ee_lan_flg & LAN_EEFLG_ONOFF) && netif_is_link_up(&eth0)) {
         /* When the netif is fully configured and switched on this function must be called */
         netif_set_up(&eth0);
-        if(!(ee_lan_flg & LAN_EEFLG_TYPE)){
+        if (!(ee_lan_flg & LAN_EEFLG_TYPE)) {
             /* Start DHCP negotiation for a network interface (IPv4) */
             dhcp_start(&eth0);
         }
     } else {
         /* When the netif link is down or software lan switch is off, this function must be called */
-        netif_set_down(&eth0);        
+        netif_set_down(&eth0);
     }
     /* Setting necessary callbacks after initial setup */
     netif_set_link_callback(&eth0, netif_link_callback);
