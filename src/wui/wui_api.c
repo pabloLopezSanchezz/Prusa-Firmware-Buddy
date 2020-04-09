@@ -59,7 +59,7 @@ void get_telemetry_data(char *data, const uint32_t buf_len) {
         percent_done = wui_vars_copy.sd_precent_done;
     }
 
-    print_dur_to_string(print_time, wui_vars_copy.print_dur);
+    print_dur_to_string(print_time, sizeof(print_time), wui_vars_copy.print_dur);
 
     snprintf(data, buf_len, "{"
                             "\"temp_nozzle\":%ld,"
