@@ -2,10 +2,12 @@
 #include "loadcell_endstops.h"
 #include "gpio.h"
 #include "metric.h"
+#include "bsod.h"
 
 Loadcell loadcell;
 static metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_loadcell = METRIC("loadcell", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
+static metric_t metric_tare_err = METRIC("tare_err", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_ENABLE_ALL);
 
 Loadcell::Loadcell() {
 }
@@ -18,20 +20,30 @@ void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
 
 void Loadcell::Tare(int tareCount) {
     if (!isSignalEventConfigured) {
+        general_error("loadcell", "uncomplete configuration");
         return;
     }
 
-    osEvent evt;
     int32_t sum = 0;
-    int tareSamples = tareCount;
+    int measuredCount = 0;
+    int errors = 0;
 
-    while (tareSamples--) {
-        evt = osSignalWait(signal, 100);
+    while (errors < 3 && measuredCount < tareCount) {
+        osEvent evt = osSignalWait(signal, 100);
         if (evt.status == osEventSignal) {
             sum += loadcellRaw;
+            measuredCount += 1;
+        } else {
+            metric_record_integer(&metric_tare_err, (int)evt.status);
+            errors += 1;
         }
     }
-    offset = sum / tareCount;
+
+    if (measuredCount == tareCount) {
+        offset = sum / measuredCount;
+    } else {
+        general_error("loadcell", "tare failed");
+    }
 }
 
 extern "C" bool loadcell_get_state() {
