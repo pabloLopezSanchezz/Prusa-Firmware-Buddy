@@ -47,6 +47,7 @@ void get_telemetry_data(char *data, const uint32_t buf_len) {
                                 "}",
             actual_nozzle, actual_heatbed, filament_material,
             z_pos_mm, print_speed, flow_factor);
+            return;
     }
 
     uint8_t percent_done;
