@@ -701,16 +701,18 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_0, ulVal ? _pwm_analogWrite_max[HWIO_PWM_HEATER_0] : 0);
             return;
         case PIN_FAN1:
-            //hwio_fan_set_pwm(_FAN1, ulVal?255:0);
-            //_hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
 #ifdef LOADCELL_HX711
             if (hwio_fans_enabled)
 #endif
+            {
 #if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 80 : 0);
-#else
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 100 : 0);
+#else
+            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
 #endif
+            }
 #ifdef LOADCELL_HX711
             hwio_fan1_tmp_state = ulVal ? 1 : 0;
 #endif
