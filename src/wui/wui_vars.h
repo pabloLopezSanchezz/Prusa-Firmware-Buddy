@@ -12,6 +12,9 @@ typedef struct {
     float pos[4];
     float temp_nozzle;
     float temp_bed;
+    float target_nozzle;
+    float target_bed;
+    uint8_t fan_speed;
     uint32_t print_dur;
     uint16_t print_speed;
     uint16_t flow_factor;
