@@ -80,8 +80,8 @@ void get_telemetry_data(char *data, const uint32_t buf_len) {
                             "\"progress\":%d,"
                             "\"print_dur\":\"%s\","     // OctoPrint API ?
                             "\"time_est\":\"%s\","
-                            "\"printing_time\":\"%ld\","     // Connect
-                            "\"estimated_time\":\"%ld\","
+                            "\"printing_time\":%ld,"     // Connect
+                            "\"estimated_time\":%ld,"
                             "\"project_name\":\"%s\","
                             "\"state\":\"PRINTING\""
                             "}",
