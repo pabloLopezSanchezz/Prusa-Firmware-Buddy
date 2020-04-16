@@ -4,7 +4,7 @@
 #include "gui.h"
 #include "bsod.h"
 
-#define SCREEN_MAX_SCREENS 32
+#define SCREEN_MAX_SCREENS 48
 
 #define SCREEN_MAX_HISTORY 32
 
