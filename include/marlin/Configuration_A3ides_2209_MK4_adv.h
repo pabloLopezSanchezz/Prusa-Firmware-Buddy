@@ -453,6 +453,14 @@
 
 // @section homing
 
+//after enabling HOMING_MAX_ATEMPTS, homing can fail
+#define HOMING_MAX_ATEMPTS 3
+#ifdef HOMING_MAX_ATEMPTS
+    //ranges in mm - allowed distance between homing probes
+    constexpr float axis_home_min_offsets[] = {-1,-1,-0.1};
+    constexpr float axis_home_max_offsets[] = {1,1,0.5};
+#endif// HOMING_MAX_ATEMPTS
+
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
 #define X_HOME_BUMP_MM 5
 #define Y_HOME_BUMP_MM 5
