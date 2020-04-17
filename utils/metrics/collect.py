@@ -1,11 +1,13 @@
 import socket
 import re
+import bisect
 from datetime import datetime, timedelta, timezone
 import aioserial
 import asyncio
 import click
 import aioinflux
 from line_protocol_parser import parse_line, LineFormatError
+from collections import defaultdict
 
 
 class MetricError(Exception):
@@ -95,6 +97,45 @@ class SyslogHandlerClient(asyncio.DatagramProtocol):
             self.mac_address = mac_address
             self.last_received_msgid = None
             self.session_start_time = None
+            self.msg_timestamps = []  # sorted tuples (msgid, timestamp)
+
+        def register_received_message(self, msgid):
+            entry = (msgid, datetime.now().timestamp())
+            idx = bisect.bisect_right(self.msg_timestamps, entry)
+            for check_index in (idx - 1, idx, idx + 1):
+                if check_index >= 0 and check_index < len(
+                        self.msg_timestamps
+                ) and self.msg_timestamps[check_index][0] == entry[0]:
+                    print('duplicate datagram from %s' % self.mac_address)
+                    return
+            else:
+                self.msg_timestamps.insert(idx, entry)
+
+        def create_report(self, interval=3.0):
+            range_end = datetime.now().timestamp()
+            range_start = range_end - interval
+
+            # drop older data
+            while len(self.msg_timestamps
+                      ) and self.msg_timestamps[0][1] < range_start:
+                self.msg_timestamps.pop(0)
+
+            if not self.msg_timestamps:
+                return None
+
+            lowest_msgid, highest_msgid = self.msg_timestamps[0][
+                0], self.msg_timestamps[-1][0]
+            expected_number_of_msgs = highest_msgid - lowest_msgid + 1
+            received_number_of_msgs = len(self.msg_timestamps)
+            if received_number_of_msgs > expected_number_of_msgs:
+                print(self.msg_timestamps)
+
+            return dict(
+                expected_number_of_messages=int(expected_number_of_msgs),
+                received_number_of_messages=int(received_number_of_msgs),
+                interval=float(interval),
+                drop_rate=1 -
+                (received_number_of_msgs / expected_number_of_msgs))
 
     def connection_made(self, transport):
         print(transport)
@@ -119,6 +160,7 @@ class SyslogHandlerClient(asyncio.DatagramProtocol):
         else:
             points = list(self.parser_v2.parse(serialized_points))
         msgid = int(headerdict['msg'])
+        printer.register_received_message(msgid)
         msgdelta = timedelta(milliseconds=int(headerdict['tm']))
         if printer.last_received_msgid is None:
             printer.session_start_time = datetime.now(
@@ -157,8 +199,23 @@ class SyslogHandlerClient(asyncio.DatagramProtocol):
             datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         }
 
+    async def create_periodic_reports(self):
+        while True:
+            for printer in self.printers.values():
+                try:
+                    report = printer.create_report()
+                    if not report:
+                        continue
+                    self.handle_fn(
+                        Point(datetime.now(tz=timezone.utc), 'udp_stats',
+                              report, dict(mac_address=printer.mac_address)))
+                except Exception as e:
+                    print('failure when collection reports: %s' % e)
+            await asyncio.sleep(1.0)
+
     async def run(self):
         loop = asyncio.get_event_loop()
+        asyncio.ensure_future(self.create_periodic_reports())
         await loop.create_datagram_endpoint(lambda: self,
                                             local_addr=('0.0.0.0', self.port),
                                             reuse_port=True)
@@ -243,8 +300,16 @@ class Application:
                             'fields': point.values,
                         })
                     else:
-                        print('received error point', point.metric_name,
-                              point.value.message)
+                        influx_points.append({
+                            'time':
+                            point.timestamp,
+                            'measurement':
+                            'metric_error',
+                            'tags':
+                            dict(metric=point.metric_name, **point.tags),
+                            'fields':
+                            point.values,
+                        })
 
                 print('writing', len(influx_points), 'points')
                 await self.influx.write(influx_points)
