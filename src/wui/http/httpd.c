@@ -2629,7 +2629,7 @@ static struct fs_file api_file; // for storing /api/* data
 
 static void wui_api_telemetry(struct fs_file *file) {
 
-    get_telemetry_data(response_body_buf, RESPONSE_BODY_SIZE);
+    get_telemetry_for_local(response_body_buf, RESPONSE_BODY_SIZE);
 
     uint16_t response_len = strlen(response_body_buf);
     file->len = response_len;
