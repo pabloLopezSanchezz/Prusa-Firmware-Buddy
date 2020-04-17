@@ -428,7 +428,7 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
         req->rx_content_len += p->tot_len;
         if (req->recv_fn != NULL) {
             /* directly return here: the connection migth already be aborted from the callback! */
-            return req->recv_fn(req->callback_arg, pcb, p, r);
+            return req->recv_fn(arg, pcb, p, r);
         } else {
             altcp_recved(pcb, p->tot_len);
             pbuf_free(p);
@@ -556,20 +556,27 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     httpc_resp_buffer[header_info.content_lenght] = 0; // end of line added
     cmd_status = parse_http_reply(httpc_resp_buffer, len_copied, &header_info);
     result = HTTPC_RESULT_OK;
+    u16_t status = req->rx_status;
     httpc_close(req, result, req->rx_status, ERR_OK);
-    // send acknowledgment
-    if (CMD_UNKNOWN != cmd_status) {
-        httpc_req_t request;
-        request.cmd_id = header_info.command_id;
-        request.cmd_status = cmd_status;
-        request.req_type = REQ_ACK;
-        if (CMD_ACCEPTED != cmd_status) {
-            request.connect_event_type = EVENT_REJECTED;
-        } else {
-            request.connect_event_type = EVENT_ACCEPTED;
-        }
+    if (status == 200) {
+        // send acknowledgment  TODO: only if it is answer to /p/telemetry
+        if (CMD_UNKNOWN != cmd_status) {
+            httpc_req_t request;
+            request.cmd_id = header_info.command_id;
+            request.cmd_status = cmd_status;
+            request.req_type = REQ_ACK;
+            if (CMD_ACCEPTED != cmd_status) {
+                request.connect_event_type = EVENT_REJECTED;
+            } else {
+                request.connect_event_type = EVENT_ACCEPTED;
+            }
 
-        send_request_to_httpc(request);
+            send_request_to_httpc(request);
+        }
+    } else if (status == 401 || status == 403) {
+        // TODO: Error message to GUI: bad Printer-Token
+    } else if (status == 404) {
+        // TODO: Error message to GUI: bad connect address
     }
 
     return ERR_OK;
