@@ -21,7 +21,7 @@
 // for data exchange between wui thread and HTTP thread
 static wui_vars_t wui_vars_copy;
 
-void get_telemetry_data(char *data, const uint32_t buf_len) {
+void get_telemetry_for_connect(char *data, const uint32_t buf_len) {
 
     osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);
     if (status == osOK) {

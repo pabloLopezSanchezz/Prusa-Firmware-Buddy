@@ -633,7 +633,7 @@ static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
     uint32_t content_length = 0;
     switch (request->req_type) {
     case REQ_TELEMETRY:
-        get_telemetry_data(httpc_req_body, REQ_BODY_MAX_SIZE);
+        get_telemetry_for_connect(httpc_req_body, REQ_BODY_MAX_SIZE);
         content_length = strlcpy(http_body_str, httpc_req_body, REQ_BODY_MAX_SIZE);
         break;
     case REQ_ACK:

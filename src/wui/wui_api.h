@@ -25,7 +25,7 @@ extern "C" {
 extern marlin_vars_t webserver_marlin_vars;
 extern osMutexId wui_web_mutex_id;
 
-void get_telemetry_data(char *data, const uint32_t buff_len);
+void get_telemetry_for_connect(char *data, const uint32_t buff_len);
 void get_telemetry_for_local(char *data, const uint32_t buf_len);
 
 HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_header_info *h_info_ptr);
