@@ -261,10 +261,6 @@ int main(void) {
     osThreadDef(displayTask, StartDisplayTask, osPriorityNormal, 0, 2048);
     displayTaskHandle = osThreadCreate(osThread(displayTask), NULL);
 
-    /* definition and creation of idleTask */
-    osThreadDef(idleTask, StartIdleTask, osPriorityIdle, 0, 128);
-    idleTaskHandle = osThreadCreate(osThread(idleTask), NULL);
-
 #ifdef BUDDY_ENABLE_WUI
     /* definition and creation of webServerTask */
     osThreadDef(webServerTask, StartWebServerTask, osPriorityNormal, 0, BUDDY_WEB_STACK_SIZE);
@@ -1004,22 +1000,6 @@ void StartDisplayTask(void const *argument) {
         osDelay(1);
     }
     /* USER CODE END StartDisplayTask */
-}
-
-/* USER CODE BEGIN Header_StartIdleTask */
-/**
-* @brief Function implementing the idleTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartIdleTask */
-void StartIdleTask(void const *argument) {
-    /* USER CODE BEGIN StartIdleTask */
-    /* Infinite loop */
-    for (;;) {
-        osDelay(1);
-    }
-    /* USER CODE END StartIdleTask */
 }
 
 /**
