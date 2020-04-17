@@ -232,7 +232,7 @@ int main(void) {
     putslave_init(&uart6slave);
 
     static metric_handler_t *handlers[] = {
-        &metric_handler_uart,
+        //&metric_handler_uart,
         &metric_handler_syslog,
         NULL
     };
