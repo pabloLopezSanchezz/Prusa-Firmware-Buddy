@@ -453,6 +453,9 @@
 
 // @section homing
 
+//kill command after probing fails
+#define HALT_ON_PROBING_ERROR
+
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
 #define X_HOME_BUMP_MM 5
 #define Y_HOME_BUMP_MM 5
