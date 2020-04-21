@@ -202,10 +202,10 @@ void fs_process_sample(int32_t fs_raw_value) {
     metric_record_integer(&metric_fsensor_raw, fs_raw_value);
 
     if (fs_raw_value <= FILAMENT_SENSOR_HX711_LOW) {
-        fsensor_state = FS_NO_FILAMENT;
+        fsensor_state = FS_HAS_FILAMENT;
     } else if (fs_raw_value < 2000) {
         fsensor_state = FS_NOT_CONNECTED;
     } else {
-        fsensor_state = FS_HAS_FILAMENT;
+        fsensor_state = FS_NO_FILAMENT;
     }
 }

@@ -72,8 +72,6 @@ void app_setup(void) {
     setup();
 
     marlin_server_settings_load(); // load marlin variables from eeprom
-#if ENABLED(PIDTEMPBED)
-#endif
 
     if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
         init_tmc();
@@ -212,6 +210,8 @@ void hx711_irq() {
 
     static int sample_counter = 0;
     int32_t raw_value;
+
+    static HX711::Channel current_channel = hx711.CHANNEL_A_GAIN_128;
     HX711::Channel next_channel;
 
     sample_counter += 1;
@@ -224,15 +224,14 @@ void hx711_irq() {
 
     raw_value = hx711.ReadValue(next_channel);
 
-    if (next_channel == hx711.CHANNEL_A_GAIN_128) {
+    if (current_channel == hx711.CHANNEL_A_GAIN_128) {
         loadcell.ProcessSample(raw_value);
     } else {
-        next_channel = hx711.CHANNEL_A_GAIN_128;
-        raw_value = hx711.ReadValue(next_channel);
         if (loadcell.IsSignalConfigured()) {
             fs_process_sample(raw_value);
         }
     }
+    current_channel = next_channel;
 }
 #endif //LOADCELL_HX711
 

@@ -31,7 +31,6 @@ enum {
 #else
     #error // unknown printer
 #endif
-
     MI_MESSAGES,
     MI_COUNT
 };

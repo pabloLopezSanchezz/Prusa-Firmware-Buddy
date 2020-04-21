@@ -563,9 +563,11 @@ void _PID_copy_and_scale_PID_d(_PID_t *ths) {
 void _PID_autotune(_PID_t *ths) {
     marlin_gcode_printf("M303 U1 E%i S%i", ths->ID, int(*ths->autotune_temp));
     if (ths->ID >= 0) {
+    #if HAS_BED_PROBE
         eeprom_set_var(EEVAR_PID_NOZ_P, variant8_flt(Temperature::temp_hotend[0].pid.Kp));
         eeprom_set_var(EEVAR_PID_NOZ_I, variant8_flt(Temperature::temp_hotend[0].pid.Ki));
         eeprom_set_var(EEVAR_PID_NOZ_D, variant8_flt(Temperature::temp_hotend[0].pid.Kd));
+    #endif
     } else {
     #if ENABLED(PIDTEMPBED)
         eeprom_set_var(EEVAR_PID_BED_P, variant8_flt(Temperature::temp_bed.pid.Kp));

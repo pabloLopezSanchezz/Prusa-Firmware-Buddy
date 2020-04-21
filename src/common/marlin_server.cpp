@@ -350,6 +350,22 @@ int marlin_server_idle(void) {
             _send_notify_event(MARLIN_EVT_CommandBegin, marlin_server.command, 0);
         }
     }
+//prevent interference from fans in loadcell (temporary solution, will be removed in future)
+#ifdef LOADCELL_HX711
+    if (hwio_fans_enabled) {
+        if ((marlin_server.command == MARLIN_CMD_G28) || (marlin_server.command == MARLIN_CMD_G29))
+            hwio_fans_set_enabled(0);
+    } else {
+        if ((marlin_server.command != MARLIN_CMD_G28) && (marlin_server.command != MARLIN_CMD_G29))
+            hwio_fans_set_enabled(1);
+        else if (marlin_server.command == MARLIN_CMD_G29) {
+            if (stepper.axis_is_moving(X_AXIS) || stepper.axis_is_moving(Y_AXIS))
+                hwio_fans_start_fan1();
+            else
+                hwio_fans_stop_fan1();
+        }
+    }
+#endif //LOADCELL_HX711
     return marlin_server_cycle();
 }
 
@@ -397,7 +413,9 @@ int marlin_server_inject_gcode(const char *gcode) {
 }
 
 void marlin_server_settings_save(void) {
+#if HAS_BED_PROBE
     eeprom_set_var(EEVAR_ZOFFSET, variant8_flt(probe_offset.z));
+#endif
 #if ENABLED(PIDTEMPBED)
     eeprom_set_var(EEVAR_PID_BED_P, variant8_flt(Temperature::temp_bed.pid.Kp));
     eeprom_set_var(EEVAR_PID_BED_I, variant8_flt(Temperature::temp_bed.pid.Ki));
@@ -972,10 +990,6 @@ int _server_set_var(char *name_val_str) {
     return 1;
 }
 
-//
-// ⬆️  oh no! This terrible hack broke the project for printers without GUI.
-// ⬇️  This fixes it. It is also a terrible hack, but the one above should be fixed ASAP.
-__attribute__((weak)) int gui_marlin_client_id = -1;
 } // extern "C"
 
 #ifdef DEBUG_FSENSOR_IN_HEADER

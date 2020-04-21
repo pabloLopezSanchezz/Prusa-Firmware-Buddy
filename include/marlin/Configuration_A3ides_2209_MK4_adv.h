@@ -453,10 +453,18 @@
 
 // @section homing
 
+//after enabling HOMING_MAX_ATTEMPTS, homing can fail
+#define HOMING_MAX_ATTEMPTS 3
+#ifdef HOMING_MAX_ATTEMPTS
+    //ranges in mm - allowed distance between homing probes
+    constexpr float axis_home_min_diff[] = {-1,-1,-0.1};
+    constexpr float axis_home_max_diff[] = {1,1,0.5};
+#endif// HOMING_MAX_ATTEMPTS
+
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
 #define X_HOME_BUMP_MM 5
 #define Y_HOME_BUMP_MM 5
-#define Z_HOME_BUMP_MM 2
+#define Z_HOME_BUMP_MM 5
 #define HOMING_BUMP_DIVISOR \
     { 2, 2, 4 } // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 //#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
