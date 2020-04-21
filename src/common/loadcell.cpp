@@ -3,13 +3,23 @@
 #include "gpio.h"
 #include "metric.h"
 #include "bsod.h"
+#include <cmath> //isnan
 
 Loadcell loadcell;
 static metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_loadcell = METRIC("loadcell", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_tare_err = METRIC("tare_err", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_ENABLE_ALL);
 
-Loadcell::Loadcell() {
+Loadcell::Loadcell()
+    : scale(1)
+    , threshold(NAN)
+    , hysteresis(0)
+    , grams_error_treshold(NAN)
+    , offset(0)
+    , loadcellRaw(0)
+    , endstop(false)
+    , isSignalEventConfigured(false)
+    , highPrecision(false) {
 }
 
 void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
@@ -51,7 +61,7 @@ extern "C" bool loadcell_get_state() {
 }
 
 bool Loadcell::GetState() const {
-    return state;
+    return endstop;
 }
 
 void Loadcell::SetScale(float scale) {
@@ -98,6 +108,14 @@ bool Loadcell::IsHighPrecisionEnabled() const {
     return highPrecision;
 }
 
+void Loadcell::SetGramsErrorTreshold(float grams_error_treshold) {
+    this->grams_error_treshold = grams_error_treshold;
+}
+
+float Loadcell::GetGramsErrorTreshold() const {
+    return grams_error_treshold;
+}
+
 void Loadcell::ProcessSample(int32_t loadcellRaw) {
     if (!isSignalEventConfigured) {
         return;
@@ -109,15 +127,35 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     metric_record_integer(&metric_loadcell_raw, loadcellRaw);
     metric_record_float(&metric_loadcell, load);
 
-    if (state) {
+    if ((!std::isnan(grams_error_treshold)) && (load > grams_error_treshold))
+        general_error("loadcell", "grams error treshold reached");
+
+    if (endstop) {
         if (load >= (threshold + hysteresis)) {
-            state = false;
+            endstop = false;
         }
     } else {
         if (load <= threshold) {
-            state = true;
+            endstop = true;
             endstops_poll();
         }
     }
     osSignalSet(threadId, signal);
+}
+
+//creates object enforcing error when pozitive load value is too big
+Loadcell::TempErrEnforcer Loadcell::CreateErrEnforcer(float grams) {
+    return Loadcell::TempErrEnforcer(*this, grams);
+}
+
+/*****************************************************************************/
+//TempErrEnforcer
+Loadcell::TempErrEnforcer::TempErrEnforcer(Loadcell &lcell, float grams_error_treshold)
+    : lcell(lcell)
+    , old_grams_error_treshold(lcell.GetGramsErrorTreshold()) {
+    lcell.SetGramsErrorTreshold(grams_error_treshold);
+}
+
+Loadcell::TempErrEnforcer::~TempErrEnforcer() {
+    lcell.SetGramsErrorTreshold(old_grams_error_treshold);
 }

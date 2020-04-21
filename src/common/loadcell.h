@@ -39,18 +39,37 @@ public:
 
     bool IsHighPrecisionEnabled() const;
 
+    void SetGramsErrorTreshold(float grams_error_treshold);
+
+    float GetGramsErrorTreshold() const;
+
+    class TempErrEnforcer {
+        Loadcell &lcell;
+        float old_grams_error_treshold;
+
+    public:
+        TempErrEnforcer(Loadcell &lcell, float grams_error_treshold);
+        TempErrEnforcer(const TempErrEnforcer &) = delete;
+        TempErrEnforcer(TempErrEnforcer &&) = default;
+        ~TempErrEnforcer();
+    };
+
+    TempErrEnforcer CreateErrEnforcer(float grams = 500);
+
 private:
     float scale;
     float threshold;
     float hysteresis;
-    uint8_t state;
+    float grams_error_treshold;
     int32_t offset;
     osThreadId threadId;
     int32_t signal;
     int32_t loadcellRaw;
+    bool endstop;
     bool isSignalEventConfigured;
     bool highPrecision;
 };
+
     #define EXTERN_C extern "C"
 extern Loadcell loadcell;
 
