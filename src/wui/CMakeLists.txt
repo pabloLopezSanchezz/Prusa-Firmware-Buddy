@@ -13,6 +13,8 @@ add_library(
   http/httpd.c
   resources/${HTTPD_FSDATA_FILE}
   progress_data_wrapper.cpp
+  lwip.c
+  ethernetif.c
 )
 
 target_include_directories(

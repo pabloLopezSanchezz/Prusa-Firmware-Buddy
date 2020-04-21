@@ -49,6 +49,12 @@ extern int marlin_client_set_fsm_change_cb(fsm_change_t cb);
 // returns enabled status of loop processing
 extern int marlin_processing(void);
 
+//sets event notification mask
+extern void marlin_client_set_event_notify(uint64_t notify_events);
+
+//sets variable change notification mask
+extern void marlin_client_set_change_notify(uint64_t notify_changes);
+
 // returns busy status of marlin
 extern int marlin_busy(void);
 
@@ -69,9 +75,6 @@ extern int marlin_wait_motion(uint32_t timeout);
 
 // enqueue gcode - thread-safe version  (request '!g xxx')
 extern void marlin_gcode(const char *gcode);
-
-// enqueue gcode from ethernet command (json parsed)
-extern void marlin_json_gcode(const char *gcode);
 
 // enqueue gcode - printf-like, returns number of chars printed
 extern int marlin_gcode_printf(const char *format, ...);
@@ -160,6 +163,8 @@ extern void marlin_do_babysteps_Z(float offs);
 extern void marlin_settings_save(void);
 
 extern void marlin_settings_load(void);
+
+extern void marlin_settings_reset(void);
 
 extern void marlin_manage_heater(void);
 

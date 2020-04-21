@@ -13,17 +13,25 @@
 #include "screen_menu.h"
 #include "lwip/netif.h"
 #include "eeprom.h"
+#include "lwip.h"
 
 #define plsd              ((screen_lan_settings_data_t *)screen->pdata)
 #define MAC_ADDR_STR_SIZE 18
 
-#define NETVAR_SETFLG_LAN_FLAGS     0b00000001
-#define NETVAR_SETFLG_HOSTNAME      0b00000010
-#define NETVAR_SETFLG_CONNECT_TOKEN 0b00000100
-#define NETVAR_SETFLG_LAN_IP4_ADDR  0b00001000
-#define NETVAR_SETFLG_LAN_IP4_MSK   0b00010000
-#define NETVAR_SETFLG_LAN_IP4_GW    0b00100000
-#define NETVAR_SETFLG_CONNECT_IP4   0b01000000
+typedef enum{
+    NETVAR_LAN_FLAGS,
+    NETVAR_HOSTNAME,
+    NETVAR_CONNECT_TOKEN,
+    NETVAR_LAN_IP4_ADDR,
+    NETVAR_LAN_IP4_MSK,
+    NETVAR_LAN_IP4_GW,
+    NETVAR_DNS1,
+    NETVAR_DNS2,
+    NETVAR_CONNECT_IP4,
+} NETVAR_t;
+#define NETVAR_MSK(n_id) ((uint16_t)1 << (n_id))
+#define NETVAR_STATIC_LAN_ADDRS \
+    (NETVAR_MSK(NETVAR_LAN_IP4_ADDR) | NETVAR_MSK(NETVAR_LAN_IP4_MSK) | NETVAR_MSK(NETVAR_LAN_IP4_GW))
 
 typedef struct {
     window_frame_t root;
@@ -45,7 +53,9 @@ typedef struct {
     ip4_addr_t lan_ip4_addr;
     ip4_addr_t lan_ip4_msk;
     ip4_addr_t lan_ip4_gw;
-    uint8_t set_flag;
+    uint16_t set_flag;
+    ip4_addr_t dns1_ip4;
+    ip4_addr_t dns2_ip4;
 } networkconfig_t;
 
 extern screen_t screen_lan_settings;
