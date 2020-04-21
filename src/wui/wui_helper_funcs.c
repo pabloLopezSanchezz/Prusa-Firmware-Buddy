@@ -9,7 +9,7 @@
 #include "ip4_addr.h"
 #include "dbg.h"
 
-//#define HTTP_DUBAI_HACK
+#define HTTP_DUBAI_HACK
 
 #ifdef HTTP_DUBAI_HACK
     #include "version.h"
