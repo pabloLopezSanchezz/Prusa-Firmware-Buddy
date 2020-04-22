@@ -232,7 +232,7 @@ int main(void) {
     putslave_init(&uart6slave);
 
     static metric_handler_t *handlers[] = {
-        &metric_handler_uart,
+        //&metric_handler_uart,
         &metric_handler_syslog,
         NULL
     };
@@ -260,10 +260,6 @@ int main(void) {
     /* definition and creation of displayTask */
     osThreadDef(displayTask, StartDisplayTask, osPriorityNormal, 0, 2048);
     displayTaskHandle = osThreadCreate(osThread(displayTask), NULL);
-
-    /* definition and creation of idleTask */
-    osThreadDef(idleTask, StartIdleTask, osPriorityIdle, 0, 128);
-    idleTaskHandle = osThreadCreate(osThread(idleTask), NULL);
 
 #ifdef BUDDY_ENABLE_WUI
     /* definition and creation of webServerTask */
@@ -1004,22 +1000,6 @@ void StartDisplayTask(void const *argument) {
         osDelay(1);
     }
     /* USER CODE END StartDisplayTask */
-}
-
-/* USER CODE BEGIN Header_StartIdleTask */
-/**
-* @brief Function implementing the idleTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartIdleTask */
-void StartIdleTask(void const *argument) {
-    /* USER CODE BEGIN StartIdleTask */
-    /* Infinite loop */
-    for (;;) {
-        osDelay(1);
-    }
-    /* USER CODE END StartIdleTask */
 }
 
 /**
