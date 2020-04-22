@@ -211,7 +211,7 @@ void hx711_irq() {
     static int sample_counter = 0;
     int32_t raw_value;
 
-	static HX711::Channel current_channel = hx711.CHANNEL_A_GAIN_128;
+    static HX711::Channel current_channel = hx711.CHANNEL_A_GAIN_128;
     HX711::Channel next_channel;
 
     sample_counter += 1;
@@ -227,11 +227,9 @@ void hx711_irq() {
     if (current_channel == hx711.CHANNEL_A_GAIN_128) {
         loadcell.ProcessSample(raw_value);
     } else {
-        if (loadcell.IsSignalConfigured()) {
-            fs_process_sample(raw_value);
-        }
+        fs_process_sample(raw_value);
     }
-	current_channel = next_channel;
+    current_channel = next_channel;
 }
 #endif //LOADCELL_HX711
 

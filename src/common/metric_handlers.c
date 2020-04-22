@@ -52,7 +52,7 @@ static int textprotocol_append_point(char *buffer, int buffer_len, metric_point_
         buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "v=\"");
         buffer_used += textprotocol_append_escaped(buffer + buffer_used, buffer_len - buffer_used, point->value_str);
         buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "\"");
-    } else if (point->metric->type == METRIC_VALUE_INTEGER) {
+    } else if (point->metric->type == METRIC_VALUE_EVENT) {
         buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "v=T");
     } else {
         buffer_used += snprintf(buffer + buffer_used, buffer_len - buffer_used, "error=\"Unknown value type\"");
