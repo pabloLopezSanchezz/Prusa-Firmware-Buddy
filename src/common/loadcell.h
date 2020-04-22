@@ -39,18 +39,56 @@ public:
 
     bool IsHighPrecisionEnabled() const;
 
+    void SetFailsOnLoadAbove(float failsOnLoadAbove);
+
+    float GetFailsOnLoadAbove() const;
+
+    void SetFailsOnLoadBelow(float failsOnLoadBelow);
+
+    float GetFailsOnLoadBelow() const;
+
+    class IFailureEnforcer {
+    protected:
+        Loadcell &lcell;
+        float oldErrThreshold;
+        IFailureEnforcer(Loadcell &lcell, float oldErrThreshold);
+        IFailureEnforcer(const IFailureEnforcer &) = delete;
+        IFailureEnforcer(IFailureEnforcer &&) = default;
+    };
+
+    class FailureOnLoadAboveEnforcer : public IFailureEnforcer {
+    public:
+        FailureOnLoadAboveEnforcer(Loadcell &lcell, float grams);
+        FailureOnLoadAboveEnforcer(FailureOnLoadAboveEnforcer &&) = default;
+        ~FailureOnLoadAboveEnforcer();
+    };
+
+    class FailureOnLoadBelowEnforcer : public IFailureEnforcer {
+    public:
+        FailureOnLoadBelowEnforcer(Loadcell &lcell, float grams);
+        FailureOnLoadBelowEnforcer(FailureOnLoadBelowEnforcer &&) = default;
+        ~FailureOnLoadBelowEnforcer();
+    };
+
+    FailureOnLoadAboveEnforcer CreateLoadAboveErrEnforcer(float grams = 500);
+
+    FailureOnLoadBelowEnforcer CreateLoadBelowErrEnforcer(float grams = -3000);
+
 private:
     float scale;
     float threshold;
     float hysteresis;
-    uint8_t state;
+    float failsOnLoadAbove;
+    float failsOnLoadBelow;
     int32_t offset;
     osThreadId threadId;
     int32_t signal;
     int32_t loadcellRaw;
+    bool endstop;
     bool isSignalEventConfigured;
     bool highPrecision;
 };
+
     #define EXTERN_C extern "C"
 extern Loadcell loadcell;
 

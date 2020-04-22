@@ -3,13 +3,24 @@
 #include "gpio.h"
 #include "metric.h"
 #include "bsod.h"
+#include <cmath> //isnan
 
 Loadcell loadcell;
 static metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_loadcell = METRIC("loadcell", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_tare_err = METRIC("tare_err", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_ENABLE_ALL);
 
-Loadcell::Loadcell() {
+Loadcell::Loadcell()
+    : scale(1)
+    , threshold(NAN)
+    , hysteresis(0)
+    , failsOnLoadAbove(INFINITY)
+    , failsOnLoadBelow(-INFINITY)
+    , offset(0)
+    , loadcellRaw(0)
+    , endstop(false)
+    , isSignalEventConfigured(false)
+    , highPrecision(false) {
 }
 
 void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
@@ -51,7 +62,7 @@ extern "C" bool loadcell_get_state() {
 }
 
 bool Loadcell::GetState() const {
-    return state;
+    return endstop;
 }
 
 void Loadcell::SetScale(float scale) {
@@ -98,6 +109,22 @@ bool Loadcell::IsHighPrecisionEnabled() const {
     return highPrecision;
 }
 
+void Loadcell::SetFailsOnLoadAbove(float failsOnLoadAbove) {
+    this->failsOnLoadAbove = failsOnLoadAbove;
+}
+
+float Loadcell::GetFailsOnLoadAbove() const {
+    return failsOnLoadAbove;
+}
+
+void Loadcell::SetFailsOnLoadBelow(float failsOnLoadBelow) {
+    this->failsOnLoadBelow = failsOnLoadBelow;
+}
+
+float Loadcell::GetFailsOnLoadBelow() const {
+    return failsOnLoadBelow;
+}
+
 void Loadcell::ProcessSample(int32_t loadcellRaw) {
     if (!isSignalEventConfigured) {
         return;
@@ -109,15 +136,58 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     metric_record_integer(&metric_loadcell_raw, loadcellRaw);
     metric_record_float(&metric_loadcell, load);
 
-    if (state) {
+    if (!std::isfinite(load))
+        general_error("loadcell", "grams error, not finite");
+    if (load > failsOnLoadAbove)
+        general_error("loadcell", "grams error threshold reached");
+    if (load < failsOnLoadBelow)
+        general_error("loadcell", "grams error threshold reached");
+
+    if (endstop) {
         if (load >= (threshold + hysteresis)) {
-            state = false;
+            endstop = false;
         }
     } else {
         if (load <= threshold) {
-            state = true;
+            endstop = true;
             endstops_poll();
         }
     }
     osSignalSet(threadId, signal);
+}
+
+//creates object enforcing error when positive load value is too big
+Loadcell::FailureOnLoadAboveEnforcer Loadcell::CreateLoadAboveErrEnforcer(float grams) {
+    return Loadcell::FailureOnLoadAboveEnforcer(*this, grams);
+}
+
+Loadcell::FailureOnLoadBelowEnforcer Loadcell::CreateLoadBelowErrEnforcer(float grams) {
+    return Loadcell::FailureOnLoadBelowEnforcer(*this, grams);
+}
+
+/*****************************************************************************/
+//IFailureEnforcer
+Loadcell::IFailureEnforcer::IFailureEnforcer(Loadcell &lcell, float oldErrThreshold)
+    : lcell(lcell)
+    , oldErrThreshold(oldErrThreshold) {
+}
+
+/*****************************************************************************/
+//FailureOnLoadAboveEnforcer
+Loadcell::FailureOnLoadAboveEnforcer::FailureOnLoadAboveEnforcer(Loadcell &lcell, float grams)
+    : IFailureEnforcer(lcell, lcell.GetFailsOnLoadAbove()) {
+    lcell.SetFailsOnLoadAbove(grams);
+}
+Loadcell::FailureOnLoadAboveEnforcer::~FailureOnLoadAboveEnforcer() {
+    lcell.SetFailsOnLoadAbove(oldErrThreshold);
+}
+
+/*****************************************************************************/
+//FailureOnLoadBelowEnforcer
+Loadcell::FailureOnLoadBelowEnforcer::FailureOnLoadBelowEnforcer(Loadcell &lcell, float grams)
+    : IFailureEnforcer(lcell, lcell.GetFailsOnLoadBelow()) {
+    lcell.SetFailsOnLoadBelow(grams);
+}
+Loadcell::FailureOnLoadBelowEnforcer::~FailureOnLoadBelowEnforcer() {
+    lcell.SetFailsOnLoadBelow(oldErrThreshold);
 }
