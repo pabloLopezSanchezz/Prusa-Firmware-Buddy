@@ -14,7 +14,8 @@ Loadcell::Loadcell()
     : scale(1)
     , threshold(NAN)
     , hysteresis(0)
-    , grams_error_treshold(NAN)
+    , failsOnLoadAbove(INFINITY)
+    , failsOnLoadBelow(-INFINITY)
     , offset(0)
     , loadcellRaw(0)
     , endstop(false)
@@ -108,12 +109,20 @@ bool Loadcell::IsHighPrecisionEnabled() const {
     return highPrecision;
 }
 
-void Loadcell::SetGramsErrorTreshold(float grams_error_treshold) {
-    this->grams_error_treshold = grams_error_treshold;
+void Loadcell::SetFailsOnLoadAbove(float failsOnLoadAbove) {
+    this->failsOnLoadAbove = failsOnLoadAbove;
 }
 
-float Loadcell::GetGramsErrorTreshold() const {
-    return grams_error_treshold;
+float Loadcell::GetFailsOnLoadAbove() const {
+    return failsOnLoadAbove;
+}
+
+void Loadcell::SetFailsOnLoadBelow(float failsOnLoadBelow) {
+    this->failsOnLoadBelow = failsOnLoadBelow;
+}
+
+float Loadcell::GetFailsOnLoadBelow() const {
+    return failsOnLoadBelow;
 }
 
 void Loadcell::ProcessSample(int32_t loadcellRaw) {
@@ -127,8 +136,12 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     metric_record_integer(&metric_loadcell_raw, loadcellRaw);
     metric_record_float(&metric_loadcell, load);
 
-    if ((!std::isnan(grams_error_treshold)) && (load > grams_error_treshold))
-        general_error("loadcell", "grams error treshold reached");
+    if (!std::isfinite(load))
+        general_error("loadcell", "grams error, not finite");
+    if (load > failsOnLoadAbove)
+        general_error("loadcell", "grams error threshold reached");
+    if (load < failsOnLoadBelow)
+        general_error("loadcell", "grams error threshold reached");
 
     if (endstop) {
         if (load >= (threshold + hysteresis)) {
@@ -143,19 +156,38 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     osSignalSet(threadId, signal);
 }
 
-//creates object enforcing error when pozitive load value is too big
-Loadcell::TempErrEnforcer Loadcell::CreateErrEnforcer(float grams) {
-    return Loadcell::TempErrEnforcer(*this, grams);
+//creates object enforcing error when positive load value is too big
+Loadcell::FailureOnLoadAboveEnforcer Loadcell::CreateLoadAboveErrEnforcer(float grams) {
+    return Loadcell::FailureOnLoadAboveEnforcer(*this, grams);
+}
+
+Loadcell::FailureOnLoadBelowEnforcer Loadcell::CreateLoadBelowErrEnforcer(float grams) {
+    return Loadcell::FailureOnLoadBelowEnforcer(*this, grams);
 }
 
 /*****************************************************************************/
-//TempErrEnforcer
-Loadcell::TempErrEnforcer::TempErrEnforcer(Loadcell &lcell, float grams_error_treshold)
+//IFailureEnforcer
+Loadcell::IFailureEnforcer::IFailureEnforcer(Loadcell &lcell, float oldErrThreshold)
     : lcell(lcell)
-    , old_grams_error_treshold(lcell.GetGramsErrorTreshold()) {
-    lcell.SetGramsErrorTreshold(grams_error_treshold);
+    , oldErrThreshold(oldErrThreshold) {
 }
 
-Loadcell::TempErrEnforcer::~TempErrEnforcer() {
-    lcell.SetGramsErrorTreshold(old_grams_error_treshold);
+/*****************************************************************************/
+//FailureOnLoadAboveEnforcer
+Loadcell::FailureOnLoadAboveEnforcer::FailureOnLoadAboveEnforcer(Loadcell &lcell, float grams)
+    : IFailureEnforcer(lcell, lcell.GetFailsOnLoadAbove()) {
+    lcell.SetFailsOnLoadAbove(grams);
+}
+Loadcell::FailureOnLoadAboveEnforcer::~FailureOnLoadAboveEnforcer() {
+    lcell.SetFailsOnLoadAbove(oldErrThreshold);
+}
+
+/*****************************************************************************/
+//FailureOnLoadBelowEnforcer
+Loadcell::FailureOnLoadBelowEnforcer::FailureOnLoadBelowEnforcer(Loadcell &lcell, float grams)
+    : IFailureEnforcer(lcell, lcell.GetFailsOnLoadBelow()) {
+    lcell.SetFailsOnLoadBelow(grams);
+}
+Loadcell::FailureOnLoadBelowEnforcer::~FailureOnLoadBelowEnforcer() {
+    lcell.SetFailsOnLoadBelow(oldErrThreshold);
 }

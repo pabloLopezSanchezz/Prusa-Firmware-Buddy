@@ -39,28 +39,47 @@ public:
 
     bool IsHighPrecisionEnabled() const;
 
-    void SetGramsErrorTreshold(float grams_error_treshold);
+    void SetFailsOnLoadAbove(float failsOnLoadAbove);
 
-    float GetGramsErrorTreshold() const;
+    float GetFailsOnLoadAbove() const;
 
-    class TempErrEnforcer {
+    void SetFailsOnLoadBelow(float failsOnLoadBelow);
+
+    float GetFailsOnLoadBelow() const;
+
+    class IFailureEnforcer {
+    protected:
         Loadcell &lcell;
-        float old_grams_error_treshold;
-
-    public:
-        TempErrEnforcer(Loadcell &lcell, float grams_error_treshold);
-        TempErrEnforcer(const TempErrEnforcer &) = delete;
-        TempErrEnforcer(TempErrEnforcer &&) = default;
-        ~TempErrEnforcer();
+        float oldErrThreshold;
+        IFailureEnforcer(Loadcell &lcell, float oldErrThreshold);
+        IFailureEnforcer(const IFailureEnforcer &) = delete;
+        IFailureEnforcer(IFailureEnforcer &&) = default;
     };
 
-    TempErrEnforcer CreateErrEnforcer(float grams = 500);
+    class FailureOnLoadAboveEnforcer : public IFailureEnforcer {
+    public:
+        FailureOnLoadAboveEnforcer(Loadcell &lcell, float grams);
+        FailureOnLoadAboveEnforcer(FailureOnLoadAboveEnforcer &&) = default;
+        ~FailureOnLoadAboveEnforcer();
+    };
+
+    class FailureOnLoadBelowEnforcer : public IFailureEnforcer {
+    public:
+        FailureOnLoadBelowEnforcer(Loadcell &lcell, float grams);
+        FailureOnLoadBelowEnforcer(FailureOnLoadBelowEnforcer &&) = default;
+        ~FailureOnLoadBelowEnforcer();
+    };
+
+    FailureOnLoadAboveEnforcer CreateLoadAboveErrEnforcer(float grams = 500);
+
+    FailureOnLoadBelowEnforcer CreateLoadBelowErrEnforcer(float grams = -3000);
 
 private:
     float scale;
     float threshold;
     float hysteresis;
-    float grams_error_treshold;
+    float failsOnLoadAbove;
+    float failsOnLoadBelow;
     int32_t offset;
     osThreadId threadId;
     int32_t signal;
