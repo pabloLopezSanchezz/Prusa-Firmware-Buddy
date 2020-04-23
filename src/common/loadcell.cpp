@@ -176,13 +176,13 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
 }
 
 int32_t Loadcell::WaitForNextSample() {
-    // hx711: output settling time is 400 ms (for reset, channel change, gain change)
-    // therefore 600 ms should be safe and if it takes longer, it is most likely an error
     if (!isSignalEventConfigured) {
         general_error("loadcell", "waitForNextSample called without proper configuration");
         return 0;
     }
 
+    // hx711: output settling time is 400 ms (for reset, channel change, gain change)
+    // therefore 600 ms should be safe and if it takes longer, it is most likely an error
     auto result = osSignalWait(signal, 600);
     if (result.status != osEventSignal) {
         general_error("loadcell", "timeout when waiting for a sample");
