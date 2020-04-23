@@ -885,27 +885,29 @@
     { 0, 0, 0 }
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 5
+#define MIN_PROBE_EDGE 0
 
 // X and Y axis travel speed (mm/m) between probes
 #define XY_PROBE_SPEED 200 * 60
 
 // Feedrate (mm/m) for the first approach when double-probing (MULTIPLE_PROBING == 2)
-#define Z_PROBE_SPEED_FAST 6 * 60
+#define Z_PROBE_SPEED_FAST 600
 
 // Feedrate (mm/m) for the "accurate" probe of each point
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 5)
+#define Z_PROBE_SPEED_SLOW 70
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
 #define MULTIPLE_PROBING 2
 
+// Extra probing  for loadcell to remove out of bounds measured values
 #define EXTRA_PROBING 1
-#define EXTRA_PROBING_TOL 0.1 // If the measured Z value is larger than this value, remove it and remeasure
-#define EXTRA_PROBING_RAIL 1.2 // Maximum value of Z measurement
+#define EXTRA_PROBING_TOL 0.2 // If the measured Z value is larger than this value, remove it and remeasure
+#define EXTRA_PROBING_RAIL 1.4 // Maximum value of Z measurement
 #define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
 
+//#define EXTRA_PROBING_DBG
 /**
  * Z probes require clearance when deploying, stowing, and moving between
  * probe points to avoid hitting the bed and other hardware.
@@ -922,7 +924,7 @@
  */
 #define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
 #define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points
-#define Z_CLEARANCE_MULTI_PROBE 0.5 // Z Clearance between multiple probes
+#define Z_CLEARANCE_MULTI_PROBE 0.7 // Z Clearance between multiple probes
 #define Z_AFTER_PROBING 2 // Z position after probing is done
 
 #define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
@@ -1122,15 +1124,15 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-#define AUTO_BED_LEVELING_BILINEAR
-//#define AUTO_BED_LEVELING_UBL
+//#define AUTO_BED_LEVELING_BILINEAR
+#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
 
 /**
  * Normally G28 leaves leveling disabled on completion. Enable
  * this option to have G28 restore the prior leveling state.
  */
-//#define RESTORE_LEVELING_AFTER_G28
+#define RESTORE_LEVELING_AFTER_G28 false
 
 /**
  * Enable detailed logging of G28, G29, M48, etc.
@@ -1206,8 +1208,7 @@
 
 //#define MESH_EDIT_GFX_OVERLAY   // Display a graphics overlay while editing the mesh
 
-    #define MESH_INSET 1 // Set Mesh bounds as an inset region of the bed
-    #define GRID_MAX_POINTS_X 10 // Don't use more than 15 points per axis, implementation limited.
+    #define GRID_MAX_POINTS_X 7 // Don't use more than 15 points per axis, implementation limited.
     #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
     #define UBL_MESH_EDIT_MOVES_Z // Sophisticated users prefer no movement of nozzle
