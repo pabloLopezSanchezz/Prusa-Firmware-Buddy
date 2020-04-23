@@ -898,7 +898,9 @@
 #define Z_PROBE_SPEED_SLOW 70
 
 #define Z_PROBE_MEASURES_ON_BACK_MOVE
-#define Z_PROBE_SPEED_BACK_MOVE 20
+#if ENABLED(Z_PROBE_MEASURES_ON_BACK_MOVE)
+  #define Z_PROBE_SPEED_BACK_MOVE 20
+#endif
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
