@@ -903,10 +903,14 @@
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
-#define MULTIPLE_PROBING 2
+#define MULTIPLE_PROBING 10
+
+// Probe for as long as the last two slow probes don't differ more than DIFF_PROBING_ACCEPT_DIFF
+#define DIFF_PROBING
+#define DIFF_PROBING_ACCEPT_DIFF 0.010
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
-#define EXTRA_PROBING 1
+//#define EXTRA_PROBING 1
 #define EXTRA_PROBING_TOL 0.2 // If the measured Z value is larger than this value, remove it and remeasure
 #define EXTRA_PROBING_RAIL 1.4 // Maximum value of Z measurement
 #define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
