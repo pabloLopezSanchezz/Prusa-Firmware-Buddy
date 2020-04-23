@@ -17,24 +17,21 @@ public:
     void Tare(TareMode mode = TareMode::Static);
 
     void SetScale(float scale);
-
     float GetScale() const;
 
     void SetThreshold(float threshold);
-
     float GetThreshold() const;
 
     void SetHysteresis(float hysteresis);
-
     float GetHysteresis() const;
 
     void ProcessSample(int32_t loadcellRaw);
 
     bool GetMinZEndstop() const;
-
     bool GetMaxZEndstop() const;
 
-    void SetTriggerZMaxOnInactiveZMin(bool enabled);
+    inline void EnableZMaxEndstopOnInactiveZMin() { triggerZmaxOnInactiveZmin = true; }
+    inline void DisableZMaxEndstopOnInactiveZMin() { triggerZmaxOnInactiveZmin = false; }
 
     void ConfigureSignalEvent(osThreadId threadId, int32_t signal);
 
@@ -45,16 +42,18 @@ public:
 
     bool IsSignalConfigured() const;
 
-    void SetHighPrecisionEnabled(bool enable, bool wait = true);
-
-    bool IsHighPrecisionEnabled() const;
+    inline void EnableHighPrecision(bool wait = true) {
+        highPrecision = true;
+        if (wait)
+            WaitForNextSample();
+    }
+    inline void DisableHighPrecision() { highPrecision = false; }
+    inline bool IsHighPrecisionEnabled() const { return highPrecision; }
 
     void SetFailsOnLoadAbove(float failsOnLoadAbove);
-
     float GetFailsOnLoadAbove() const;
 
     void SetFailsOnLoadBelow(float failsOnLoadBelow);
-
     float GetFailsOnLoadBelow() const;
 
     class IFailureEnforcer {
@@ -103,6 +102,8 @@ private:
     int32_t offset;
     // used when tareMode == Continuous
     std::array<int32_t, 32> window;
+
+    int32_t WaitForNextSample();
 };
 
     #define EXTERN_C extern "C"

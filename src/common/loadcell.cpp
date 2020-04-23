@@ -72,10 +72,6 @@ bool Loadcell::GetMaxZEndstop() const {
     return triggerZmaxOnInactiveZmin ? !endstop : false;
 }
 
-void Loadcell::SetTriggerZMaxOnInactiveZMin(bool enabled) {
-    triggerZmaxOnInactiveZmin = enabled;
-}
-
 void Loadcell::SetScale(float scale) {
     this->scale = scale;
 }
@@ -128,20 +124,6 @@ bool Loadcell::IsSignalConfigured() const {
     return isSignalEventConfigured;
 }
 
-void Loadcell::SetHighPrecisionEnabled(bool enable, bool wait) {
-    this->highPrecision = enable;
-    if (wait && isSignalEventConfigured) {
-        auto result = osSignalWait(signal, 600);
-        if (result.status != osEventSignal) {
-            general_error("loadcell", "timeout when waiting for high precision mode");
-        }
-    }
-}
-
-bool Loadcell::IsHighPrecisionEnabled() const {
-    return highPrecision;
-}
-
 void Loadcell::SetFailsOnLoadAbove(float failsOnLoadAbove) {
     this->failsOnLoadAbove = failsOnLoadAbove;
 }
@@ -191,6 +173,21 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
         }
     }
     osSignalSet(threadId, signal);
+}
+
+int32_t Loadcell::WaitForNextSample() {
+    // hx711: output settling time is 400 ms (for reset, channel change, gain change)
+    // therefore 600 ms should be safe and if it takes longer, it is most likely an error
+    if (!isSignalEventConfigured) {
+        general_error("loadcell", "waitForNextSample called without proper configuration");
+        return 0;
+    }
+
+    auto result = osSignalWait(signal, 600);
+    if (result.status != osEventSignal) {
+        general_error("loadcell", "timeout when waiting for a sample");
+    }
+    return loadcellRaw;
 }
 
 //creates object enforcing error when positive load value is too big
