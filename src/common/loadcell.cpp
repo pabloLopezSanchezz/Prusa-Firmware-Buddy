@@ -105,8 +105,14 @@ bool Loadcell::IsSignalConfigured() const {
     return isSignalEventConfigured;
 }
 
-void Loadcell::SetHighPrecisionEnabled(bool enable) {
+void Loadcell::SetHighPrecisionEnabled(bool enable, bool wait) {
     this->highPrecision = enable;
+    if (wait && isSignalEventConfigured) {
+        auto result = osSignalWait(signal, 600);
+        if (result.status != osEventSignal) {
+            general_error("loadcell", "timeout when waiting for high precision mode");
+        }
+    }
 }
 
 bool Loadcell::IsHighPrecisionEnabled() const {

@@ -39,7 +39,7 @@ public:
 
     bool IsSignalConfigured() const;
 
-    void SetHighPrecisionEnabled(bool enable);
+    void SetHighPrecisionEnabled(bool enable, bool wait = true);
 
     bool IsHighPrecisionEnabled() const;
 
