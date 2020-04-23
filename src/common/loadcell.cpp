@@ -4,6 +4,9 @@
 #include "metric.h"
 #include "bsod.h"
 #include <cmath> //isnan
+#include <algorithm>
+#include <numeric>
+#include <limits>
 
 Loadcell loadcell;
 static metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
@@ -16,11 +19,13 @@ Loadcell::Loadcell()
     , hysteresis(0)
     , failsOnLoadAbove(INFINITY)
     , failsOnLoadBelow(-INFINITY)
-    , offset(0)
     , loadcellRaw(0)
     , endstop(false)
     , isSignalEventConfigured(false)
-    , highPrecision(false) {
+    , highPrecision(false)
+    , tareMode(TareMode::Static)
+    , offset(0)
+    , window() {
 }
 
 void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
@@ -29,18 +34,20 @@ void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
     isSignalEventConfigured = 1;
 }
 
-void Loadcell::Tare(int tareCount) {
+void Loadcell::Tare(TareMode mode) {
     if (!isSignalEventConfigured) {
         general_error("loadcell", "uncomplete configuration");
         return;
     }
 
-    int32_t sum = 0;
+    tareMode = mode;
+    int tareCount = mode == TareMode::Continuous ? window.size() : 4;
     int measuredCount = 0;
     int errors = 0;
+    int32_t sum = 0;
 
     while (errors < 3 && measuredCount < tareCount) {
-        osEvent evt = osSignalWait(signal, 100);
+        osEvent evt = osSignalWait(signal, 500);
         if (evt.status == osEventSignal) {
             sum += loadcellRaw;
             measuredCount += 1;
@@ -94,7 +101,23 @@ float Loadcell::GetHysteresis() const {
 }
 
 float Loadcell::GetLoad() const {
-    return (scale * (loadcellRaw - offset));
+    float baseline;
+    switch (tareMode) {
+    case TareMode::Static:
+        baseline = offset;
+        break;
+    case TareMode::Continuous: {
+        auto windowCopy = window;
+        auto medianIt = windowCopy.begin() + (windowCopy.size() / 2);
+        std::nth_element(windowCopy.begin(), medianIt, windowCopy.end());
+        baseline = *medianIt;
+        break;
+    }
+    default:
+        general_error("unreachable", "");
+        return 0;
+    }
+    return (scale * (loadcellRaw - baseline));
 }
 
 int32_t Loadcell::GetRawValue() const {
@@ -141,7 +164,10 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     }
 
     this->loadcellRaw = loadcellRaw;
-    float load = scale * (loadcellRaw - offset); //scale to gram
+    std::rotate(window.begin(), window.begin() + 1, window.end());
+    window.back() = loadcellRaw;
+
+    float load = GetLoad();
 
     metric_record_integer(&metric_loadcell_raw, loadcellRaw);
     metric_record_float(&metric_loadcell, load);

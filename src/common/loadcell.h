@@ -3,12 +3,18 @@
 #ifdef __cplusplus
     #include <inttypes.h>
     #include "cmsis_os.h"
+    #include <array>
 
 class Loadcell {
 public:
+    enum class TareMode {
+        Continuous,
+        Static,
+    };
+
     Loadcell();
 
-    void Tare(int tareCount = 4);
+    void Tare(TareMode mode = TareMode::Static);
 
     void SetScale(float scale);
 
@@ -85,13 +91,18 @@ private:
     float hysteresis;
     float failsOnLoadAbove;
     float failsOnLoadBelow;
-    int32_t offset;
     osThreadId threadId;
     int32_t signal;
     int32_t loadcellRaw;
     bool endstop;
     bool isSignalEventConfigured;
     bool highPrecision;
+
+    TareMode tareMode;
+    // used when tareMode == Static
+    int32_t offset;
+    // used when tareMode == Continuous
+    std::array<int32_t, 32> window;
 };
 
     #define EXTERN_C extern "C"
