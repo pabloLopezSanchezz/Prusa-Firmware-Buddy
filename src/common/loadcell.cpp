@@ -4,6 +4,9 @@
 #include "metric.h"
 #include "bsod.h"
 #include <cmath> //isnan
+#include <algorithm>
+#include <numeric>
+#include <limits>
 
 Loadcell loadcell;
 static metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
@@ -16,11 +19,13 @@ Loadcell::Loadcell()
     , hysteresis(0)
     , failsOnLoadAbove(INFINITY)
     , failsOnLoadBelow(-INFINITY)
-    , offset(0)
     , loadcellRaw(0)
     , endstop(false)
     , isSignalEventConfigured(false)
-    , highPrecision(false) {
+    , highPrecision(false)
+    , tareMode(TareMode::Static)
+    , offset(0)
+    , window() {
 }
 
 void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
@@ -29,18 +34,20 @@ void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
     isSignalEventConfigured = 1;
 }
 
-void Loadcell::Tare(int tareCount) {
+void Loadcell::Tare(TareMode mode) {
     if (!isSignalEventConfigured) {
         general_error("loadcell", "uncomplete configuration");
         return;
     }
 
-    int32_t sum = 0;
+    tareMode = mode;
+    int tareCount = mode == TareMode::Continuous ? window.size() : 4;
     int measuredCount = 0;
     int errors = 0;
+    int32_t sum = 0;
 
     while (errors < 3 && measuredCount < tareCount) {
-        osEvent evt = osSignalWait(signal, 100);
+        osEvent evt = osSignalWait(signal, 500);
         if (evt.status == osEventSignal) {
             sum += loadcellRaw;
             measuredCount += 1;
@@ -57,12 +64,12 @@ void Loadcell::Tare(int tareCount) {
     }
 }
 
-extern "C" bool loadcell_get_state() {
-    return loadcell.GetState();
+bool Loadcell::GetMinZEndstop() const {
+    return endstop;
 }
 
-bool Loadcell::GetState() const {
-    return endstop;
+bool Loadcell::GetMaxZEndstop() const {
+    return triggerZmaxOnInactiveZmin ? !endstop : false;
 }
 
 void Loadcell::SetScale(float scale) {
@@ -90,7 +97,23 @@ float Loadcell::GetHysteresis() const {
 }
 
 float Loadcell::GetLoad() const {
-    return (scale * (loadcellRaw - offset));
+    float baseline;
+    switch (tareMode) {
+    case TareMode::Static:
+        baseline = offset;
+        break;
+    case TareMode::Continuous: {
+        auto windowCopy = window;
+        auto medianIt = windowCopy.begin() + (windowCopy.size() / 2);
+        std::nth_element(windowCopy.begin(), medianIt, windowCopy.end());
+        baseline = *medianIt;
+        break;
+    }
+    default:
+        general_error("unreachable", "");
+        return 0;
+    }
+    return (scale * (loadcellRaw - baseline));
 }
 
 int32_t Loadcell::GetRawValue() const {
@@ -99,14 +122,6 @@ int32_t Loadcell::GetRawValue() const {
 
 bool Loadcell::IsSignalConfigured() const {
     return isSignalEventConfigured;
-}
-
-void Loadcell::SetHighPrecisionEnabled(bool enable) {
-    this->highPrecision = enable;
-}
-
-bool Loadcell::IsHighPrecisionEnabled() const {
-    return highPrecision;
 }
 
 void Loadcell::SetFailsOnLoadAbove(float failsOnLoadAbove) {
@@ -131,7 +146,10 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     }
 
     this->loadcellRaw = loadcellRaw;
-    float load = scale * (loadcellRaw - offset); //scale to gram
+    std::rotate(window.begin(), window.begin() + 1, window.end());
+    window.back() = loadcellRaw;
+
+    float load = GetLoad();
 
     metric_record_integer(&metric_loadcell_raw, loadcellRaw);
     metric_record_float(&metric_loadcell, load);
@@ -146,6 +164,7 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     if (endstop) {
         if (load >= (threshold + hysteresis)) {
             endstop = false;
+            endstops_poll();
         }
     } else {
         if (load <= threshold) {
@@ -156,6 +175,21 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     osSignalSet(threadId, signal);
 }
 
+int32_t Loadcell::WaitForNextSample() {
+    if (!isSignalEventConfigured) {
+        general_error("loadcell", "waitForNextSample called without proper configuration");
+        return 0;
+    }
+
+    // hx711: output settling time is 400 ms (for reset, channel change, gain change)
+    // therefore 600 ms should be safe and if it takes longer, it is most likely an error
+    auto result = osSignalWait(signal, 600);
+    if (result.status != osEventSignal) {
+        general_error("loadcell", "timeout when waiting for a sample");
+    }
+    return loadcellRaw;
+}
+
 //creates object enforcing error when positive load value is too big
 Loadcell::FailureOnLoadAboveEnforcer Loadcell::CreateLoadAboveErrEnforcer(float grams) {
     return Loadcell::FailureOnLoadAboveEnforcer(*this, grams);
@@ -163,6 +197,14 @@ Loadcell::FailureOnLoadAboveEnforcer Loadcell::CreateLoadAboveErrEnforcer(float 
 
 Loadcell::FailureOnLoadBelowEnforcer Loadcell::CreateLoadBelowErrEnforcer(float grams) {
     return Loadcell::FailureOnLoadBelowEnforcer(*this, grams);
+}
+
+extern "C" bool loadcell_get_max_z_endstop() {
+    return loadcell.GetMaxZEndstop();
+}
+
+extern "C" bool loadcell_get_min_z_endstop() {
+    return loadcell.GetMinZEndstop();
 }
 
 /*****************************************************************************/

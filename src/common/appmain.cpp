@@ -84,7 +84,6 @@ void app_setup(void) {
     loadcell.SetThreshold(eeprom_get_var(EEVAR_LOADCELL_THRS).flt);
     loadcell.SetHysteresis(eeprom_get_var(EEVAR_LOADCELL_HYST).flt);
     loadcell.ConfigureSignalEvent(osThreadGetId(), 0x0A);
-    loadcell.SetHighPrecisionEnabled(false);
 #endif //LOADCELL_HX711
 }
 

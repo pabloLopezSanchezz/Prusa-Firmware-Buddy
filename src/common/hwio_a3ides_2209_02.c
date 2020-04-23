@@ -648,10 +648,14 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             if (loadcell_probe)
                 gpio_set(PC13, 0);
         #endif //LOADCELL_LATENCY_TEST
-            return loadcell_get_state();
+            return loadcell_get_min_z_endstop();
     #else      //LOADCELL_HX711
             return hwio_di_get_val(_DI_Z_MIN);
     #endif     //LOADCELL_HX711
+    #ifdef LOADCELL_HX711
+        case PIN_Z_MAX:
+            return loadcell_get_max_z_endstop();
+    #endif
         case PIN_E_DIAG:
             return hwio_di_get_val(_DI_E_DIAG);
         case PIN_Y_DIAG:
@@ -660,7 +664,7 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return hwio_di_get_val(_DI_X_DIAG);
         case PIN_Z_DIAG:
             return hwio_di_get_val(_DI_Z_DIAG);
-#endif         //SIM_MOTION
+#endif //SIM_MOTION
         case PIN_BTN_ENC:
             return hwio_di_get_val(_DI_BTN_ENC) || !hwio_jogwheel_enabled;
         case PIN_BTN_EN1:

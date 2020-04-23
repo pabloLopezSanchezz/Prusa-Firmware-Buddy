@@ -9,6 +9,7 @@
 #define PIN_THERM2         PA5
 #define PIN_TEMP_HEATBREAK PA6
 #define PIN_Z_MIN          PA8
+#define PIN_Z_MAX          PA9
 
 #define PIN_HEATER_BED PB0
 #define PIN_HEATER_0   PB1

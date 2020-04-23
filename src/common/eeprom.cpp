@@ -147,7 +147,7 @@ static const eeprom_vars_t eeprom_var_defaults = {
     0,               // EEVAR_CONNECT_IP4
     "",              // EEVAR_CONNECT_TOKEN
     "PrusaMINI",     // EEVAR_LAN_HOSTNAME
-    0.0100,          // EEVAR_LOADCELL_SCALE
+    0.0192,          // EEVAR_LOADCELL_SCALE
     -125,            // EEVAR_LOADCELL_THRS
     50,              // EEVAR_LOADCELL_HYST
     "",              // EEVAR__PADDING

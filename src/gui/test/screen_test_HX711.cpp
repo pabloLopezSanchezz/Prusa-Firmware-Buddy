@@ -175,7 +175,7 @@ int screen_test_hx711_event(screen_t *screen, window_t *window, uint8_t event, v
     } else if (event == WINDOW_EVENT_LOOP) {
         sprintf(pd->str_out, "%ld", loadcell.GetRawValue());
         window_set_text(pd->text_out.win.id, pd->str_out);
-        sprintf(pd->str_term, "LC: %d, RAW: %.1f", loadcell_get_state(), (double)loadcell.GetLoad());
+        sprintf(pd->str_term, "LC: %d, RAW: %.1f", loadcell.GetMinZEndstop(), (double)loadcell.GetLoad());
         window_set_text(pd->text_terminal.win.id, pd->str_term);
     #ifdef FILAMENT_SENSOR_HX711
         //sprintf(pd->str_term2, "FS: %d, RAW: %ld", fsensor_probe, fsensor_value);
