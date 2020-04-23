@@ -57,12 +57,16 @@ void Loadcell::Tare(int tareCount) {
     }
 }
 
-extern "C" bool loadcell_get_state() {
-    return loadcell.GetState();
+bool Loadcell::GetMinZEndstop() const {
+    return endstop;
 }
 
-bool Loadcell::GetState() const {
-    return endstop;
+bool Loadcell::GetMaxZEndstop() const {
+    return triggerZmaxOnInactiveZmin ? !endstop : false;
+}
+
+void Loadcell::SetTriggerZMaxOnInactiveZMin(bool enabled) {
+    triggerZmaxOnInactiveZmin = enabled;
 }
 
 void Loadcell::SetScale(float scale) {
@@ -146,6 +150,7 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     if (endstop) {
         if (load >= (threshold + hysteresis)) {
             endstop = false;
+            endstops_poll();
         }
     } else {
         if (load <= threshold) {
@@ -163,6 +168,14 @@ Loadcell::FailureOnLoadAboveEnforcer Loadcell::CreateLoadAboveErrEnforcer(float 
 
 Loadcell::FailureOnLoadBelowEnforcer Loadcell::CreateLoadBelowErrEnforcer(float grams) {
     return Loadcell::FailureOnLoadBelowEnforcer(*this, grams);
+}
+
+extern "C" bool loadcell_get_max_z_endstop() {
+    return loadcell.GetMaxZEndstop();
+}
+
+extern "C" bool loadcell_get_min_z_endstop() {
+    return loadcell.GetMinZEndstop();
 }
 
 /*****************************************************************************/

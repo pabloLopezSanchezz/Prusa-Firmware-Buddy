@@ -24,7 +24,11 @@ public:
 
     void ProcessSample(int32_t loadcellRaw);
 
-    bool GetState() const;
+    bool GetMinZEndstop() const;
+
+    bool GetMaxZEndstop() const;
+
+    void SetTriggerZMaxOnInactiveZMin(bool enabled);
 
     void ConfigureSignalEvent(osThreadId threadId, int32_t signal);
 
@@ -75,6 +79,7 @@ public:
     FailureOnLoadBelowEnforcer CreateLoadBelowErrEnforcer(float grams = -3000);
 
 private:
+    bool triggerZmaxOnInactiveZmin;
     float scale;
     float threshold;
     float hysteresis;
@@ -98,4 +103,5 @@ extern Loadcell loadcell;
 
 #include <stdbool.h>
 
-EXTERN_C bool loadcell_get_state();
+EXTERN_C bool loadcell_get_min_z_endstop();
+EXTERN_C bool loadcell_get_max_z_endstop();
