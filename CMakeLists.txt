@@ -34,7 +34,7 @@ set(PRINTER_VALID_OPTS
     "PICKER"
     "EXTRACTOR"
     )
-set(MOTHERBOARD_VALID_OPTS "1823" "1850" "1851")
+set(MOTHERBOARD_VALID_OPTS "1823")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
 set(PRINTER
@@ -47,13 +47,7 @@ set(BOOTLOADER
     "NO"
     CACHE STRING "Selects the bootloader mode (valid values are ${BOOTLOADER_VALID_OPTS})."
     )
-if(${PRINTER} STREQUAL "MANIPULATOR")
-  set(MOTHERBOARD "1850")
-elseif(${PRINTER} STREQUAL "PICKER")
-  set(MOTHERBOARD "1851")
-else()
-  set(MOTHERBOARD "1823")
-endif()
+set(MOTHERBOARD "1823")
 set(GENERATE_BBF
     "NO"
     CACHE STRING "Whether a .bbf version should be generated."
