@@ -4,7 +4,6 @@
 #define _HWIO_A3IDES_H
 
 #include "printers.h"
-
 //a3ides digital inputs
 #define _DI_Z_MIN   0 // PA8
 #define _DI_E_DIAG  1 // PA15

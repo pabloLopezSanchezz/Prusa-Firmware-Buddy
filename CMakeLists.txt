@@ -34,7 +34,7 @@ set(PRINTER_VALID_OPTS
     "PICKER"
     "EXTRACTOR"
     )
-set(MOTHERBOARD_VALID_OPTS "1823" "1850")
+set(MOTHERBOARD_VALID_OPTS "1823")
 set(BOOTLOADER_VALID_OPTS "NO" "EMPTY" "YES")
 
 set(PRINTER
@@ -47,11 +47,7 @@ set(BOOTLOADER
     "NO"
     CACHE STRING "Selects the bootloader mode (valid values are ${BOOTLOADER_VALID_OPTS})."
     )
-if(${PRINTER} STREQUAL "MANIPULATOR")
-  set(MOTHERBOARD "1850")
-else()
-  set(MOTHERBOARD "1823")
-endif()
+set(MOTHERBOARD "1823")
 set(GENERATE_BBF
     "NO"
     CACHE STRING "Whether a .bbf version should be generated."
@@ -128,9 +124,9 @@ message(STATUS "Web User Interface: ${WUI}")
 set(unused "${CMAKE_VERBOSE_MAKEFILE} ${CMAKE_RULE_MESSAGES}")
 
 # Set printer features
-set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI")
+set(PRINTERS_WITH_FILAMENT_SENSOR_YES "MINI" "PICKER")
 set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
-set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL")
+set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL" "PICKER")
 set(PRINTERS_WITH_INIT_TRINAMIC_FROM_MARLIN_ONLY "XL" "IXL" "MANIPULATOR" "PICKER" "EXTRACTOR")
 set(PRINTERS_WITH_ADVANCED_PAUSE "MINI" "MK4" "IXL" "XL")
 set(WUI YES)
@@ -495,7 +491,6 @@ target_sources(
     src/common/sim_nozzle.c
     src/common/heap.c
     src/common/hx711.cpp
-    src/common/hwio_a3ides_2209_02.c
     src/common/putslave.c
     src/common/safe_state.c
     src/common/variant8.cpp
@@ -545,6 +540,12 @@ target_sources(
     $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_PAUSE}>:src/marlin_stubs/pause/pause.cpp>
     src/gui/filament.cpp
   )
+
+if(PRINTER STREQUAL "MANIPULATOR")
+  target_sources(firmware PRIVATE src/common/hwio_MANIPULATOR.cpp)
+else()
+  target_sources(firmware PRIVATE src/common/hwio_a3ides_2209_02.c)
+endif()
 
 if(GUI)
   target_sources(

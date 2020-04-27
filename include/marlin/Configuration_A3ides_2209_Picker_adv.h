@@ -454,12 +454,12 @@
 // @section homing
 
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
-#define X_HOME_BUMP_MM 0
-#define Y_HOME_BUMP_MM 0
+#define X_HOME_BUMP_MM 10
+#define Y_HOME_BUMP_MM 10
 #define Z_HOME_BUMP_MM 2
 #define HOMING_BUMP_DIVISOR \
-    { 2, 2, 4 } // Re-Bump Speed Divisor (Divides the Homing Feedrate)
-//#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
+    { 1, 1, 1 } // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
 
 // When G28 is called, this option will make Y home before X
 //#define HOME_Y_BEFORE_X
@@ -507,7 +507,7 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 // Steppers will shut down DEFAULT_STEPPER_DEACTIVE_TIME seconds after the last move when DISABLE_INACTIVE_? is true.
 // Time can be set by M18 and M84.
-#define DEFAULT_STEPPER_DEACTIVE_TIME 120
+#define DEFAULT_STEPPER_DEACTIVE_TIME 0
 #define DISABLE_INACTIVE_X true
 #define DISABLE_INACTIVE_Y true
 #define DISABLE_INACTIVE_Z true // set to false if the nozzle will fall down on your printed part when print has finished.
@@ -655,8 +655,7 @@
 //#define MICROSTEP32 HIGH,LOW,HIGH
 
 // Microstep setting (Only functional when stepper driver microstep pins are connected to MCU.
-#define MICROSTEP_MODES \
-    { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
+//#define MICROSTEP_MODES { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
 
 /**
  *  @section  stepper motor current
@@ -1310,6 +1309,9 @@
  * Requires NOZZLE_PARK_FEATURE.
  * This feature is required for the default FILAMENT_RUNOUT_SCRIPT.
  */
+#define FILAMENT_CHANGE_SLOW_LOAD_FEEDRATE 10 // (mm/s) Slow move when starting load.
+#define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 40 // (mm) Slow length, to allow time to insert material.
+#define FILAMENT_CHANGE_FAST_LOAD_LENGTH 320 // (mm) Load length of filament, from extruder gear to nozzle.
 //#define ADVANCED_PAUSE_FEATURE
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
     #define PAUSE_PARK_RETRACT_FEEDRATE 66 // (mm/s) Initial retract feedrate.
@@ -1321,12 +1323,9 @@
 //   For Bowden, the full length of the tube and nozzle.
 //   For direct drive, the full length of the nozzle.
 //   Set to 0 for manual unloading.
-    #define FILAMENT_CHANGE_SLOW_LOAD_FEEDRATE 10 // (mm/s) Slow move when starting load.
-    #define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 40 // (mm) Slow length, to allow time to insert material.
 // 0 to disable start loading and skip to fast load only
     #define FILAMENT_CHANGE_FAST_LOAD_FEEDRATE 80 // (mm/s) Load filament feedrate. This can be pretty fast.
     #define FILAMENT_CHANGE_FAST_LOAD_ACCEL 625 // (mm/s^2) Lower acceleration may allow a faster feedrate.
-    #define FILAMENT_CHANGE_FAST_LOAD_LENGTH 320 // (mm) Load length of filament, from extruder gear to nozzle.
 //   For Bowden, the full length of the tube and nozzle.
 //   For direct drive, the full length of the nozzle.
 //#define ADVANCED_PAUSE_CONTINUOUS_PURGE       // Purge continuously up to the purge length until interrupted.
@@ -1466,11 +1465,11 @@
  */
 #if HAS_TRINAMIC
 
-    #define HOLD_MULTIPLIER 1 //0.5  // Scales down the holding current from run current
+    constexpr float HOLD_MULTIPLIER[4] = {1, 0.7, 0.7, 0.7};  // Scales down the holding current from run current
     #define INTERPOLATE true // Interpolate X/Y/Z_MICROSTEPS to 256
 
     #if AXIS_IS_TMC(X)
-        #define X_CURRENT 700 // (mA) RMS current. Multiply by 1.414 for peak current.
+        #define X_CURRENT 957 // absolute maximum with 0.22 Rsense
         #define X_MICROSTEPS 16 // 0..256
         #define X_RSENSE 0.22
     #endif
@@ -1494,8 +1493,8 @@
     #endif
 
     #if AXIS_IS_TMC(Z)
-        #define Z_CURRENT 720 //530//650
-        #define Z_MICROSTEPS 8 //16
+        #define Z_CURRENT 700 // (mA) RMS current. Multiply by 1.414 for peak current.
+        #define Z_MICROSTEPS 16
         #define Z_RSENSE 0.22
     #endif
 
@@ -1512,8 +1511,8 @@
     #endif
 
     #if AXIS_IS_TMC(E0)
-        #define E0_CURRENT 1000 //520
-        #define E0_MICROSTEPS 16 //32
+        #define E0_CURRENT 957 // absolute maximum with 0.22 Rsense
+        #define E0_MICROSTEPS 8
         #define E0_RSENSE 0.22
     #endif
 
@@ -1664,20 +1663,12 @@
    * It is advised to set X/Y/Z_HOME_BUMP_MM to 0.
    * M914 X/Y/Z to live tune the setting
    */
-//#define SENSORLESS_HOMING // TMC2130 only
-
-/**
-   * Use StallGuard2 to probe the bed with the nozzle.
-   *
-   * CAUTION: This could cause damage to machines that use a lead screw or threaded rod
-   *          to move the Z axis. Take extreme care when attempting to enable this feature.
-   */
-//#define SENSORLESS_PROBING // TMC2130 only
+#define SENSORLESS_HOMING
 
     #if EITHER(SENSORLESS_HOMING, SENSORLESS_PROBING)
-        #define X_STALL_SENSITIVITY 8
-        #define Y_STALL_SENSITIVITY 8
-    //#define Z_STALL_SENSITIVITY  8
+        #define X_STALL_SENSITIVITY 90
+        #define Y_STALL_SENSITIVITY 140
+        #define Z_STALL_SENSITIVITY 130
     #endif
 
     /**
@@ -2060,9 +2051,9 @@
 //#define GCODE_MOTION_MODES  // Remember the motion mode (G0 G1 G2 G3 G5 G38.X) and apply for X Y Z E F, etc.
 
 // Enable and set a (default) feedrate for all G0 moves
-//#define G0_FEEDRATE 3000 // (mm/m)
+#define G0_FEEDRATE 3000 // (mm/m)
 #ifdef G0_FEEDRATE
-//#define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
+    #define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
 #endif
 
 /**

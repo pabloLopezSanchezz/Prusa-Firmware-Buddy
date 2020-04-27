@@ -453,6 +453,14 @@
 
 // @section homing
 
+//after enabling HOMING_MAX_ATTEMPTS, homing can fail
+#define HOMING_MAX_ATTEMPTS 3
+#ifdef HOMING_MAX_ATTEMPTS
+    //ranges in mm - allowed distance between homing probes
+    constexpr float axis_home_min_diff[] = {-3,-3,-0.1};
+    constexpr float axis_home_max_diff[] = {3,3,0.5};
+#endif// HOMING_MAX_ATTEMPTS
+
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
 #define X_HOME_BUMP_MM 20
 #define Y_HOME_BUMP_MM 20
@@ -655,8 +663,7 @@
 //#define MICROSTEP32 HIGH,LOW,HIGH
 
 // Microstep setting (Only functional when stepper driver microstep pins are connected to MCU.
-#define MICROSTEP_MODES \
-    { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
+//#define MICROSTEP_MODES { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
 
 /**
  *  @section  stepper motor current
@@ -1059,10 +1066,10 @@
 
 #if EITHER(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)
 // Override the mesh area if the automatic (max) area is too large
-//#define MESH_MIN_X MESH_INSET
-//#define MESH_MIN_Y MESH_INSET
-//#define MESH_MAX_X X_BED_SIZE - (MESH_INSET)
-//#define MESH_MAX_Y Y_BED_SIZE - (MESH_INSET)
+#define MESH_MIN_X ((-(X_BED_SIZE / (GRID_MAX_POINTS_X - 2 - 1))) + 15)
+#define MESH_MIN_Y ((-(Y_BED_SIZE / (GRID_MAX_POINTS_Y - 2 - 1))) + 15)
+#define MESH_MAX_X X_BED_SIZE - (MESH_MIN_X)
+#define MESH_MAX_Y Y_BED_SIZE - (MESH_MIN_Y)
 #endif
 
 /**
@@ -1487,7 +1494,7 @@
  */
 #if HAS_TRINAMIC
 
-    #define HOLD_MULTIPLIER 1 //0.5  // Scales down the holding current from run current
+    constexpr float HOLD_MULTIPLIER[4] = {1, 1, 1, 1};  // Scales down the holding current from run current
     #define INTERPOLATE true // Interpolate X/Y/Z_MICROSTEPS to 256
 
     #if AXIS_IS_TMC(X)

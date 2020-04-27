@@ -1,6 +1,5 @@
 //config.h - main configuration file
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#pragma once
 
 #include "printers.h"
 #include <avr/pgmspace.h>
@@ -52,5 +51,3 @@
 
 //resource.h included with config
 #include "resource.h"
-
-#endif //_CONFIG_H

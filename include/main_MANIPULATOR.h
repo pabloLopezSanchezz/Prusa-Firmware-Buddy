@@ -97,6 +97,8 @@ void Error_Handler(void);
 #define THERM_0_GPIO_Port     GPIOC
 #define BUZZER_Pin            GPIO_PIN_0
 #define BUZZER_GPIO_Port      GPIOA
+#define X_MAX_Pin             GPIO_PIN_0
+#define X_MAX_Port            GPIOA
 #define HW_IDENTIFY_Pin       GPIO_PIN_3
 #define HW_IDENTIFY_GPIO_Port GPIOA
 #define THERM_1_Pin           GPIO_PIN_4
@@ -143,8 +145,8 @@ void Error_Handler(void);
 #define ESP_TX_GPIO_Port      GPIOC
 #define ESP_RX_Pin            GPIO_PIN_7
 #define ESP_RX_GPIO_Port      GPIOC
-#define Z_MIN_Pin             GPIO_PIN_8
-#define Z_MIN_GPIO_Port       GPIOA
+#define Z_MAX_Pin             GPIO_PIN_8
+#define Z_MAX_GPIO_Port       GPIOA
 #define USB_FS_N_Pin          GPIO_PIN_11
 #define USB_FS_N_GPIO_Port    GPIOA
 #define USB_FS_P_Pin          GPIO_PIN_12

@@ -11,10 +11,12 @@
 #include "../Marlin/src/module/stepper.h"
 
 /// This metric is defined in Marlin/src/module/probe.cpp, thus no interface
+#if HAS_BED_PROBE
 extern metric_t metric_probe_z;
 extern metric_t metric_probe_z_raw;
 extern metric_t metric_probe_z_diff;
 extern metric_t metric_home_diff;
+#endif
 
 void Buddy::Metrics::RecordRuntimeStats() {
     static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 1 * 1000, METRIC_HANDLER_ENABLE_ALL);
@@ -37,11 +39,12 @@ void Buddy::Metrics::RecordRuntimeStats() {
 }
 
 void Buddy::Metrics::RecordMarlinVariables() {
+#if HAS_BED_PROBE
     metric_register(&metric_probe_z);
     metric_register(&metric_probe_z_raw);
     metric_register(&metric_probe_z_diff);
     metric_register(&metric_home_diff);
-
+#endif
     static metric_t is_printing = METRIC("is_printing", METRIC_VALUE_INTEGER, 5000, METRIC_HANDLER_ENABLE_ALL);
     metric_record_integer(&is_printing, printingIsActive() ? 1 : 0);
 
