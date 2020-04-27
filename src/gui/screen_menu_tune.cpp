@@ -5,15 +5,8 @@
 #include "marlin_client.h"
 #include "filament.h"
 #include "menu_vars.h"
+#include "screens.h"
 #include "eeprom.h"
-
-#ifdef _DEBUG
-
-#endif //_DEBUG
-extern screen_t screen_test;
-extern screen_t screen_lan_settings;
-extern screen_t screen_version_info;
-extern screen_t screen_messages;
 
 enum {
     MI_RETURN,
@@ -48,17 +41,17 @@ const menu_item_t _menu_tune_items[] = {
     { { "Flow Factor", 0, WI_SPIN }, SCREEN_MENU_NO_SCREEN },      //set later
     { { "Live Adjust Z", 0, WI_SPIN_FL }, SCREEN_MENU_NO_SCREEN }, //set later
     { { "Change Filament", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
-    { { "LAN Setings", 0, WI_LABEL }, &screen_lan_settings },
-    { { "Version Info", 0, WI_LABEL }, &screen_version_info },
+    { { "LAN Setings", 0, WI_LABEL }, get_scr_lan_settings() },
+    { { "Version Info", 0, WI_LABEL }, get_scr_version_info() },
 #if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
-    { { "Test", 0, WI_LABEL }, &screen_test },
+    { { "Test", 0, WI_LABEL }, get_scr_test() },
 #elif (PRINTER_TYPE == PRINTER_PRUSA_MINI || PRINTER_TYPE == PRINTER_PRUSA_MANIPULATOR \
     || PRINTER_TYPE == PRINTER_PRUSA_PICKER || PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR)
 
 #else
     #error // unknown printer
 #endif
-    { { "Messages", 0, WI_LABEL }, &screen_messages },
+    { { "Messages", 0, WI_LABEL }, get_scr_messages() },
 };
 
 //"C inheritance" of screen_menu_data_t with data items
@@ -225,6 +218,4 @@ screen_t screen_menu_tune = {
     0,                          //pdata
 };
 
-extern "C" {
-const screen_t *pscreen_menu_tune = &screen_menu_tune;
-}
+extern "C" screen_t *const get_scr_menu_tune() { return &screen_menu_tune; }
