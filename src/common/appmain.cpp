@@ -71,19 +71,7 @@ void app_setup(void) {
 
     setup();
 
-    // variables from eeprom - temporary solution
-#if HAS_BED_PROBE
-    probe_offset.z = eeprom_get_var(EEVAR_ZOFFSET).flt;
-#endif
-#if ENABLED(PIDTEMPBED)
-    Temperature::temp_bed.pid.Kp = eeprom_get_var(EEVAR_PID_BED_P).flt;
-    Temperature::temp_bed.pid.Ki = eeprom_get_var(EEVAR_PID_BED_I).flt;
-    Temperature::temp_bed.pid.Kd = eeprom_get_var(EEVAR_PID_BED_D).flt;
-#endif
-    Temperature::temp_hotend[0].pid.Kp = eeprom_get_var(EEVAR_PID_NOZ_P).flt;
-    Temperature::temp_hotend[0].pid.Ki = eeprom_get_var(EEVAR_PID_NOZ_I).flt;
-    Temperature::temp_hotend[0].pid.Kd = eeprom_get_var(EEVAR_PID_NOZ_D).flt;
-    thermalManager.updatePID();
+    marlin_server_settings_load(); // load marlin variables from eeprom
 
     if (INIT_TRINAMIC_FROM_MARLIN_ONLY == 0) {
         init_tmc();
@@ -96,7 +84,6 @@ void app_setup(void) {
     loadcell.SetThreshold(eeprom_get_var(EEVAR_LOADCELL_THRS).flt);
     loadcell.SetHysteresis(eeprom_get_var(EEVAR_LOADCELL_HYST).flt);
     loadcell.ConfigureSignalEvent(osThreadGetId(), 0x0A);
-    loadcell.SetHighPrecisionEnabled(false);
 #endif //LOADCELL_HX711
 }
 
@@ -222,6 +209,8 @@ void hx711_irq() {
 
     static int sample_counter = 0;
     int32_t raw_value;
+
+    static HX711::Channel current_channel = hx711.CHANNEL_A_GAIN_128;
     HX711::Channel next_channel;
 
     sample_counter += 1;
@@ -234,15 +223,12 @@ void hx711_irq() {
 
     raw_value = hx711.ReadValue(next_channel);
 
-    if (next_channel == hx711.CHANNEL_A_GAIN_128) {
+    if (current_channel == hx711.CHANNEL_A_GAIN_128) {
         loadcell.ProcessSample(raw_value);
     } else {
-        next_channel = hx711.CHANNEL_A_GAIN_128;
-        raw_value = hx711.ReadValue(next_channel);
-        if (loadcell.IsSignalConfigured()) {
-            fs_process_sample(raw_value);
-        }
+        fs_process_sample(raw_value);
     }
+    current_channel = next_channel;
 }
 #endif //LOADCELL_HX711
 

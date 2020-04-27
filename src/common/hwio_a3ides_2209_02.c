@@ -532,6 +532,26 @@ void hwio_update_1ms(void) {
         hwio_beeper_set_pwm(0, 0);
 }
 
+int hwio_fans_enabled = 1;
+int hwio_fan1_tmp_state = 0;
+
+void hwio_fans_set_enabled(int enabled) {
+    if (hwio_fans_enabled && !enabled) {
+        _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, 0);
+        _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, 0);
+    }
+    hwio_fans_enabled = enabled;
+}
+
+void hwio_fans_start_fan1(void) {
+    if (hwio_fan1_tmp_state)
+        _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, 255);
+}
+
+void hwio_fans_stop_fan1(void) {
+    _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, 0);
+}
+
 //--------------------------------------
 // ADC sampler
 
@@ -628,10 +648,14 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             if (loadcell_probe)
                 gpio_set(PC13, 0);
         #endif //LOADCELL_LATENCY_TEST
-            return loadcell_get_state();
+            return loadcell_get_min_z_endstop();
     #else      //LOADCELL_HX711
             return hwio_di_get_val(_DI_Z_MIN);
     #endif     //LOADCELL_HX711
+    #ifdef LOADCELL_HX711
+        case PIN_Z_MAX:
+            return loadcell_get_max_z_endstop();
+    #endif
         case PIN_E_DIAG:
             return hwio_di_get_val(_DI_E_DIAG);
         case PIN_Y_DIAG:
@@ -640,7 +664,7 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return hwio_di_get_val(_DI_X_DIAG);
         case PIN_Z_DIAG:
             return hwio_di_get_val(_DI_Z_DIAG);
-#endif         //SIM_MOTION
+#endif //SIM_MOTION
         case PIN_BTN_ENC:
             return hwio_di_get_val(_DI_BTN_ENC) || !hwio_jogwheel_enabled;
         case PIN_BTN_EN1:
@@ -681,16 +705,27 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_0, ulVal ? _pwm_analogWrite_max[HWIO_PWM_HEATER_0] : 0);
             return;
         case PIN_FAN1:
-            //hwio_fan_set_pwm(_FAN1, ulVal?255:0);
-            //_hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
-#ifdef PRINTER_PRUSA_MK4
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 80 : 0);
-#else
+#ifdef LOADCELL_HX711
+            if (hwio_fans_enabled)
+#endif
+            {
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+                _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 80 : 0);
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MINI)
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 100 : 0);
+#else
+            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
+#endif
+            }
+#ifdef LOADCELL_HX711
+            hwio_fan1_tmp_state = ulVal ? 1 : 0;
 #endif
             return;
         case PIN_FAN:
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN] : 0);
+#ifdef LOADCELL_HX711
+            if (hwio_fans_enabled)
+#endif
+                _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN] : 0);
             return;
 #ifdef SIM_MOTION
         case PIN_X_DIR:
@@ -801,11 +836,20 @@ void hwio_arduino_analogWrite(uint32_t ulPin, uint32_t ulValue) {
         switch (ulPin) {
         case PIN_FAN1:
             //hwio_fan_set_pwm(_FAN1, ulValue);
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulValue);
+#ifdef LOADCELL_HX711
+            if (hwio_fans_enabled)
+#endif
+                _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulValue);
+#ifdef LOADCELL_HX711
+            hwio_fan1_tmp_state = ulValue ? 1 : 0;
+#endif
             return;
         case PIN_FAN:
             //hwio_fan_set_pwm(_FAN, ulValue);
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulValue);
+#ifdef LOADCELL_HX711
+            if (hwio_fans_enabled)
+#endif
+                _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulValue);
             return;
         case PIN_HEATER_BED:
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_BED, ulValue);

@@ -14,6 +14,8 @@
 #if HAS_BED_PROBE
 extern metric_t metric_probe_z;
 extern metric_t metric_probe_z_raw;
+extern metric_t metric_probe_z_diff;
+extern metric_t metric_home_diff;
 #endif
 
 void Buddy::Metrics::RecordRuntimeStats() {
@@ -40,6 +42,8 @@ void Buddy::Metrics::RecordMarlinVariables() {
 #if HAS_BED_PROBE
     metric_register(&metric_probe_z);
     metric_register(&metric_probe_z_raw);
+    metric_register(&metric_probe_z_diff);
+    metric_register(&metric_home_diff);
 #endif
     static metric_t is_printing = METRIC("is_printing", METRIC_VALUE_INTEGER, 5000, METRIC_HANDLER_ENABLE_ALL);
     metric_record_integer(&is_printing, printingIsActive() ? 1 : 0);
@@ -66,11 +70,11 @@ void Buddy::Metrics::RecordMarlinVariables() {
     metric_record_integer(&fan_speed, thermalManager.fan_speed[0]);
 
     static metric_t ipos_x = METRIC("ipos_x", METRIC_VALUE_INTEGER, 10, METRIC_HANDLER_DISABLE_ALL);
-    metric_record_integer(&ipos_x, stepper.position(AxisEnum::X_AXIS));
+    metric_record_integer(&ipos_x, stepper.position_from_startup(AxisEnum::X_AXIS));
     static metric_t ipos_y = METRIC("ipos_y", METRIC_VALUE_INTEGER, 10, METRIC_HANDLER_DISABLE_ALL);
-    metric_record_integer(&ipos_y, stepper.position(AxisEnum::Y_AXIS));
+    metric_record_integer(&ipos_y, stepper.position_from_startup(AxisEnum::Y_AXIS));
     static metric_t ipos_z = METRIC("ipos_z", METRIC_VALUE_INTEGER, 10, METRIC_HANDLER_DISABLE_ALL);
-    metric_record_integer(&ipos_z, stepper.position(AxisEnum::Z_AXIS));
+    metric_record_integer(&ipos_z, stepper.position_from_startup(AxisEnum::Z_AXIS));
 
     static metric_t pos_x = METRIC("pos_x", METRIC_VALUE_FLOAT, 11, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&pos_x, planner.get_axis_position_mm(AxisEnum::X_AXIS));

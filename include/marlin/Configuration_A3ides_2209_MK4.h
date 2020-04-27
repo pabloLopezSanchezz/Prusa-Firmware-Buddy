@@ -129,12 +129,6 @@
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
 
-// The following define selects which electronics board you have.
-// Please choose the name from boards.h that matches your setup
-#ifndef MOTHERBOARD
-    #define MOTHERBOARD BOARD_RAMPS_14_EFB
-#endif
-
 // Optional custom name for your RepStrap or other custom machine
 // Displayed in the LCD "Ready" message
 //#define CUSTOM_MACHINE_NAME "3D Printer"
@@ -903,13 +897,22 @@
 // Feedrate (mm/m) for the "accurate" probe of each point
 #define Z_PROBE_SPEED_SLOW 70
 
+#define Z_PROBE_MEASURES_ON_BACK_MOVE
+#if ENABLED(Z_PROBE_MEASURES_ON_BACK_MOVE)
+  #define Z_PROBE_SPEED_BACK_MOVE 20
+#endif
+
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
-#define MULTIPLE_PROBING 2
+#define MULTIPLE_PROBING 10
+
+// Probe for as long as the last two slow probes don't differ more than DIFF_PROBING_ACCEPT_DIFF
+#define DIFF_PROBING
+#define DIFF_PROBING_ACCEPT_DIFF 0.010
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
-#define EXTRA_PROBING 1
+//#define EXTRA_PROBING 1
 #define EXTRA_PROBING_TOL 0.2 // If the measured Z value is larger than this value, remove it and remeasure
 #define EXTRA_PROBING_RAIL 1.4 // Maximum value of Z measurement
 #define EXTRA_PROBING_MAXFAIL 5 // Maximum allowed number of failed probing measurements
