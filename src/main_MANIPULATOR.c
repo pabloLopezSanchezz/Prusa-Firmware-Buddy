@@ -803,17 +803,17 @@ static void MX_GPIO_Init(void) {
     HAL_GPIO_WritePin(GPIOB, Z_STEP_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, ESP_RST_Pin | Z_DIR_Pin | X_DIR_Pin | X_STEP_Pin | Z_ENA_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, ESP_RST_Pin | Z_DIR_Pin | X1_DIR_Pin | X1_STEP_Pin | Z_ENA_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOD, E_DIR_Pin | E_STEP_Pin | E_ENA_Pin | Y_DIR_Pin | Y_STEP_Pin | Y_ENA_Pin | X_ENA_Pin | FLASH_CSN_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOD, E_DIR_Pin | E_STEP_Pin | E_ENA_Pin | Y_DIR_Pin | Y_STEP_Pin | Y_ENA_Pin | X1_ENA_Pin | FLASH_CSN_Pin, GPIO_PIN_RESET);
 
     /*Bed always on to source external drivers*/
     HAL_GPIO_WritePin(BED_HEAT_GPIO_Port, BED_HEAT_Pin, GPIO_PIN_SET);
 
     /*Configure GPIO pins : X_DIAG_Pin Z_DIAG_Pin USB_OVERC_Pin ESP_GPIO0_Pin
                            BED_MON_Pin WP1_Pin Z_DIAGE1_Pin */
-    GPIO_InitStruct.Pin = X_DIAG_Pin | Z_DIAG_Pin | USB_OVERC_Pin | ESP_GPIO0_Pin
+    GPIO_InitStruct.Pin = X1_DIAG_Pin | Z_DIAG_Pin | USB_OVERC_Pin | ESP_GPIO0_Pin
         | BED_MON_Pin | WP1_Pin | Z_DIAGE1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -827,7 +827,7 @@ static void MX_GPIO_Init(void) {
     HAL_GPIO_Init(USB_EN_GPIO_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pins : ESP_RST_Pin Z_DIR_Pin X_DIR_Pin X_STEP_Pin Z_ENA_Pin*/
-    GPIO_InitStruct.Pin = ESP_RST_Pin | Z_DIR_Pin | X_DIR_Pin | X_STEP_Pin | Z_ENA_Pin;
+    GPIO_InitStruct.Pin = ESP_RST_Pin | Z_DIR_Pin | X1_DIR_Pin | X1_STEP_Pin | Z_ENA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -852,7 +852,7 @@ static void MX_GPIO_Init(void) {
                            FLASH_CSN_Pin */
     GPIO_InitStruct.Pin = E_DIR_Pin | E_STEP_Pin | E_ENA_Pin
         | Y_DIR_Pin | Y_STEP_Pin | Y_ENA_Pin
-        | X_ENA_Pin
+        | X1_ENA_Pin
         | FLASH_CSN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
