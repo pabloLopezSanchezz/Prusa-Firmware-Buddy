@@ -70,6 +70,7 @@ typedef struct _eeprom_vars_t {
     float LOADCELL_SCALE;
     float LOADCELL_THRS;
     float LOADCELL_HYST;
+    uint8_t SOUND_MODE;
     char _PADDING[EEPROM__PADDING];
     uint32_t CRC32;
 } eeprom_vars_t;
@@ -110,6 +111,7 @@ static const eeprom_entry_t eeprom_map[] = {
     { "LOADCELL_SCALE",  VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_SCALE
     { "LOADCELL_THRS",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_THRS
     { "LOADCELL_HYST",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_HYST
+    { "SOUND_MODE",      VARIANT8_UI8,   1, 0 }, // EEVAR_SOUND_MODE
     { "_PADDING",        VARIANT8_PCHAR, EEPROM__PADDING, 0 }, // EEVAR__PADDING32
     { "CRC32",           VARIANT8_UI32,  1, 0 }, // EEVAR_CRC32
 };
@@ -150,6 +152,7 @@ static const eeprom_vars_t eeprom_var_defaults = {
     0.0192,          // EEVAR_LOADCELL_SCALE
     -125,            // EEVAR_LOADCELL_THRS
     50,              // EEVAR_LOADCELL_HYST
+    0,               // EEVAR_SOUND_MODE
     "",              // EEVAR__PADDING
     0xffffffff,      // EEVAR_CRC32
 };
