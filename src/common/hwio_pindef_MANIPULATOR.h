@@ -16,10 +16,10 @@
 
 #define PIN_TEMP_0 PC0
 
-#define PIN_X_DIR    PC8
-#define PIN_X_STEP   PC9
-#define PIN_X_ENABLE PD11
-#define PIN_X_DIAG   PE2
+#define PIN_X1_DIR    PC8
+#define PIN_X1_STEP   PC9
+#define PIN_X1_ENABLE PD11
+#define PIN_X1_DIAG   PE2
 
 #define PIN_Y_DIR    PD12
 #define PIN_Y_STEP   PD13
