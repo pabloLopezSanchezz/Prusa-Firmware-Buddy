@@ -41,7 +41,7 @@ enum digIn {
     ePIN_X_MAX = PIN_X_MAX,
     ePIN_E_DIAG = PIN_E_DIAG,
     ePIN_Y_DIAG = PIN_Y_DIAG,
-    ePIN_X_DIAG = PIN_X1_DIAG,
+    ePIN_X1_DIAG = PIN_X1_DIAG,
     ePIN_Z_DIAG = PIN_Z_DIAG,
     ePIN_BTN_ENC = PIN_BTN_ENC,
     ePIN_BTN_EN1 = PIN_BTN_ENC,
@@ -50,10 +50,10 @@ enum digIn {
 
 // a3ides digital output pins
 enum digOut {
-    ePIN_X_DIR = PIN_X1_DIR,
-    ePIN_X_STEP = PIN_X1_STEP,
+    ePIN_X1_DIR = PIN_X1_DIR,
+    ePIN_X1_STEP = PIN_X1_STEP,
     ePIN_Z_ENABLE = PIN_Z_ENABLE,
-    ePIN_X_ENABLE = PIN_X1_ENABLE,
+    ePIN_X1_ENABLE = PIN_X1_ENABLE,
     ePIN_Z_STEP = PIN_Z_STEP,
     ePIN_E_DIR = PIN_E_DIR,
     ePIN_E_STEP = PIN_E_STEP,
@@ -392,7 +392,7 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
         case PIN_Y_DIAG:
             return gpio_get(digIn::ePIN_Y_DIAG);
         case PIN_X1_DIAG:
-            return gpio_get(digIn::ePIN_X_DIAG);
+            return gpio_get(digIn::ePIN_X1_DIAG);
         case PIN_Z_DIAG:
             return gpio_get(digIn::ePIN_Z_DIAG);
 #endif //SIM_MOTION
@@ -481,16 +481,16 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
             return;
 #else  //SIM_MOTION
         case PIN_X1_DIR:
-            gpio_set(digOut::ePIN_X_DIR, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_X1_DIR, ulVal ? 1 : 0);
             return;
         case PIN_X1_STEP:
-            gpio_set(digOut::ePIN_X_STEP, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_X1_STEP, ulVal ? 1 : 0);
             return;
         case PIN_Z_ENABLE:
             gpio_set(digOut::ePIN_Z_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_X1_ENABLE:
-            gpio_set(digOut::ePIN_X_ENABLE, ulVal ? 1 : 0);
+            gpio_set(digOut::ePIN_X1_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_Z_STEP:
             gpio_set(digOut::ePIN_Z_STEP, ulVal ? 1 : 0);
