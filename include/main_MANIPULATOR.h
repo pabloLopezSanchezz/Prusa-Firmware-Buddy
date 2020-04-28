@@ -81,8 +81,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define X_DIAG_Pin            GPIO_PIN_2
-#define X_DIAG_GPIO_Port      GPIOE
 #define Z_DIAG_Pin            GPIO_PIN_3
 #define Z_DIAG_GPIO_Port      GPIOE
 #define USB_OVERC_Pin         GPIO_PIN_4
@@ -139,8 +137,6 @@ void Error_Handler(void);
 #define Y_STEP_GPIO_Port      GPIOD
 #define Y_ENA_Pin             GPIO_PIN_14
 #define Y_ENA_GPIO_Port       GPIOD
-#define Z_DIR_Pin             GPIO_PIN_3
-#define Z_DIR_GPIO_Port       GPIOC
 #define ESP_TX_Pin            GPIO_PIN_6
 #define ESP_TX_GPIO_Port      GPIOC
 #define ESP_RX_Pin            GPIO_PIN_7
@@ -163,16 +159,20 @@ void Error_Handler(void);
 #define FLASH_MISO_GPIO_Port  GPIOC
 #define FLASH_MOSI_Pin        GPIO_PIN_12
 #define FLASH_MOSI_GPIO_Port  GPIOC
-#define X_DIR_Pin             GPIO_PIN_8
-#define X_DIR_GPIO_Port       GPIOC
 #define X_STEP_Pin            GPIO_PIN_9
 #define X_STEP_GPIO_Port      GPIOC
-#define Z_ENA_Pin             GPIO_PIN_2
-#define Z_ENA_GPIO_Port       GPIOC
+#define X_DIR_Pin             GPIO_PIN_8
+#define X_DIR_GPIO_Port       GPIOC
 #define X_ENA_Pin             GPIO_PIN_11
 #define X_ENA_GPIO_Port       GPIOD
+#define X_DIAG_Pin            GPIO_PIN_2
+#define X_DIAG_GPIO_Port      GPIOE
 #define Z_STEP_Pin            GPIO_PIN_10
 #define Z_STEP_GPIO_Port      GPIOB
+#define Z_DIR_Pin             GPIO_PIN_3
+#define Z_DIR_GPIO_Port       GPIOC
+#define Z_ENA_Pin             GPIO_PIN_2
+#define Z_ENA_GPIO_Port       GPIOC
 #define FLASH_CSN_Pin         GPIO_PIN_7
 #define FLASH_CSN_GPIO_Port   GPIOD
 #define FIL_SENSOR_Pin        GPIO_PIN_4
