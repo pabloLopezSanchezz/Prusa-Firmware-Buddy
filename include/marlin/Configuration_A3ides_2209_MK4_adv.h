@@ -456,7 +456,7 @@
 //kill command after probing fails
 #define HALT_ON_PROBING_ERROR
 //after enabling HOMING_MAX_ATTEMPTS, homing can fail
-#define HOMING_MAX_ATTEMPTS 3
+#define HOMING_MAX_ATTEMPTS 10
 #ifdef HOMING_MAX_ATTEMPTS
     //ranges in mm - allowed distance between homing probes
     constexpr float axis_home_min_diff[] = {-1,-1,-0.1};
