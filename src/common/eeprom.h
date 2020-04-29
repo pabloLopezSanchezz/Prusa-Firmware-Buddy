@@ -60,9 +60,10 @@
 #endif                               // (EEPROM_FEATURES & EEPROM_FEATURE_LAN)
 
 #if (EEPROM_FEATURES & EEPROM_FEATURE_LOADCELL)
-    #define EEVAR_LOADCELL_SCALE 0x1B
-    #define EEVAR_LOADCELL_THRS  0x1C
-    #define EEVAR_LOADCELL_HYST  0x1D
+    #define EEVAR_LOADCELL_SCALE          0x1B
+    #define EEVAR_LOADCELL_THRS_STATIC    0x1C
+    #define EEVAR_LOADCELL_HYST           0x1D
+    #define EEVAR_LOADCELL_THRS_CONTINOUS 0x1E
 #endif
 
 // loadcell variables

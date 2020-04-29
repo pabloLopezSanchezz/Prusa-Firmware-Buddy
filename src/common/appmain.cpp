@@ -81,7 +81,8 @@ void app_setup(void) {
 #ifdef LOADCELL_HX711
     hx711.Configure(LOADCELL_PIN_DOUT, LOADCELL_PIN_SCK);
     loadcell.SetScale(eeprom_get_var(EEVAR_LOADCELL_SCALE).flt);
-    loadcell.SetThreshold(eeprom_get_var(EEVAR_LOADCELL_THRS).flt);
+    loadcell.SetThreshold(eeprom_get_var(EEVAR_LOADCELL_THRS_STATIC).flt, Loadcell::TareMode::Static);
+    loadcell.SetThreshold(eeprom_get_var(EEVAR_LOADCELL_THRS_CONTINOUS).flt, Loadcell::TareMode::Continuous);
     loadcell.SetHysteresis(eeprom_get_var(EEVAR_LOADCELL_HYST).flt);
     loadcell.ConfigureSignalEvent(osThreadGetId(), 0x0A);
 #endif //LOADCELL_HX711

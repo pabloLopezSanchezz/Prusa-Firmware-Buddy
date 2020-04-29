@@ -11,21 +11,19 @@
     #include "gpio.h"
     #include "eeprom.h"
 
-    #pragma pack(push)
-    #pragma pack(1)
-
 typedef struct
 {
     window_frame_t frame;
     window_text_t text_terminal;
     window_text_t text_scale;
     window_spin_t spin_scale;
-    window_text_t text_thrs;
-    window_spin_t spin_thrs;
+    window_text_t text_thrs_static;
+    window_spin_t spin_thrs_static;
+    window_text_t text_thrs_continuous;
+    window_spin_t spin_thrs_continuous;
     window_text_t text_hyst;
     window_spin_t spin_hyst;
     window_text_t text_out;
-    window_text_t button_tare;
     window_text_t button_save;
     window_text_t button_return;
     char str_out[32];
@@ -36,7 +34,15 @@ typedef struct
     #endif
 } screen_test_hx711_data_t;
 
-    #pragma pack(pop)
+enum class Action : int {
+    Tare = 1,
+    Save,
+    Close,
+    UpdateThresholdStatic,
+    UpdateThresholdContinous,
+    UpdateScale,
+    UpdateHysteresis,
+};
 
     #define pd ((screen_test_hx711_data_t *)screen->pdata)
 
@@ -80,21 +86,35 @@ void screen_test_hx711_init(screen_t *screen) {
     window_set_format(id, "%.1f");
     window_set_min_max_step(id, 2.0F, 30.0F, 0.10F);
     window_set_value(id, loadcell.GetScale() * 1000);
-    window_set_tag(id, 4);
+    window_set_tag(id, (int)Action::UpdateScale);
 
     y += 22;
 
-    id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(x, y, w, h), &(pd->text_thrs));
-    pd->text_thrs.font = _font_term;
-    window_set_text(id, "threshold [g]");
+    id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(x, y, w, h), &(pd->text_thrs_static));
+    pd->text_thrs_static.font = _font_term;
+    window_set_text(id, "threshold (MBL) [g]");
 
     y += 22;
 
-    id = window_create_ptr(WINDOW_CLS_SPIN, id0, rect_ui16(x, y, w, h), &(pd->spin_thrs));
+    id = window_create_ptr(WINDOW_CLS_SPIN, id0, rect_ui16(x, y, w, h), &(pd->spin_thrs_static));
     window_set_format(id, "%.0f");
     window_set_min_max_step(id, -500.0F, -5.0F, 5.0F);
-    window_set_value(id, loadcell.GetThreshold());
-    window_set_tag(id, 5);
+    window_set_value(id, loadcell.GetThreshold(Loadcell::TareMode::Static));
+    window_set_tag(id, (int)Action::UpdateThresholdStatic);
+
+    y += 22;
+
+    id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(x, y, w, h), &(pd->text_thrs_continuous));
+    pd->text_thrs_continuous.font = _font_term;
+    window_set_text(id, "threshold (home) [g]");
+
+    y += 22;
+
+    id = window_create_ptr(WINDOW_CLS_SPIN, id0, rect_ui16(x, y, w, h), &(pd->spin_thrs_continuous));
+    window_set_format(id, "%.0f");
+    window_set_min_max_step(id, -500.0F, -5.0F, 5.0F);
+    window_set_value(id, loadcell.GetThreshold(Loadcell::TareMode::Continuous));
+    window_set_tag(id, (int)Action::UpdateThresholdContinous);
 
     y += 22;
 
@@ -108,7 +128,7 @@ void screen_test_hx711_init(screen_t *screen) {
     window_set_format(id, "%.0f");
     window_set_min_max_step(id, 0.0F, 100.0F, 5.0F);
     window_set_value(id, loadcell.GetHysteresis());
-    window_set_tag(id, 6);
+    window_set_tag(id, (int)Action::UpdateHysteresis);
 
     y += 22;
 
@@ -117,24 +137,17 @@ void screen_test_hx711_init(screen_t *screen) {
 
     y += 22;
 
-    id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(x, y, w, h), &(pd->button_tare));
-    window_set_text(id, "Tare");
-    window_enable(id);
-    window_set_tag(id, 1);
-
-    y += 22;
-
     id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(x, y, w, h), &(pd->button_save));
     window_set_text(id, "Save");
     window_enable(id);
-    window_set_tag(id, 2);
+    window_set_tag(id, (int)Action::Save);
 
     y += 22;
 
     id = window_create_ptr(WINDOW_CLS_TEXT, id0, rect_ui16(x, y, w, h), &(pd->button_return));
     window_set_text(id, "Return");
     window_enable(id);
-    window_set_tag(id, 3);
+    window_set_tag(id, (int)Action::Close);
 }
 
 void screen_test_hx711_done(screen_t *screen) {
@@ -146,30 +159,34 @@ void screen_test_hx711_draw(screen_t *screen) {
 
 int screen_test_hx711_event(screen_t *screen, window_t *window, uint8_t event, void *param) {
     if (event == WINDOW_EVENT_CLICK) {
-        switch ((int)param) {
-        case 1: // tare
-            loadcell.Tare();
+        switch (Action((int)param)) {
+        case Action::Save: // save
+            eeprom_set_var(EEVAR_LOADCELL_SCALE, variant8_flt(loadcell.GetScale()));
+            eeprom_set_var(EEVAR_LOADCELL_THRS_STATIC, variant8_flt(loadcell.GetThreshold(Loadcell::TareMode::Static)));
+            eeprom_set_var(EEVAR_LOADCELL_THRS_CONTINOUS, variant8_flt(loadcell.GetThreshold(Loadcell::TareMode::Continuous)));
+            eeprom_set_var(EEVAR_LOADCELL_HYST, variant8_flt(loadcell.GetHysteresis()));
             break;
-        case 2: // save
-
-            break;
-        case 3: // return
+        case Action::Close: // return
             screen_close();
             return 1;
+        default:
+            break;
         }
     } else if (event == WINDOW_EVENT_CHANGE) {
-        switch ((int)param) {
-        case 4: //scale
+        switch (Action((int)param)) {
+        case Action::UpdateScale:
             loadcell.SetScale(window_get_value(pd->spin_scale.window.win.id) / 1000);
-            eeprom_set_var(EEVAR_LOADCELL_SCALE, variant8_flt(loadcell.GetScale()));
             break;
-        case 5: //thrs
-            loadcell.SetThreshold(window_get_value(pd->spin_thrs.window.win.id));
-            eeprom_set_var(EEVAR_LOADCELL_THRS, variant8_flt(loadcell.GetThreshold()));
+        case Action::UpdateThresholdStatic:
+            loadcell.SetThreshold(window_get_value(pd->spin_thrs_static.window.win.id), Loadcell::TareMode::Static);
             break;
-        case 6: //hyst
+        case Action::UpdateThresholdContinous:
+            loadcell.SetThreshold(window_get_value(pd->spin_thrs_continuous.window.win.id), Loadcell::TareMode::Continuous);
+            break;
+        case Action::UpdateHysteresis:
             loadcell.SetHysteresis(window_get_value(pd->spin_hyst.window.win.id));
-            eeprom_set_var(EEVAR_LOADCELL_HYST, variant8_flt(loadcell.GetHysteresis()));
+            break;
+        default:
             break;
         }
     } else if (event == WINDOW_EVENT_LOOP) {
