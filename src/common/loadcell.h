@@ -134,7 +134,7 @@ private:
         inline float GetOutput() const { return yv[1]; }
 
         /// How many samples it approximatelly takes for the filter to settle down.
-        inline int GetSettlingTime() const { return 40; }
+        inline int GetSettlingTime() const { return 12; }
 
     private:
         static constexpr int NZEROS = 1;
