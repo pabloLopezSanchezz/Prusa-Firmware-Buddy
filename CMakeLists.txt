@@ -459,13 +459,11 @@ target_sources(
   firmware
   PRIVATE $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/startup/startup_stm32f407xx_boot.s>
           $<$<STREQUAL:${BOOTLOADER},NO>:src/startup/startup_stm32f407xx.s>
-          src/lwip.c
           src/usbd_cdc_if.c
           src/usb_device.c
           src/freertos.c
           src/freertos_openocd.c
           src/usbh_diskio.c
-          src/ethernetif.c
           src/main_${PRINTER}.c
           src/usbd_desc.c
           $<$<IN_LIST:${BOOTLOADER},YES;EMPTY>:src/system_stm32f4xx_boot.c>

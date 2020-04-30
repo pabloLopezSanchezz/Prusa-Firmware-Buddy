@@ -1,0 +1,101 @@
+{
+    "tests": 
+    [
+        {
+            "switch": "off",
+            "name": "Low level GCODE",
+            "delay": 5,
+            "request":
+            {
+                "header": 
+                {
+                    "c-type": "text/x.gcode",
+                    "c-id": 1254
+                }
+            ,
+                "body": 
+                {
+                    "type": "low",
+                    "repeat": 3,
+                    "command": "G28 XY"
+                }
+            }
+            ,
+            "result": 
+            {
+                "header": 
+                [
+                    "POST",
+                    "/p/events",
+                    "HTTP/1.0",
+                    "01234567899876543210",
+                    "application/json"
+                ]
+                ,
+                "body":
+                {
+                    "event": "ACCEPTED",
+                    "command_id": 1254
+                }
+            }
+        }
+        ,
+        {
+            "switch": "off",
+            "name": "Low level GCODEs",
+            "delay": 15,
+            "request":
+            {
+                "header": 
+                {
+                    "c-type": "text/x.gcode",
+                    "c-id": 23
+                }
+                ,
+                "body": 
+                {
+                    "type": "low",
+                    "commands": 
+                    [
+                        "G28 XY",
+                        "G1 X160",
+                        "G1 X180",
+                        "G1 X160",
+                        "G1 Y160",
+                        "G1 Y180",
+                        "G1 Y160",
+                        "G1 X100",
+                        "G1 X120",
+                        "G1 X100"
+                    ]
+                }
+            }
+            ,
+            "result": 
+            {
+                "header": 
+                [
+                    "POST",
+                    "/p/events",
+                    "HTTP/1.0",
+                    "01234567899876543210",
+                    "application/json"
+                ]
+            ,
+            
+                "body":
+                {
+                    "event": "ACCEPTED",
+                    "command_id": 23
+                }
+            }
+        }
+
+
+
+
+
+
+
+    ]
+}

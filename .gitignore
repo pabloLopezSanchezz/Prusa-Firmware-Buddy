@@ -12,3 +12,4 @@ compile_commands.json
 /.vscode/*.peripherals.state.json
 /.vscode/*.registers.state.json
 Makefile
+utils/test_http_server/connect_tests/errors.log
