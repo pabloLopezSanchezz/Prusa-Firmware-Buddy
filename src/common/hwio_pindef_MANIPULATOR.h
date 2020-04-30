@@ -10,6 +10,7 @@
 #define PIN_TEMP_HEATBREAK PA6
 #define PIN_Z_MAX          PA8
 #define PIN_X_MAX          PA0
+#define PIN_X2_MAX         PE10
 
 #define PIN_HEATER_BED PB0
 #define PIN_HEATER_0   PB1

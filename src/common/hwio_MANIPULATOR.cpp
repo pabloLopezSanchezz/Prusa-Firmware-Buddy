@@ -39,6 +39,7 @@ namespace {
 enum digIn {
     ePIN_Z_MAX = PIN_Z_MAX,
     ePIN_X_MAX = PIN_X_MAX,
+    ePIN_X2_MAX = PIN_X2_MAX,
     ePIN_E_DIAG = PIN_E_DIAG,
     ePIN_Y_DIAG = PIN_Y_DIAG,
     ePIN_X1_DIAG = PIN_X1_DIAG,
@@ -390,6 +391,8 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return gpio_get(digIn::ePIN_Z_MAX);
         case PIN_X_MAX:
             return gpio_get(digIn::ePIN_X_MAX);
+        case PIN_X2_MAX:
+            return gpio_get(digIn::ePIN_X2_MAX);
         case PIN_E_DIAG:
             return gpio_get(digIn::ePIN_E_DIAG);
         case PIN_Y_DIAG:

@@ -148,7 +148,6 @@ uartslave_t uart6slave;
 char uart6slave_line[32];
 
 volatile uint32_t Tacho_FAN0;
-volatile uint32_t Tacho_FAN1;
 
 /* USER CODE END 0 */
 
@@ -829,7 +828,7 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = FAN0_TACH_Pin | FAN1_TACH_Pin;
+    GPIO_InitStruct.Pin = FAN1_TACH_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -859,6 +858,11 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = X2_MAX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(X2_MAX_Port, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = E_DIAG_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -892,10 +896,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     switch (GPIO_Pin) {
-    case GPIO_PIN_10:
-        Tacho_FAN1++;
-        break;
-    case GPIO_PIN_14:
+    case FAN1_TACH_Pin:
         Tacho_FAN0++;
         break;
     }

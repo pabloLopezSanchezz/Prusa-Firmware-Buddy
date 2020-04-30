@@ -29,6 +29,7 @@
 #include "hwio.h"
 #include "eeprom.h"
 #include "filament_sensor.h"
+#include "main.h"
 
 #ifdef MINDA_BROKEN_CABLE_DETECTION
     #include "Z_probe.h" //get_Z_probe_endstop_hits
@@ -90,8 +91,6 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 
 //-----------------------------------------------------------------------------
 // variables
-extern uint32_t Tacho_FAN0;
-extern uint32_t Tacho_FAN1;
 
 osThreadId marlin_server_task = 0;    // task handle
 osMessageQId marlin_server_queue = 0; // input queue (uint8_t)
@@ -191,11 +190,13 @@ void print_fan_spd() {
             serial_echopair_PGM("Tacho_FAN0 ", (30 * 1000 * Tacho_FAN0) / timediff); //60s / 2 pulses per rotation
             serialprintPGM("rpm ");
             SERIAL_EOL();
+#ifdef FAN0_TACH_Pin
             serial_echopair_PGM("Tacho_FAN1 ", (30 * 1000 * Tacho_FAN1) / timediff);
             serialprintPGM("rpm ");
+            Tacho_FAN1 = 0;
+#endif
             SERIAL_EOL();
             Tacho_FAN0 = 0;
-            Tacho_FAN1 = 0;
             last_prt = time;
         }
     }

@@ -95,8 +95,6 @@ void Error_Handler(void);
 #define THERM_0_GPIO_Port     GPIOC
 #define BUZZER_Pin            GPIO_PIN_0
 #define BUZZER_GPIO_Port      GPIOA
-#define X_MAX_Pin             GPIO_PIN_0
-#define X_MAX_Port            GPIOA
 #define HW_IDENTIFY_Pin       GPIO_PIN_3
 #define HW_IDENTIFY_GPIO_Port GPIOA
 #define THERM_1_Pin           GPIO_PIN_4
@@ -113,8 +111,6 @@ void Error_Handler(void);
 #define BED_MON_GPIO_Port     GPIOE
 #define FAN1_Pin              GPIO_PIN_9
 #define FAN1_GPIO_Port        GPIOE
-#define FAN0_TACH_Pin         GPIO_PIN_10
-#define FAN0_TACH_GPIO_Port   GPIOE
 #define FAN0_TACH_EXTI_IRQn   EXTI15_10_IRQn
 #define FAN0_Pin              GPIO_PIN_11
 #define FAN0_GPIO_Port        GPIOE
@@ -159,6 +155,8 @@ void Error_Handler(void);
 #define FLASH_MISO_GPIO_Port  GPIOC
 #define FLASH_MOSI_Pin        GPIO_PIN_12
 #define FLASH_MOSI_GPIO_Port  GPIOC
+#define X_MAX_Pin             GPIO_PIN_0
+#define X_MAX_Port            GPIOA
 #define X1_STEP_Pin           GPIO_PIN_9
 #define X1_STEP_GPIO_Port     GPIOC
 #define X1_DIR_Pin            GPIO_PIN_8
@@ -167,6 +165,8 @@ void Error_Handler(void);
 #define X1_ENA_GPIO_Port      GPIOD
 #define X1_DIAG_Pin           GPIO_PIN_2
 #define X1_DIAG_GPIO_Port     GPIOE
+#define X2_MAX_Pin            GPIO_PIN_10
+#define X2_MAX_Port           GPIOE
 #define X2_STEP_Pin           GPIO_PIN_12
 #define X2_STEP_GPIO_Port     GPIOE
 #define X2_DIR_Pin            GPIO_PIN_15
