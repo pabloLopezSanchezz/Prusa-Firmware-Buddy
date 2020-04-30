@@ -21,6 +21,10 @@
 #define PIN_X1_ENABLE PD11
 #define PIN_X1_DIAG   PE2
 
+#define PIN_X2_STEP   PE12
+#define PIN_X2_DIR    PE15
+#define PIN_X2_ENABLE PE13
+
 #define PIN_Y_DIR    PD12
 #define PIN_Y_STEP   PD13
 #define PIN_Y_ENABLE PD14

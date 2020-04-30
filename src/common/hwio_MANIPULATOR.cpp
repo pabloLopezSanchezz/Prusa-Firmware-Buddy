@@ -54,6 +54,9 @@ enum digOut {
     ePIN_X1_STEP = PIN_X1_STEP,
     ePIN_Z_ENABLE = PIN_Z_ENABLE,
     ePIN_X1_ENABLE = PIN_X1_ENABLE,
+    ePIN_X2_STEP = PIN_X2_STEP,
+    ePIN_X2_DIR = PIN_X2_DIR,
+    ePIN_X2_ENABLE = PIN_X2_ENABLE,
     ePIN_Z_STEP = PIN_Z_STEP,
     ePIN_E_DIR = PIN_E_DIR,
     ePIN_E_STEP = PIN_E_STEP,
@@ -491,6 +494,15 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
             return;
         case PIN_X1_ENABLE:
             gpio_set(digOut::ePIN_X1_ENABLE, ulVal ? 1 : 0);
+            return;
+        case PIN_X2_STEP:
+            gpio_set(digOut::ePIN_X2_STEP, ulVal ? 1 : 0);
+            return;
+        case PIN_X2_DIR:
+            gpio_set(digOut::ePIN_X2_DIR, ulVal ? 1 : 0);
+            return;
+        case PIN_X2_ENABLE:
+            gpio_set(digOut::ePIN_X2_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_Z_STEP:
             gpio_set(digOut::ePIN_Z_STEP, ulVal ? 1 : 0);
