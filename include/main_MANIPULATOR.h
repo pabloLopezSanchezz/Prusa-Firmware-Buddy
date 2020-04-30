@@ -167,6 +167,12 @@ void Error_Handler(void);
 #define X1_ENA_GPIO_Port      GPIOD
 #define X1_DIAG_Pin           GPIO_PIN_2
 #define X1_DIAG_GPIO_Port     GPIOE
+#define X2_STEP_Pin           GPIO_PIN_12
+#define X2_STEP_GPIO_Port     GPIOE
+#define X2_DIR_Pin            GPIO_PIN_15
+#define X2_DIR_GPIO_Port      GPIOE
+#define X2_ENA_Pin            GPIO_PIN_13
+#define X2_ENA_GPIO_Port      GPIOE
 #define Z_STEP_Pin            GPIO_PIN_10
 #define Z_STEP_GPIO_Port      GPIOB
 #define Z_DIR_Pin             GPIO_PIN_3
