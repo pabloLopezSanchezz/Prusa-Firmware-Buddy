@@ -71,19 +71,21 @@ pipeline {
                             if (config.containsKey('options')) {
                                 options = config.options
                             }
-                            sh """
-                                python utils/build.py \
-                                    --printer ${config.printer} \
-                                    --build-type ${config.build_type} \
-                                    --bootloader ${config.bootloader} \
-                                    --generate-bbf \
-                                    --generate-dfu \
-                                    --no-store-output \
-                                    --version-suffix=${variant_full_suffix} \
-                                    --version-suffix-short=${short_suffix} ${options} \
-                                    --version-suffix=${full_suffix} \
-                                    --version-suffix-short=${short_suffix}
-                            """
+                            catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                sh """
+                                    python utils/build.py \
+                                        --printer ${config.printer} \
+                                        --build-type ${config.build_type} \
+                                        --bootloader ${config.bootloader} \
+                                        --generate-bbf \
+                                        --generate-dfu \
+                                        --no-store-output \
+                                        --version-suffix=${variant_full_suffix} \
+                                        --version-suffix-short=${short_suffix} ${options} \
+                                        --version-suffix=${full_suffix} \
+                                        --version-suffix-short=${short_suffix}
+                                """
+                            }
                         }
                     }
                 }
