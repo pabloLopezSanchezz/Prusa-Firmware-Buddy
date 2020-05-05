@@ -738,6 +738,9 @@ static void MX_GPIO_Init(void) {
     /*Bed always on to source external drivers*/
     HAL_GPIO_WritePin(BED_HEAT_GPIO_Port, BED_HEAT_Pin, GPIO_PIN_SET);
 
+    /*X2_MAX_Power_Pin always on to source X2 PINDA*/
+    HAL_GPIO_WritePin(X2_MAX_Power_GPIO_Port, X2_MAX_Power_Pin, GPIO_PIN_SET);
+
     GPIO_InitStruct.Pin = X1_DIAG_Pin | Z_DIAG_Pin | USB_OVERC_Pin | ESP_GPIO0_Pin
         | BED_MON_Pin | WP1_Pin | Z_DIAGE1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -776,7 +779,7 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = X2_STEP_Pin | X2_DIR_Pin | X2_ENA_Pin;
+    GPIO_InitStruct.Pin = X2_STEP_Pin | X2_DIR_Pin | X2_ENA_Pin | X2_MAX_Power_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
