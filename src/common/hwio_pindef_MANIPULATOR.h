@@ -41,8 +41,6 @@
 #define PIN_E_ENABLE PD10
 #define PIN_E_DIAG   PA15
 
-#define PIN_FAN1    PE9
-#define PIN_FAN     PE11
 #define PIN_BTN_ENC PE12
 #define PIN_BTN_EN1 PE13
 #define PIN_BTN_EN2 PE15
