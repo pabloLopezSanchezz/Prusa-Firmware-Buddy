@@ -111,7 +111,6 @@ void Error_Handler(void);
 #define BED_MON_GPIO_Port     GPIOE
 #define FAN1_Pin              GPIO_PIN_9
 #define FAN1_GPIO_Port        GPIOE
-#define FAN0_TACH_EXTI_IRQn   EXTI15_10_IRQn
 #define FAN0_Pin              GPIO_PIN_11
 #define FAN0_GPIO_Port        GPIOE
 #define FAN1_TACH_Pin         GPIO_PIN_14

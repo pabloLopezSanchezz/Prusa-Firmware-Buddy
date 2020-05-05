@@ -89,8 +89,6 @@ static int _tim3_period_us = GEN_PERIOD_US(TIM3_default_Prescaler, TIM3_default_
 static const uint32_t _pwm_pin32[] = {
     PIN_HEATER_0,
     PIN_HEATER_BED,
-    PIN_FAN1,
-    PIN_FAN
 };
 
 static const uint32_t _pwm_chan[] = {
@@ -103,8 +101,6 @@ static const uint32_t _pwm_chan[] = {
 static TIM_HandleTypeDef *_pwm_p_htim[] = {
     &htim3, //_PWM_HEATER_BED
     &htim3, //_PWM_HEATER_0
-    &htim1, //_PWM_FAN1
-    &htim1, //_PWM_FAN
 };
 
 static int *const _pwm_period_us[] = {
@@ -129,9 +125,9 @@ static const TIM_OC_InitTypeDef sConfigOC_default = {
 };
 
 // a3ides pwm output maximum values  as arduino analogWrite
-static const int _pwm_analogWrite_max[_PWM_CNT] = { 0xff, 0xff, 0xff, 0xff };
+static const int _pwm_analogWrite_max[_PWM_CNT] = { 0xff, 0xff };
 // a3ides fan output values  as arduino analogWrite
-static int _pwm_analogWrite_val[_PWM_CNT] = { 0, 0, 0, 0 };
+static int _pwm_analogWrite_val[_PWM_CNT] = { 0, 0 };
 
 /*****************************************************************************
  * private function declarations
@@ -437,17 +433,6 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
 #endif //SIM_HEATER_NOZZLE_ADC
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_0, ulVal ? _pwm_analogWrite_max[HWIO_PWM_HEATER_0] : 0);
             return;
-        case PIN_FAN1:
-            //_hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
-#ifdef PRINTER_PRUSA_MK4
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 200 : 0);
-#else
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 100 : 0);
-#endif
-            return;
-        case PIN_FAN:
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN] : 0);
-            return;
 #ifdef SIM_MOTION
         case PIN_X1_DIR:
             sim_motion_set_dir(0, ulVal ? 1 : 0);
@@ -564,13 +549,6 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
 void hwio_arduino_analogWrite(uint32_t ulPin, uint32_t ulValue) {
     if (HAL_PWM_Initialized) {
         switch (ulPin) {
-        case PIN_FAN1:
-            //hwio_fan_set_pwm(_FAN1, ulValue);
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulValue);
-            return;
-        case PIN_FAN:
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulValue);
-            return;
         case PIN_HEATER_BED:
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_BED, ulValue);
             return;
