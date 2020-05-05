@@ -66,8 +66,10 @@ void Buddy::Metrics::RecordMarlinVariables() {
     static metric_t target_nozzle = METRIC("ttemp_noz", METRIC_VALUE_INTEGER, 1000 + 7, METRIC_HANDLER_DISABLE_ALL);
     metric_record_integer(&target_nozzle, thermalManager.degTargetHotend(0));
 
+#if FAN_COUNT > 0
     static metric_t fan_speed = METRIC("fan_speed", METRIC_VALUE_INTEGER, 501, METRIC_HANDLER_DISABLE_ALL);
     metric_record_integer(&fan_speed, thermalManager.fan_speed[0]);
+#endif
 
     static metric_t ipos_x = METRIC("ipos_x", METRIC_VALUE_INTEGER, 10, METRIC_HANDLER_DISABLE_ALL);
     metric_record_integer(&ipos_x, stepper.position_from_startup(AxisEnum::X_AXIS));
