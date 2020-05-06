@@ -34,9 +34,18 @@
 #define _DO_Z_DIR 11 // PD15
 
 //a3ides analog inputs
-#define _ADC_HW_IDENTIFY    0 // PA3 - chan 3
-#define _ADC_TEMP_BED       1 // PA4 - chan 4
-#define _ADC_TEMP_2         2 // PA5 - chan 5
+#ifdef ADC_EXT_MUX
+    #define _ADC_MUX_CHANNEL_A 0
+#else
+    #define _ADC_HW_IDENTIFY 0 // PA3 - chan 3
+#endif
+
+#define _ADC_TEMP_BED 1 // PA4 - chan 4
+#ifdef ADC_EXT_MUX
+    #define _ADC_MUX_CHANNEL_B 2
+#else
+    #define _ADC_TEMP_2 2 // PA5 - chan 5
+#endif
 #define _ADC_TEMP_HEATBREAK 3 // PA6 - chan 6
 #define _ADC_TEMP_0         4 // PC0 - chan 10
 

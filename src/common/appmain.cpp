@@ -21,6 +21,10 @@
     #include "filament_sensor.h"
 #endif //LOADCELL_HX711
 
+#ifdef ADC_EXT_MUX
+    #include "advanced_power.h"
+#endif
+
 #ifdef SIM_HEATER
     #include "sim_heater.h"
 #endif //SIM_HEATER
@@ -110,6 +114,10 @@ void app_run(void) {
     marlin_server_idle_cb = app_idle;
 
     adc_init();
+
+#ifdef ADC_EXT_MUX
+    adc_reset_fault_signal();
+#endif
 
 #ifdef SIM_HEATER
     sim_heater_init();
@@ -233,8 +241,22 @@ void hx711_irq() {
 }
 #endif //LOADCELL_HX711
 
+#ifdef ADC_EXT_MUX
+void advanced_power_irq() {
+    static uint8_t cnt_advanced_power_update = 0;
+    if (++cnt_advanced_power_update >= 70) { // update Advanced power variables = 14Hz
+        advancedpower.Update();
+        Buddy::Metrics::RecordPowerStats();
+        cnt_advanced_power_update = 0;
+    }
+}
+#endif //ADC_EXT_MUX
+
 void adc_tick_1ms(void) {
     adc_cycle();
+#ifdef ADC_EXT_MUX
+    adc2_cycle();
+#endif
 #ifdef SIM_HEATER
     static uint8_t cnt_sim_heater = 0;
     if (++cnt_sim_heater >= 50) // sim_heater freq = 20Hz
@@ -250,6 +272,10 @@ void adc_tick_1ms(void) {
 #ifdef SIM_MOTION
     sim_motion_cycle();
 #endif //SIM_MOTION
+
+#ifdef ADC_EXT_MUX
+    advanced_power_irq();
+#endif
 }
 
 void app_tim14_tick(void) {

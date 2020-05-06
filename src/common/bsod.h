@@ -9,6 +9,7 @@
 #define _BSOD_H
 
 #include <stdint.h>
+#include "config_a3ides2209_02.h"
 
 #ifdef __cplusplus
 extern "C" {

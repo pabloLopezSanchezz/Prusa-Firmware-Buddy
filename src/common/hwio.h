@@ -4,6 +4,7 @@
 #define _HWIO_H
 
 #include <inttypes.h>
+#include "config_a3ides2209_02.h"
 
 //low level I/O classes
 #define HWIO_CLS_DI  0x01 //class digital input
@@ -28,9 +29,17 @@ extern "C" {
 
 //a3ides analog inputs
 enum {
-    ADC_HW_IDENTIFY,    //!< PA3 - chan 3
-    ADC_TEMP_BED,       //!< PA4 - chan 4
-    ADC_TEMP_2,         //!< PA5 - chan 5
+#ifdef ADC_EXT_MUX
+    ADC_MUX_CHANNEL_A, //!< PA3 - chan 3
+#else
+    ADC_HW_IDENTIFY, //!< PA3 - chan 3
+#endif
+    ADC_TEMP_BED, //!< PA4 - chan 4
+#ifdef ADC_EXT_MUX
+    ADC_MUX_CHANNEL_B,
+#else
+    ADC_TEMP_2,      //!< PA5 - chan 5
+#endif
     ADC_TEMP_HEATBREAK, //!< PA6 - chan 6
     ADC_TEMP_0,         //!< PC0 - chan 10
     ONE_BEHIND_LAST_ADC,

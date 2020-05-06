@@ -129,6 +129,7 @@ set(PRINTERS_WITH_FILAMENT_SENSOR_HX711 "MK4" "XL" "IXL")
 set(PRINTERS_WITH_GUI "MINI" "MK4" "XL" "IXL" "PICKER")
 set(PRINTERS_WITH_INIT_TRINAMIC_FROM_MARLIN_ONLY "XL" "IXL" "MANIPULATOR" "PICKER" "EXTRACTOR")
 set(PRINTERS_WITH_ADVANCED_PAUSE "MINI" "MK4" "IXL" "XL")
+set(PRINTERS_WITH_ADVANCED_POWER "MK4")
 set(WUI YES)
 
 if(${PRINTER} IN_LIST PRINTERS_WITH_FILAMENT_SENSOR_YES)
@@ -480,6 +481,7 @@ target_sources(
           $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/common/filament_sensor_hx711.c>
           $<$<STREQUAL:${FILAMENT_SENSOR},YES>:src/common/filament_sensor.cpp>
           $<$<BOOL:${FILAMENT_SENSOR}>:src/common/thread_measurement.c>
+          $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_POWER}>:src/common/advanced_power.cpp>
           src/common/diag.c
           src/common/eeprom.cpp
           src/common/eeprom_loadsave.c
@@ -504,6 +506,7 @@ target_sources(
           src/common/marlin_errors.c
           src/common/metric.c
           src/common/metric_handlers.c
+          src/common/ext_mux.c
           src/common/uartrxbuff.c
           src/common/loadcell.cpp
           src/common/loadcell_endstops.cpp

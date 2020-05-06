@@ -5,6 +5,7 @@
 #include "cmsis_os.h"
 #include "malloc.h"
 #include "heap.h"
+#include "advanced_power.h"
 
 #include "../Marlin/src/module/temperature.h"
 #include "../Marlin/src/module/planner.h"
@@ -83,3 +84,29 @@ void Buddy::Metrics::RecordMarlinVariables() {
     static metric_t pos_z = METRIC("pos_z", METRIC_VALUE_FLOAT, 11, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&pos_z, planner.get_axis_position_mm(AxisEnum::Z_AXIS));
 }
+
+#ifdef ADC_EXT_MUX
+void Buddy::Metrics::RecordPowerStats() {
+
+    static metric_t metric_bed_v_raw = METRIC("volt_bed_raw", METRIC_VALUE_INTEGER, 1000, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_bed_v_raw, advancedpower.GetBedVoltageRaw());
+    static metric_t metric_bed_v = METRIC("volt_bed", METRIC_VALUE_FLOAT, 1001, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_bed_v, advancedpower.GetBedVoltage());
+    static metric_t metric_nozzle_v_raw = METRIC("volt_nozz_raw", METRIC_VALUE_INTEGER, 1002, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_nozzle_v_raw, advancedpower.GetHeaterVoltageRaw());
+    static metric_t metric_nozzle_v = METRIC("volt_nozz", METRIC_VALUE_FLOAT, 1003, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_nozzle_v, advancedpower.GetHeaterVoltage());
+    static metric_t metric_nozzle_i_raw = METRIC("curr_nozz_raw", METRIC_VALUE_INTEGER, 1004, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_nozzle_i_raw, advancedpower.GetHeaterCurrentRaw());
+    static metric_t metric_nozzle_i = METRIC("curr_nozz", METRIC_VALUE_FLOAT, 1005, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_nozzle_i, advancedpower.GetHeaterCurrent());
+    static metric_t metric_input_i_raw = METRIC("curr_inp_raw", METRIC_VALUE_INTEGER, 1006, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_input_i_raw, advancedpower.GetInputCurrentRaw());
+    static metric_t metric_input_i = METRIC("curr_inp", METRIC_VALUE_FLOAT, 1007, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_input_i, advancedpower.GetInputCurrent());
+    static metric_t metric_oc_nozzle_fault = METRIC("oc_nozz", METRIC_VALUE_INTEGER, 1008, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_integer(&metric_oc_nozzle_fault, advancedpower.HeaterOvercurentFaultDetected());
+    static metric_t metric_oc_input_fault = METRIC("oc_inp", METRIC_VALUE_INTEGER, 1009, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_integer(&metric_oc_input_fault, advancedpower.OvercurrentFaultDetected());
+}
+#endif //ADC_EXT_MUX

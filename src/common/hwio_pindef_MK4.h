@@ -3,13 +3,13 @@
 #ifndef _HWIO_PINDEF_H
 #define _HWIO_PINDEF_H
 
-#define PIN_BEEPER         PA0
-#define PIN_HW_IDENTIFY    PA3
-#define PIN_TEMP_BED       PA4
-#define PIN_THERM2         PA5
-#define PIN_TEMP_HEATBREAK PA6
-#define PIN_Z_MIN          PA8
-#define PIN_Z_MAX          PA9
+#define PIN_BEEPER            PA0
+#define PIN_EXT_MUX_CHANELL_A PA3
+#define PIN_TEMP_BED          PA4
+#define PIN_EXT_MUX_CHANNEL_B PA5
+#define PIN_TEMP_HEATBREAK    PA6
+#define PIN_Z_MIN             PA8
+#define PIN_Z_MAX             PA9
 
 #define PIN_HEATER_BED PB0
 #define PIN_HEATER_0   PB1
