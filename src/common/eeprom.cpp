@@ -151,7 +151,7 @@ static const eeprom_vars_t eeprom_var_defaults = {
     "PrusaMINI",     // EEVAR_LAN_HOSTNAME
     0.0192,          // EEVAR_LOADCELL_SCALE
     -125,            // EEVAR_LOADCELL_THRS_STATIC
-    50,              // EEVAR_LOADCELL_HYST
+    100,             // EEVAR_LOADCELL_HYST
     -25,            // EEVAR_LOADCELL_THRS_CONTINOUS
     "",              // EEVAR__PADDING
     0xffffffff,      // EEVAR_CRC32
