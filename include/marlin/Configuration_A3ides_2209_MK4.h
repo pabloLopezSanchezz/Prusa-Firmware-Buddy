@@ -909,7 +909,7 @@
 
 // Probe for as long as the last two slow probes don't differ more than DIFF_PROBING_ACCEPT_DIFF
 #define DIFF_PROBING
-#define DIFF_PROBING_ACCEPT_DIFF 0.010
+#define DIFF_PROBING_ACCEPT_DIFF 0.005
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
 //#define EXTRA_PROBING 1
