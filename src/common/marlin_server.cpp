@@ -561,6 +561,7 @@ uint64_t _send_notify_events_to_client(int client_id, osMessageQId queue, uint64
                     sent |= msk; // event sent, set bit
                 break;
             case MARLIN_EVT_MeshUpdate:
+                break;
                 if (marlin_server.mesh_point_notsent[client_id]) {
                     uint8_t x;
                     uint8_t y;
@@ -1157,6 +1158,7 @@ void onConfigurationStoreRead(bool success) {
 }
 
 void onMeshUpdate(const uint8_t xpos, const uint8_t ypos, const float zval) {
+    return;
     DBG_XUI("XUI: onMeshUpdate x: %u, y: %u, z: %.2f", xpos, ypos, (double)zval);
     uint8_t index = xpos + marlin_server.mesh.xc * ypos;
     uint32_t usr32 = variant8_flt(zval).ui32;
