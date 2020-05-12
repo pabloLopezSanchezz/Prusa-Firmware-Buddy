@@ -26,8 +26,7 @@ public:
     }
 
     inline float GetHeaterCurrent() const {
-        float mvToAmper = 0.022;
-        return (RawValueToVoltage(rawHeaterCurrent * 1000) / mvToAmper);
+        return ((RawValueToVoltage(rawHeaterCurrent) / 2.20f) * 2);
     }
 
     inline int GetHeaterCurrentRaw() const {
@@ -35,8 +34,7 @@ public:
     }
 
     inline float GetInputCurrent() const {
-        float mvToAmper = 90.00;
-        return ((RawValueToVoltage(rawInputCurrent) * 1000) / mvToAmper);
+        return ((2.4f / RawValueToVoltage(rawInputCurrent)) * 0.9f);
     }
 
     inline int GetInputCurrentRaw() const {
