@@ -29,6 +29,7 @@
 #include "hwio.h"
 #include "eeprom.h"
 #include "filament_sensor.h"
+#include "main.h"
 
 #ifdef MINDA_BROKEN_CABLE_DETECTION
     #include "Z_probe.h" //get_Z_probe_endstop_hits
@@ -90,8 +91,6 @@ extern IWDG_HandleTypeDef hiwdg; //watchdog handle
 
 //-----------------------------------------------------------------------------
 // variables
-extern uint32_t Tacho_FAN0;
-extern uint32_t Tacho_FAN1;
 
 osThreadId marlin_server_task = 0;    // task handle
 osMessageQId marlin_server_queue = 0; // input queue (uint8_t)
@@ -191,11 +190,13 @@ void print_fan_spd() {
             serial_echopair_PGM("Tacho_FAN0 ", (30 * 1000 * Tacho_FAN0) / timediff); //60s / 2 pulses per rotation
             serialprintPGM("rpm ");
             SERIAL_EOL();
+#ifdef FAN0_TACH_Pin
             serial_echopair_PGM("Tacho_FAN1 ", (30 * 1000 * Tacho_FAN1) / timediff);
             serialprintPGM("rpm ");
+            Tacho_FAN1 = 0;
+#endif
             SERIAL_EOL();
             Tacho_FAN0 = 0;
-            Tacho_FAN1 = 0;
             last_prt = time;
         }
     }
@@ -765,7 +766,9 @@ uint64_t _server_update_vars(uint64_t update) {
     }
 
     if (update & MARLIN_VAR_MSK(MARLIN_VAR_FANSPEED)) {
+#if FAN_COUNT > 0
         v.ui8 = thermalManager.fan_speed[0];
+#endif
         if (marlin_server.vars.fan_speed != v.ui8) {
             marlin_server.vars.fan_speed = v.ui8;
             changes |= MARLIN_VAR_MSK(MARLIN_VAR_FANSPEED);
@@ -957,7 +960,9 @@ int _server_set_var(char *name_val_str) {
 #endif //HAS_BED_PROBE
                 break;
             case MARLIN_VAR_FANSPEED:
+#if FAN_COUNT > 0
                 thermalManager.set_fan_speed(0, marlin_server.vars.fan_speed);
+#endif
                 var_change_update = true;
                 break;
             case MARLIN_VAR_PRNSPEED:

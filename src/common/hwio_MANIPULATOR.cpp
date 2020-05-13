@@ -39,9 +39,10 @@ namespace {
 enum digIn {
     ePIN_Z_MAX = PIN_Z_MAX,
     ePIN_X_MAX = PIN_X_MAX,
+    ePIN_X2_MAX = PIN_X2_MAX,
     ePIN_E_DIAG = PIN_E_DIAG,
     ePIN_Y_DIAG = PIN_Y_DIAG,
-    ePIN_X_DIAG = PIN_X_DIAG,
+    ePIN_X1_DIAG = PIN_X1_DIAG,
     ePIN_Z_DIAG = PIN_Z_DIAG,
     ePIN_BTN_ENC = PIN_BTN_ENC,
     ePIN_BTN_EN1 = PIN_BTN_ENC,
@@ -50,10 +51,13 @@ enum digIn {
 
 // a3ides digital output pins
 enum digOut {
-    ePIN_X_DIR = PIN_X_DIR,
-    ePIN_X_STEP = PIN_X_STEP,
+    ePIN_X1_DIR = PIN_X1_DIR,
+    ePIN_X1_STEP = PIN_X1_STEP,
     ePIN_Z_ENABLE = PIN_Z_ENABLE,
-    ePIN_X_ENABLE = PIN_X_ENABLE,
+    ePIN_X1_ENABLE = PIN_X1_ENABLE,
+    ePIN_X2_STEP = PIN_X2_STEP,
+    ePIN_X2_DIR = PIN_X2_DIR,
+    ePIN_X2_ENABLE = PIN_X2_ENABLE,
     ePIN_Z_STEP = PIN_Z_STEP,
     ePIN_E_DIR = PIN_E_DIR,
     ePIN_E_STEP = PIN_E_STEP,
@@ -85,8 +89,6 @@ static int _tim3_period_us = GEN_PERIOD_US(TIM3_default_Prescaler, TIM3_default_
 static const uint32_t _pwm_pin32[] = {
     PIN_HEATER_0,
     PIN_HEATER_BED,
-    PIN_FAN1,
-    PIN_FAN
 };
 
 static const uint32_t _pwm_chan[] = {
@@ -99,8 +101,6 @@ static const uint32_t _pwm_chan[] = {
 static TIM_HandleTypeDef *_pwm_p_htim[] = {
     &htim3, //_PWM_HEATER_BED
     &htim3, //_PWM_HEATER_0
-    &htim1, //_PWM_FAN1
-    &htim1, //_PWM_FAN
 };
 
 static int *const _pwm_period_us[] = {
@@ -125,9 +125,9 @@ static const TIM_OC_InitTypeDef sConfigOC_default = {
 };
 
 // a3ides pwm output maximum values  as arduino analogWrite
-static const int _pwm_analogWrite_max[_PWM_CNT] = { 0xff, 0xff, 0xff, 0xff };
+static const int _pwm_analogWrite_max[_PWM_CNT] = { 0xff, 0xff };
 // a3ides fan output values  as arduino analogWrite
-static int _pwm_analogWrite_val[_PWM_CNT] = { 0, 0, 0, 0 };
+static int _pwm_analogWrite_val[_PWM_CNT] = { 0, 0 };
 
 /*****************************************************************************
  * private function declarations
@@ -378,7 +378,7 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return sim_motion_get_diag(3);
         case PIN_Y_DIAG:
             return sim_motion_get_diag(1);
-        case PIN_X_DIAG:
+        case PIN_X1_DIAG:
             return sim_motion_get_diag(0);
         case PIN_Z_DIAG:
             return sim_motion_get_diag(2);
@@ -387,12 +387,14 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return gpio_get(digIn::ePIN_Z_MAX);
         case PIN_X_MAX:
             return gpio_get(digIn::ePIN_X_MAX);
+        case PIN_X2_MAX:
+            return gpio_get(digIn::ePIN_X2_MAX);
         case PIN_E_DIAG:
             return gpio_get(digIn::ePIN_E_DIAG);
         case PIN_Y_DIAG:
             return gpio_get(digIn::ePIN_Y_DIAG);
-        case PIN_X_DIAG:
-            return gpio_get(digIn::ePIN_X_DIAG);
+        case PIN_X1_DIAG:
+            return gpio_get(digIn::ePIN_X1_DIAG);
         case PIN_Z_DIAG:
             return gpio_get(digIn::ePIN_Z_DIAG);
 #endif //SIM_MOTION
@@ -431,28 +433,17 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
 #endif //SIM_HEATER_NOZZLE_ADC
                 _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_0, ulVal ? _pwm_analogWrite_max[HWIO_PWM_HEATER_0] : 0);
             return;
-        case PIN_FAN1:
-            //_hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN1] : 0);
-#ifdef PRINTER_PRUSA_MK4
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 200 : 0);
-#else
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulVal ? 100 : 0);
-#endif
-            return;
-        case PIN_FAN:
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulVal ? _pwm_analogWrite_max[HWIO_PWM_FAN] : 0);
-            return;
 #ifdef SIM_MOTION
-        case PIN_X_DIR:
+        case PIN_X1_DIR:
             sim_motion_set_dir(0, ulVal ? 1 : 0);
             return;
-        case PIN_X_STEP:
+        case PIN_X1_STEP:
             sim_motion_set_stp(0, ulVal ? 1 : 0);
             return;
         case PIN_Z_ENABLE:
             sim_motion_set_ena(2, ulVal ? 1 : 0);
             return;
-        case PIN_X_ENABLE:
+        case PIN_X1_ENABLE:
             sim_motion_set_ena(0, ulVal ? 1 : 0);
             return;
         case PIN_Z_STEP:
@@ -480,17 +471,26 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
             sim_motion_set_dir(2, ulVal ? 1 : 0);
             return;
 #else  //SIM_MOTION
-        case PIN_X_DIR:
-            gpio_set(digOut::ePIN_X_DIR, ulVal ? 1 : 0);
+        case PIN_X1_DIR:
+            gpio_set(digOut::ePIN_X1_DIR, ulVal ? 1 : 0);
             return;
-        case PIN_X_STEP:
-            gpio_set(digOut::ePIN_X_STEP, ulVal ? 1 : 0);
+        case PIN_X1_STEP:
+            gpio_set(digOut::ePIN_X1_STEP, ulVal ? 1 : 0);
             return;
         case PIN_Z_ENABLE:
             gpio_set(digOut::ePIN_Z_ENABLE, ulVal ? 1 : 0);
             return;
-        case PIN_X_ENABLE:
-            gpio_set(digOut::ePIN_X_ENABLE, ulVal ? 1 : 0);
+        case PIN_X1_ENABLE:
+            gpio_set(digOut::ePIN_X1_ENABLE, ulVal ? 1 : 0);
+            return;
+        case PIN_X2_STEP:
+            gpio_set(digOut::ePIN_X2_STEP, ulVal ? 1 : 0);
+            return;
+        case PIN_X2_DIR:
+            gpio_set(digOut::ePIN_X2_DIR, ulVal ? 1 : 0);
+            return;
+        case PIN_X2_ENABLE:
+            gpio_set(digOut::ePIN_X2_ENABLE, ulVal ? 1 : 0);
             return;
         case PIN_Z_STEP:
             gpio_set(digOut::ePIN_Z_STEP, ulVal ? 1 : 0);
@@ -549,13 +549,6 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
 void hwio_arduino_analogWrite(uint32_t ulPin, uint32_t ulValue) {
     if (HAL_PWM_Initialized) {
         switch (ulPin) {
-        case PIN_FAN1:
-            //hwio_fan_set_pwm(_FAN1, ulValue);
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN1, ulValue);
-            return;
-        case PIN_FAN:
-            _hwio_pwm_analogWrite_set_val(HWIO_PWM_FAN, ulValue);
-            return;
         case PIN_HEATER_BED:
             _hwio_pwm_analogWrite_set_val(HWIO_PWM_HEATER_BED, ulValue);
             return;
