@@ -542,7 +542,9 @@ static void _server_print_loop(void) {
     case mpsAborting_Begin:
         media_print_stop();
         thermalManager.disable_all_heaters();
+#if FAN_COUNT > 0
         thermalManager.set_fan_speed(0, 0);
+#endif
         print_job_timer.stop();
         planner.quick_stop();
         marlin_server.print_state = mpsAborting_WaitIdle;
@@ -583,10 +585,10 @@ static void _server_print_loop(void) {
 }
 
 void marlin_server_park_head(void) {
+#if ENABLED(NOZZLE_PARK_FEATURE)
     constexpr feedRate_t fr_xy = NOZZLE_PARK_XY_FEEDRATE, fr_z = NOZZLE_PARK_Z_FEEDRATE;
     constexpr xyz_pos_t park = NOZZLE_PARK_POINT;
     //homed check
-#if ENABLED(NOZZLE_PARK_FEATURE)
     if (all_axes_homed() && all_axes_known()) {
         planner.synchronize();
         marlin_server.resume_pos[0] = current_position.x;
@@ -600,9 +602,11 @@ void marlin_server_park_head(void) {
         current_position.set(park.x, park.y);
         line_to_current_position(fr_xy);
     }
+#endif //NOZZLE_PARK_FEATURE
 }
 
 void marlin_server_unpark_head(void) {
+#if ENABLED(NOZZLE_PARK_FEATURE)
     constexpr feedRate_t fr_xy = NOZZLE_PARK_XY_FEEDRATE, fr_z = NOZZLE_PARK_Z_FEEDRATE;
     if (all_axes_homed() && all_axes_known()) {
         planner.synchronize();
