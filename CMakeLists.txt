@@ -277,7 +277,9 @@ target_link_libraries(FatFs_Config INTERFACE A3idesHeaders STM32::USBHost)
 
 add_library(Marlin_Config INTERFACE)
 # TODO: fix dependency on src/common and src/gui
-target_include_directories(Marlin_Config INTERFACE include/marlin src/common src/gui)
+target_include_directories(
+  Marlin_Config INTERFACE include/marlin src/common src/gui src/marlin_stubs/include
+  )
 target_link_libraries(Marlin_Config INTERFACE A3idesHeaders FreeRTOS::FreeRTOS)
 
 #
@@ -486,7 +488,7 @@ target_sources(
           src/common/eeprom.cpp
           src/common/eeprom_loadsave.c
           src/common/marlin_vars.c
-          src/common/marlin_host.c
+          src/common/media.cpp
           src/common/sim_bed.c
           src/common/sys.cpp
           src/common/sim_nozzle.c
@@ -496,6 +498,7 @@ target_sources(
           src/common/safe_state.c
           src/common/variant8.cpp
           src/common/dbg.c
+          src/common/wdt.cpp
           src/common/dump.c
           src/common/marlin_client.c
           src/common/bsod.c
@@ -510,7 +513,6 @@ target_sources(
           src/common/uartrxbuff.c
           src/common/loadcell.cpp
           src/common/loadcell_endstops.cpp
-          src/common/Marlin_CardReader.cpp
           src/common/appmain.cpp
           src/common/app_metrics.cpp
           src/common/sim_heater.cpp
@@ -554,7 +556,7 @@ endif()
 if(GUI)
   target_sources(
     firmware
-    PRIVATE src/gui/screen_menu_filament.c
+    PRIVATE src/gui/screen_menu_filament.cpp
             src/gui/dialogs/Dialog_C_wrapper.cpp
             src/gui/dialogs/IDialog.cpp
             src/gui/dialogs/DialogFactory.cpp
@@ -566,7 +568,7 @@ if(GUI)
             src/gui/dialogs/window_dlg_wait.c
             src/gui/dialogs/window_dlg_popup.c
             src/gui/dialogs/window_dlg_preheat.c
-            src/gui/screen_menu_temperature.c
+            src/gui/screen_menu_temperature.cpp
             src/gui/guimain.c
             src/gui/resource.c
             src/gui/window_file_list.c
@@ -574,26 +576,26 @@ if(GUI)
             src/gui/pngview.c
             src/gui/wizard/selftest_temp.c
             src/gui/window_temp_graph.c
-            src/gui/screen_menu_settings.c
+            src/gui/screen_menu_settings.cpp
             src/gui/wizard/wizard_progress_bar.c
             src/gui/wizard/firstlay.c
             src/gui/wizard/selftest_cool.c
             src/gui/window_header.c
             src/gui/screen_sysinf.c
-            src/gui/screen_version_info.cpp
+            src/gui/screen_menu_version_info.cpp
             src/gui/test_display.c
             src/gui/screen_splash.c
-            src/gui/screen_menu_service.c
-            src/gui/screen_menu_calibration.c
-            src/gui/screen_menu.c
+            src/gui/screen_menu_service.cpp
+            src/gui/screen_menu_calibration.cpp
+            src/gui/screen_menu.cpp
             src/gui/screen_print_preview.c
-            src/gui/screen_messages.c
-            src/gui/screen_menu_info.c
+            src/gui/screen_menu_messages.cpp
+            src/gui/screen_menu_info.cpp
             src/gui/screen_watchdog.c
-            src/gui/screen_menu_move.c
-            src/gui/screen_lan_settings.c
-            src/gui/screen_qr_info.cpp
-            src/gui/screen_qr_error.cpp
+            src/gui/screen_menu_move.cpp
+            src/gui/screen_menu_lan_settings.cpp
+            src/gui/screen_menu_qr_info.cpp
+            src/gui/screen_menu_qr_error.cpp
             $<$<STREQUAL:${FILAMENT_SENSOR},HX711>:src/gui/test/screen_test_HX711.cpp>
             src/gui/test/screen_test.c
             src/gui/test/screen_test_disp_mem.c
@@ -621,8 +623,8 @@ if(GUI)
             src/gui/screen_printing_serial.cpp
             src/gui/screen_menu_tune.cpp
             src/gui/screen_PID.cpp
-            src/gui/screen_menu_fw_update.c
-            src/gui/test/screen_test_temperature.cpp
+            src/gui/screen_menu_fw_update.cpp
+            src/gui/test/screen_menu_test_temperature.cpp
             src/gui/wizard/selftest_fans_axis.c
             src/gui/test/screen_mesh_bed_lv.cpp
             src/gui/wizard/Marlin_PID_wrapper.cpp
@@ -635,7 +637,7 @@ if(GUI)
             src/guiapi/src/window_frame.c
             src/guiapi/src/gui_timer.c
             src/guiapi/src/display_helper.c
-            src/guiapi/src/window_menu.c
+            src/guiapi/src/window_menu.cpp
             src/guiapi/src/screen.c
             src/guiapi/src/screen_close_multiple.cpp
             src/guiapi/src/window_term.c

@@ -4,6 +4,8 @@
 #define _CONFIG_A3IDES2209_02_H
 
 #include "printers.h"
+#define PRUSA_MARLIN_API
+
 //--------------------------------------
 //DBG - debug/trace configuration
 #define DBG_RTOS // use FreeRTOS (semaphore and osDelay instead of HAL_Delay)
@@ -14,6 +16,13 @@
     #define DBG_LEVEL 1 // debug level (0..3)
 #else
 //#define DBG_SWO        // trace to swo port
+#endif //_DEBUG
+
+//--------------------------------------
+//WDT - watchdog timers (IWDG, WWDG)
+#ifndef _DEBUG
+    #define WDT_IWDG_ENABLED
+    //#define WDT_WWDG_ENABLED
 #endif //_DEBUG
 
 //show filament sensor status in header
@@ -147,5 +156,8 @@
 //#define SIM_MOTION_TRACE_Y
 //#define SIM_MOTION_TRACE_Z
 #endif //SIM_MOTION
+
+//new pause settings
+#define PAUSE_NOZZLE_TIMEOUT 45 // nozzle "sleep" after 45s inside paused state
 
 #endif //_CONFIG_A3IDES2209_02_H

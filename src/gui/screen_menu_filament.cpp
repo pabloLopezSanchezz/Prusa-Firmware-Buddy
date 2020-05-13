@@ -1,7 +1,7 @@
 // screen_menu_filament.c
 
 #include "gui.h"
-#include "screen_menu.h"
+#include "screen_menu.hpp"
 #include "filament.h"
 #include "filament_sensor.h"
 #include "marlin_client.h"
@@ -105,7 +105,7 @@ int screen_menu_filament_event(screen_t *screen, window_t *window, uint8_t event
                 break;
             case MI_PURGE:
                 p_window_header_set_text(&(psmd->header), "PURGE FILAM.");
-                // todo purge dialog
+                gui_dlg_purge();
                 p_window_header_set_text(&(psmd->header), "FILAMENT");
                 break;
             }
@@ -123,4 +123,4 @@ screen_t screen_menu_filament = {
     0,                          //pdata
 };
 
-screen_t *const get_scr_menu_filament() { return &screen_menu_filament; }
+extern "C" screen_t *const get_scr_menu_filament() { return &screen_menu_filament; }

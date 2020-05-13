@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "sound_C_wrapper.h"
+#include "wdt.h"
 
 #ifndef HAS_GUI
     #error "HAS_GUI not defined"
@@ -122,10 +123,6 @@ typedef tskTCB TCB_t;
 //current thread from FreeRTOS
 extern PRIVILEGED_INITIALIZED_DATA TCB_t *volatile pxCurrentTCB;
 
-    #ifndef _DEBUG
-extern IWDG_HandleTypeDef hiwdg; //watchdog handle
-    #endif //_DEBUG
-
     #define PADDING 10
     #define X_MAX   (display->w - PADDING * 2)
 
@@ -182,7 +179,7 @@ void general_error(const char *error, const char *module) {
 
     display->draw_text(rect_ui16(PADDING, PADDING, X_MAX, 22), error, gui_defaults.font, //resource_font(IDR_FNT_NORMAL),
         COLOR_RED_ALERT, COLOR_WHITE);
-    display->draw_line(point_ui16(PADDING, 30), point_ui16(display->w - PADDING, 30), COLOR_WHITE);
+    display->draw_line(point_ui16(PADDING, 30), point_ui16(display->w - 1 - PADDING, 30), COLOR_WHITE);
 
     term_printf(&term, module);
     term_printf(&term, "\n");
@@ -203,9 +200,7 @@ void general_error(const char *error, const char *module) {
 
     //cannot use jogwheel_signals  (disabled interrupt)
     while (1) {
-    #ifndef _DEBUG
-        HAL_IWDG_Refresh(&hiwdg);
-    #endif //_DEBUG
+        wdt_iwdg_refresh();
         if (!gpio_get(jogwheel_config.pinENC))
             sys_reset(); //button press
     }
@@ -291,9 +286,7 @@ void _bsod(const char *fmt, const char *file_name, int line_number, ...) {
 
     while (1) //endless loop
     {
-    #ifndef _DEBUG
-        HAL_IWDG_Refresh(&hiwdg); //watchdog reset
-    #endif //_DEBUG
+        wdt_iwdg_refresh();
 
         //TODO: safe delay with sleep
     }
@@ -544,9 +537,7 @@ void ScreenHardFault(void) {
 
     while (1) //endless loop
     {
-        #ifndef _DEBUG
-        HAL_IWDG_Refresh(&hiwdg); //watchdog reset
-        #endif //_DEBUG
+        wdt_iwdg_refresh();
 
         //TODO: safe delay with sleep
     }
