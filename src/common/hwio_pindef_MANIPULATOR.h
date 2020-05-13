@@ -10,16 +10,21 @@
 #define PIN_TEMP_HEATBREAK PA6
 #define PIN_Z_MAX          PA8
 #define PIN_X_MAX          PA0
+#define PIN_X2_MAX         PE10
 
 #define PIN_HEATER_BED PB0
 #define PIN_HEATER_0   PB1
 
 #define PIN_TEMP_0 PC0
 
-#define PIN_X_DIR    PC8
-#define PIN_X_STEP   PC9
-#define PIN_X_ENABLE PD11
-#define PIN_X_DIAG   PE2
+#define PIN_X1_DIR    PC8
+#define PIN_X1_STEP   PC9
+#define PIN_X1_ENABLE PD11
+#define PIN_X1_DIAG   PE2
+
+#define PIN_X2_STEP   PE12
+#define PIN_X2_DIR    PE15
+#define PIN_X2_ENABLE PE13
 
 #define PIN_Y_DIR    PD12
 #define PIN_Y_STEP   PD13
@@ -36,8 +41,6 @@
 #define PIN_E_ENABLE PD10
 #define PIN_E_DIAG   PA15
 
-#define PIN_FAN1    PE9
-#define PIN_FAN     PE11
 #define PIN_BTN_ENC PE12
 #define PIN_BTN_EN1 PE13
 #define PIN_BTN_EN2 PE15

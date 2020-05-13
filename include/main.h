@@ -15,10 +15,6 @@ extern TIM_HandleTypeDef htim3;
 
 extern void Error_Handler(void);
 
-#ifdef __cplusplus
-}
-#endif //__cplusplus
-
 #if (!defined(PRINTER_PRUSA_MINI) || !defined(PRINTER_PRUSA_MK4)             \
     || !defined(PRINTER_PRUSA_XL) || !defined(PRINTER_PRUSA_IXL)             \
     || !defined(PRINTER_PRUSA_MANIPULATOR) || !defined(PRINTER_PRUSA_PICKER) \
@@ -42,3 +38,14 @@ extern void Error_Handler(void);
 #else
     #error "Unknown PRINTER_TYPE!"
 #endif
+
+#ifdef FAN1_TACH_Pin
+extern volatile uint32_t Tacho_FAN0;
+#endif
+#ifdef FAN0_TACH_Pin
+extern volatile uint32_t Tacho_FAN1;
+#endif
+
+#ifdef __cplusplus
+}
+#endif //__cplusplus
