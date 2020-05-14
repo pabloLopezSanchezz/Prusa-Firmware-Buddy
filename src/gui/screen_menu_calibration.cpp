@@ -1,7 +1,7 @@
 // screen_menu_calibration.c
 
 #include "gui.h"
-#include "screen_menu.h"
+#include "screen_menu.hpp"
 #include "marlin_client.h"
 #include "wizard/wizard.h"
 #include "window_dlg_wait.h"
@@ -17,11 +17,6 @@ typedef enum {
     MI_AUTO_HOME,
     MI_MESH_BED,
     MI_SELFTEST,
-//	MI_CALIB_XYZ,
-#ifdef WIZARD_Z_CALIBRATION
-//	MI_CALIB_Z,
-#endif
-    //	MI_CALIB_XY,
     MI_CALIB_FIRST,
     MI_COUNT
 } MI_t;
@@ -32,11 +27,6 @@ const menu_item_t _menu_calibration_items[] = {
     { { "Auto Home", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
     { { "Mesh Bed Level.", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
     { { "SelfTest", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
-//	{{"XYZ calibration",   0, WI_LABEL,  }, SCREEN_MENU_NO_SCREEN},
-#ifdef WIZARD_Z_CALIBRATION
-//	{{"Z calibration",     0, WI_LABEL,  }, SCREEN_MENU_NO_SCREEN},
-#endif
-    //	{{"XY calibration",    0, WI_LABEL   }, SCREEN_MENU_NO_SCREEN},
     { { "First Layer Cal.", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
 };
 
@@ -65,6 +55,14 @@ void screen_menu_calibration_init(screen_t *screen) {
     psmd->items[MI_Z_OFFSET].item.wi_spin_fl.range = zoffset_fl_range;
 }
 
+int8_t gui_marlin_G28_or_G29_in_progress() {
+    uint32_t cmd = marlin_command();
+    if ((cmd == MARLIN_CMD_G28) || (cmd == MARLIN_CMD_G29))
+        return -1;
+    else
+        return 0;
+}
+
 int screen_menu_calibration_event(screen_t *screen, window_t *window, uint8_t event, void *param) {
     if (screen_menu_event(screen, window, event, param))
         return 1;
@@ -78,22 +76,29 @@ int screen_menu_calibration_event(screen_t *screen, window_t *window, uint8_t ev
             wizard_run_complete();
             break;
         case MI_AUTO_HOME:
+            marlin_event_clr(MARLIN_EVT_CommandBegin);
             marlin_gcode("G28");
-            gui_dlg_wait(gui_marlin_busy_callback);
+            while (!marlin_event_clr(MARLIN_EVT_CommandBegin))
+                marlin_client_loop();
+            gui_dlg_wait(gui_marlin_G28_or_G29_in_progress);
             break;
         case MI_MESH_BED:
-            marlin_gcode("G28");
+            if (!marlin_all_axes_homed()) {
+                marlin_event_clr(MARLIN_EVT_CommandBegin);
+                marlin_gcode("G28");
+                while (!marlin_event_clr(MARLIN_EVT_CommandBegin))
+                    marlin_client_loop();
+                gui_dlg_wait(gui_marlin_G28_or_G29_in_progress);
+            }
+            marlin_event_clr(MARLIN_EVT_CommandBegin);
             marlin_gcode("G29");
-            gui_dlg_wait(gui_marlin_busy_callback);
+            while (!marlin_event_clr(MARLIN_EVT_CommandBegin))
+                marlin_client_loop();
+            gui_dlg_wait(gui_marlin_G28_or_G29_in_progress);
             break;
         case MI_SELFTEST:
             wizard_run_selftest();
             break;
-            /*			case MI_CALIB_XYZ:   wizard_run_xyzcalib(); break;
-#ifdef WIZARD_Z_CALIBRATION
-			case MI_CALIB_Z:     wizard_run_xyzcalib_z(); break;
-#endif
-			case MI_CALIB_XY:    wizard_run_xyzcalib_xy(); break;*/
         case MI_CALIB_FIRST:
             wizard_run_firstlay();
             break;
@@ -113,4 +118,4 @@ screen_t screen_menu_calibration = {
     0,                          //pdata
 };
 
-screen_t *const get_scr_menu_calibration() { return &screen_menu_calibration; }
+extern "C" screen_t *const get_scr_menu_calibration() { return &screen_menu_calibration; }
