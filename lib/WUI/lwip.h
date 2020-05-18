@@ -83,6 +83,8 @@ extern "C" {
 #include "wui_api.h"
 /* Global Variables ---------------------------------------------------------*/
 
+#define BUDDY_ENABLE_CONNECT
+
 extern struct netif eth0;
 extern ip4_addr_t ipaddr;
 extern ip4_addr_t netmask;

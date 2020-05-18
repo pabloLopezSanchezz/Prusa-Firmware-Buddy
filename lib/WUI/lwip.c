@@ -58,7 +58,7 @@
 #include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/netif.h"
-
+#include "dns.h"
 #include <string.h>
 
 #include "dbg.h"
@@ -129,6 +129,9 @@ void MX_LWIP_Init(void) {
         ipaddr.addr = ethconfig.lan.addr_ip4.addr;
         netmask.addr = ethconfig.lan.msk_ip4.addr;
         gw.addr = ethconfig.lan.gw_ip4.addr;
+
+        dns_setserver(0, &ethconfig.dns1_ip4);
+        dns_setserver(1, &ethconfig.dns2_ip4);
 
         netif_set_addr(&eth0, &ipaddr, &netmask, &gw);
     }

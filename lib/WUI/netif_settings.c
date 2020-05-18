@@ -1,5 +1,6 @@
 #include "netifapi.h"
 #include "dhcp.h"
+#include "dns.h"
 #include "wui_api.h"
 #include "lwip.h"
 
@@ -68,6 +69,12 @@ void set_LAN_to_static(ETH_config_t *config) {
         (const ip4_addr_t *)&ipaddr,
         (const ip4_addr_t *)&netmask,
         (const ip4_addr_t *)&gw);
+    if (config->var_mask & ETHVAR_MSK(ETHVAR_DNS1_IP4)) {
+        dns_setserver(0, &config->dns1_ip4);
+    }
+    if (config->var_mask & ETHVAR_MSK(ETHVAR_DNS2_IP4)) {
+        dns_setserver(1, &config->dns2_ip4);
+    }
     if (netif_is_link_up(&eth0) && IS_LAN_ON(config->lan.flag)) {
         netifapi_netif_set_up(&eth0);
     }

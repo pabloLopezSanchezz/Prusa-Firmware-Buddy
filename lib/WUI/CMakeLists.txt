@@ -8,6 +8,7 @@ target_sources(WUI INTERFACE
   http/altcp_proxyconnect.c
   http/fs.c
   http/httpd.c
+  http/http_client.c
   lwip.c
   ethernetif.c
   netif_settings.c

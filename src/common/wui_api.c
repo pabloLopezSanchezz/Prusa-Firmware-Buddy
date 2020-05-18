@@ -55,6 +55,27 @@ static int ini_handler_func(void *user, const char *section, const char *name, c
         if (ip4addr_aton(value, &tmp_config->lan.gw_ip4)) {
             tmp_config->var_mask |= ETHVAR_MSK(ETHVAR_LAN_GW_IP4);
         }
+    } else if (ini_string_match(section, "lan_ip4", name, "dns1")) {
+        if (ip4addr_aton(value, &tmp_config->dns1_ip4)) {
+            tmp_config->var_mask |= ETHVAR_MSK(ETHVAR_DNS1_IP4);
+        }
+    } else if (ini_string_match(section, "lan_ip4", name, "dns2")) {
+        if (ip4addr_aton(value, &tmp_config->dns2_ip4)) {
+            tmp_config->var_mask |= ETHVAR_MSK(ETHVAR_DNS2_IP4);
+        }
+    } else if (ini_string_match(section, "connect", name, "address")) {
+        if (ip4addr_aton(value, &tmp_config->connect.ip4)) {
+            tmp_config->var_mask |= ETHVAR_MSK(ETHVAR_CONNECT_IP4);
+        }
+    } else if (ini_string_match(section, "connect", name, "token")) {
+        strlcpy(tmp_config->connect.token, value, CONNECT_TOKEN_LEN + 1);
+        tmp_config->var_mask |= ETHVAR_MSK(ETHVAR_CONNECT_TOKEN);
+    } else if (ini_string_match(section, "connect", name, "port")) {
+        int32_t tmp = atoi(value);
+        if (tmp >= 0 && tmp <= MAX_UINT16) {
+            tmp_config->connect.port = (uint16_t)tmp;
+            tmp_config->var_mask |= ETHVAR_MSK(ETHVAR_CONNECT_PORT);
+        }
     } else {
         return 0; /* unknown section/name, error */
     }
@@ -87,10 +108,27 @@ uint32_t save_eth_params(ETH_config_t *ethconfig) {
     if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_LAN_GW_IP4)) {
         eeprom_set_var(EEVAR_LAN_IP4_GW, variant8_ui32(ethconfig->lan.gw_ip4.addr));
     }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_DNS1_IP4)) {
+        eeprom_set_var(EEVAR_LAN_IP4_DNS2, variant8_ui32(ethconfig->dns2_ip4.addr));
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_DNS2_IP4)) {
+        eeprom_set_var(EEVAR_LAN_IP4_DNS1, variant8_ui32(ethconfig->dns1_ip4.addr));
+    }
     if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_HOSTNAME)) {
         variant8_t hostname = variant8_pchar(ethconfig->hostname, 0, 0);
         eeprom_set_var(EEVAR_LAN_HOSTNAME, hostname);
         //variant8_done() is not called, variant_pchar with init flag 0 doesnt hold its memory
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_CONNECT_TOKEN)) {
+        variant8_t token = variant8_pchar(ethconfig->connect.token, 0, 0);
+        eeprom_set_var(EEVAR_CONNECT_TOKEN, token);
+        //variant8_done() is not called, variant_pchar with init flag 0 doesnt hold its memory
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_CONNECT_IP4)) {
+        eeprom_set_var(EEVAR_CONNECT_IP4, variant8_ui32(ethconfig->connect.ip4.addr));
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_CONNECT_PORT)) {
+        eeprom_set_var(EEVAR_CONNECT_PORT, variant8_ui16(ethconfig->connect.port));
     }
     if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_TIMEZONE)) {
         eeprom_set_var(EEVAR_TIMEZONE, variant8_i8(ethconfig->timezone));
@@ -113,10 +151,27 @@ uint32_t load_eth_params(ETH_config_t *ethconfig) {
     if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_LAN_GW_IP4)) {
         ethconfig->lan.gw_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_GW).ui32;
     }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_DNS1_IP4)) {
+        ethconfig->dns1_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS1).ui32;
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_DNS2_IP4)) {
+        ethconfig->dns2_ip4.addr = eeprom_get_var(EEVAR_LAN_IP4_DNS2).ui32;
+    }
     if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_HOSTNAME)) {
         variant8_t hostname = eeprom_get_var(EEVAR_LAN_HOSTNAME);
         strlcpy(ethconfig->hostname, hostname.pch, ETH_HOSTNAME_LEN + 1);
         variant8_done(&hostname);
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_CONNECT_TOKEN)) {
+        variant8_t token = eeprom_get_var(EEVAR_CONNECT_TOKEN);
+        strlcpy(ethconfig->connect.token, token.pch, CONNECT_TOKEN_LEN + 1);
+        variant8_done(&token);
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_CONNECT_IP4)) {
+        ethconfig->connect.ip4.addr = eeprom_get_var(EEVAR_CONNECT_IP4).ui32;
+    }
+    if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_CONNECT_PORT)) {
+        ethconfig->connect.port = eeprom_get_var(EEVAR_CONNECT_PORT).ui16;
     }
     if (ethconfig->var_mask & ETHVAR_MSK(ETHVAR_TIMEZONE)) {
         ethconfig->timezone = eeprom_get_var(EEVAR_TIMEZONE).i8;
@@ -151,15 +206,18 @@ void parse_MAC_address(mac_address_t *dest) {
 
 void stringify_eth_for_ini(ini_file_str_t *dest, ETH_config_t *config) {
     char addr[IP4_ADDR_STR_SIZE], msk[IP4_ADDR_STR_SIZE], gw[IP4_ADDR_STR_SIZE];
-
+    char dns1[IP4_ADDR_STR_SIZE], dns2[IP4_ADDR_STR_SIZE], connect[IP4_ADDR_STR_SIZE];
     ip4addr_ntoa_r(&(config->lan.addr_ip4), addr, IP4_ADDR_STR_SIZE);
     ip4addr_ntoa_r(&(config->lan.msk_ip4), msk, IP4_ADDR_STR_SIZE);
     ip4addr_ntoa_r(&(config->lan.gw_ip4), gw, IP4_ADDR_STR_SIZE);
+    ip4addr_ntoa_r(&(config->dns1_ip4), dns1, IP4_ADDR_STR_SIZE);
+    ip4addr_ntoa_r(&(config->dns2_ip4), dns2, IP4_ADDR_STR_SIZE);
+    ip4addr_ntoa_r(&(config->connect.ip4), connect, IP4_ADDR_STR_SIZE);
 
     snprintf(*dest, MAX_INI_SIZE,
-        "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\n",
+        "[lan_ip4]\ntype=%s\nhostname=%s\naddress=%s\nmask=%s\ngateway=%s\ndns1=%s\ndns2=%s\n\n[connect]\naddress=%s\ntoken=%s\nport=%u\n",
         IS_LAN_STATIC(config->lan.flag) ? "STATIC" : "DHCP", config->hostname,
-        addr, msk, gw);
+        addr, msk, gw, dns1, dns2, connect, config->connect.token, config->connect.port);
 }
 
 void stringify_eth_for_screen(lan_descp_str_t *dest, ETH_config_t *config) {
