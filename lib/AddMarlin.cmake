@@ -31,6 +31,7 @@ add_library(
   Marlin/Marlin/src/gcode/bedlevel/ubl/G29.cpp
   Marlin/Marlin/src/gcode/bedlevel/ubl/M421.cpp
   Marlin/Marlin/src/gcode/calibrate/G28.cpp
+  Marlin/Marlin/src/gcode/calibrate/M666.cpp
   Marlin/Marlin/src/gcode/config/M200-M205.cpp
   Marlin/Marlin/src/gcode/config/M220.cpp
   Marlin/Marlin/src/gcode/config/M221.cpp
@@ -116,7 +117,6 @@ add_library(
   Marlin/Marlin/src/HAL/HAL_STM32_F4_F7/STM32F4/timers.cpp
   Marlin/Marlin/src/HAL/HAL_STM32_F4_F7/STM32F7/timers.cpp
   Marlin/Marlin/src/HAL/HAL_STM32_F4_F7/STM32F7/TMC2660.cpp
-  Marlin/Marlin/src/HAL/HAL_STM32_F4_F7/watchdog.cpp
   Marlin/Marlin/src/HAL/shared/backtrace/backtrace.cpp
   Marlin/Marlin/src/HAL/shared/backtrace/unwarm.cpp
   Marlin/Marlin/src/HAL/shared/backtrace/unwarm_arm.cpp

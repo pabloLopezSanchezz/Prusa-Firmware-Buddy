@@ -1,6 +1,5 @@
 //config.h - main configuration file
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#pragma once
 
 #include "printers.h"
 #include <avr/pgmspace.h>
@@ -11,23 +10,15 @@
 #ifdef BUDDY_ENABLE_WUI
     #define BUDDY_ENABLE_ETHERNET
 #endif //BUDDY_ENABLE_WUI
-//--------------------------------------
+
 // Disable wizard startup check on splash screen
 #define DISABLE_WIZARD_CHECK_STARTUP
 
-//--------------------------------------
-//LCDSIM configuration
-
-//defined as external
-#ifdef LCDSIM
-    #undef BUDDY_ENABLE_ETHERNET
-    #define LCDSIM_COLS 20
-    #define LCDSIM_ROWS 4
-#endif //LCDSIM
-
 //marlin api config
-#define MARLIN_MAX_CLIENTS 3   // maximum number of clients registered in same time
-#define MARLIN_MAX_REQUEST 100 // maximum request length in chars
+#define MARLIN_MAX_CLIENTS  3   // maximum number of clients registered in same time
+#define MARLIN_MAX_REQUEST  100 // maximum request length in chars
+#define MARLIN_SERVER_QUEUE 128 // size of marlin server input character queue (number of characters)
+#define MARLIN_CLIENT_QUEUE 16  // size of marlin client input message queue (number of messages)
 
 //display PSOD instead of BSOD
 //#define PSOD_BSOD
@@ -52,5 +43,3 @@
 
 //resource.h included with config
 #include "resource.h"
-
-#endif //_CONFIG_H

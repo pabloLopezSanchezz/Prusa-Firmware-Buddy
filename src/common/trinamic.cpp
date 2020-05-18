@@ -9,7 +9,7 @@
 #define DBG _dbg3 //debug level 3
 //#define DBG(...)  //disable debug
 
-#if ((MOTHERBOARD == 1823) || (MOTHERBOARD == 1850))
+#if (MOTHERBOARD == 1823)
 
 extern TMC2209Stepper stepperX;
 extern TMC2209Stepper stepperY;
@@ -44,7 +44,7 @@ void init_tmc(void) {
     pStepY->TCOOLTHRS(400);
     pStepZ->TCOOLTHRS(400);
     pStepE->TCOOLTHRS(400); //400
-    #if (PRINTER_TYPE == PRINTER_PRUSA_XL)
+    #if ((PRINTER_TYPE == PRINTER_PRUSA_XL) || (PRINTER_TYPE == PRINTER_PRUSA_IXL))
     pStepX->SGTHRS(115);
     pStepY->SGTHRS(115);
     #else

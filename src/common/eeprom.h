@@ -56,9 +56,10 @@
     #define EEVAR_LAN_IP4_DNS2  0x17 // X.X.X.X address encoded in uint32
     #define EEVAR_CONNECT_IP4   0x18 // X.X.X.X address encoded in uint32
     #define EEVAR_CONNECT_TOKEN 0x19 // 20char string
-    #define EEVAR_LAN_HOSTNAME  0x1A // 20char string
+    #define EEVAR_LAN_HOSTNAME  0x1a // 20char string
 #endif                               // (EEPROM_FEATURES & EEPROM_FEATURE_LAN)
 
+// loadcell variables
 #if (EEPROM_FEATURES & EEPROM_FEATURE_LOADCELL)
     #define EEVAR_LOADCELL_SCALE          0x1B
     #define EEVAR_LOADCELL_THRS_STATIC    0x1C
@@ -66,11 +67,12 @@
     #define EEVAR_LOADCELL_THRS_CONTINOUS 0x1E
 #endif
 
-// loadcell variables
+// sound variable
+#define EEVAR_SOUND_MODE 0x1F // uint8_t
 
-#define EEVAR__PADDING 0x19 // 1..4 chars, to ensure (DATASIZE % 4 == 0)
+#define EEVAR__PADDING 0x18 // 1..4 chars, to ensure (DATASIZE % 4 == 0)
 
-#define EEVAR_CRC32 0x1a // uint32_t crc32 for
+#define EEVAR_CRC32 0x1d // uint32_t crc32 for
 
 #define LAN_HOSTNAME_MAX_LEN 20
 #define CONNECT_TOKEN_SIZE   20

@@ -5,16 +5,19 @@
 #include "cmsis_os.h"
 #include "malloc.h"
 #include "heap.h"
+#include "advanced_power.h"
 
 #include "../Marlin/src/module/temperature.h"
 #include "../Marlin/src/module/planner.h"
 #include "../Marlin/src/module/stepper.h"
 
 /// This metric is defined in Marlin/src/module/probe.cpp, thus no interface
+#if HAS_BED_PROBE
 extern metric_t metric_probe_z;
 extern metric_t metric_probe_z_raw;
 extern metric_t metric_probe_z_diff;
 extern metric_t metric_home_diff;
+#endif
 
 void Buddy::Metrics::RecordRuntimeStats() {
     static metric_t fw_version = METRIC("fw_version", METRIC_VALUE_STRING, 1 * 1000, METRIC_HANDLER_ENABLE_ALL);
@@ -37,11 +40,12 @@ void Buddy::Metrics::RecordRuntimeStats() {
 }
 
 void Buddy::Metrics::RecordMarlinVariables() {
+#if HAS_BED_PROBE
     metric_register(&metric_probe_z);
     metric_register(&metric_probe_z_raw);
     metric_register(&metric_probe_z_diff);
     metric_register(&metric_home_diff);
-
+#endif
     static metric_t is_printing = METRIC("is_printing", METRIC_VALUE_INTEGER, 5000, METRIC_HANDLER_ENABLE_ALL);
     metric_record_integer(&is_printing, printingIsActive() ? 1 : 0);
 
@@ -63,8 +67,10 @@ void Buddy::Metrics::RecordMarlinVariables() {
     static metric_t target_nozzle = METRIC("ttemp_noz", METRIC_VALUE_INTEGER, 1000 + 7, METRIC_HANDLER_DISABLE_ALL);
     metric_record_integer(&target_nozzle, thermalManager.degTargetHotend(0));
 
+#if FAN_COUNT > 0
     static metric_t fan_speed = METRIC("fan_speed", METRIC_VALUE_INTEGER, 501, METRIC_HANDLER_DISABLE_ALL);
     metric_record_integer(&fan_speed, thermalManager.fan_speed[0]);
+#endif
 
     static metric_t ipos_x = METRIC("ipos_x", METRIC_VALUE_INTEGER, 10, METRIC_HANDLER_DISABLE_ALL);
     metric_record_integer(&ipos_x, stepper.position_from_startup(AxisEnum::X_AXIS));
@@ -80,3 +86,29 @@ void Buddy::Metrics::RecordMarlinVariables() {
     static metric_t pos_z = METRIC("pos_z", METRIC_VALUE_FLOAT, 11, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&pos_z, planner.get_axis_position_mm(AxisEnum::Z_AXIS));
 }
+
+#ifdef ADC_EXT_MUX
+void Buddy::Metrics::RecordPowerStats() {
+
+    static metric_t metric_bed_v_raw = METRIC("volt_bed_raw", METRIC_VALUE_INTEGER, 1000, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_bed_v_raw, advancedpower.GetBedVoltageRaw());
+    static metric_t metric_bed_v = METRIC("volt_bed", METRIC_VALUE_FLOAT, 1001, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_bed_v, advancedpower.GetBedVoltage());
+    static metric_t metric_nozzle_v_raw = METRIC("volt_nozz_raw", METRIC_VALUE_INTEGER, 1002, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_nozzle_v_raw, advancedpower.GetHeaterVoltageRaw());
+    static metric_t metric_nozzle_v = METRIC("volt_nozz", METRIC_VALUE_FLOAT, 1003, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_nozzle_v, advancedpower.GetHeaterVoltage());
+    static metric_t metric_nozzle_i_raw = METRIC("curr_nozz_raw", METRIC_VALUE_INTEGER, 1004, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_nozzle_i_raw, advancedpower.GetHeaterCurrentRaw());
+    static metric_t metric_nozzle_i = METRIC("curr_nozz", METRIC_VALUE_FLOAT, 1005, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_nozzle_i, advancedpower.GetHeaterCurrent());
+    static metric_t metric_input_i_raw = METRIC("curr_inp_raw", METRIC_VALUE_INTEGER, 1006, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_integer(&metric_input_i_raw, advancedpower.GetInputCurrentRaw());
+    static metric_t metric_input_i = METRIC("curr_inp", METRIC_VALUE_FLOAT, 1007, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_float(&metric_input_i, advancedpower.GetInputCurrent());
+    static metric_t metric_oc_nozzle_fault = METRIC("oc_nozz", METRIC_VALUE_INTEGER, 1008, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_integer(&metric_oc_nozzle_fault, advancedpower.HeaterOvercurentFaultDetected());
+    static metric_t metric_oc_input_fault = METRIC("oc_inp", METRIC_VALUE_INTEGER, 1009, METRIC_HANDLER_ENABLE_ALL);
+    metric_record_integer(&metric_oc_input_fault, advancedpower.OvercurrentFaultDetected());
+}
+#endif //ADC_EXT_MUX

@@ -10,6 +10,7 @@
     #include "loadcell.h"
     #include "gpio.h"
     #include "eeprom.h"
+    #include "screens.h"
 
 typedef struct
 {
@@ -213,6 +214,6 @@ screen_t screen_test_hx711 = {
     0,                                //pdata
 };
 
-const screen_t *pscreen_test_hx711 = &screen_test_hx711;
+screen_t *const get_scr_test_hx711() { return &screen_test_hx711; }
 
 #endif //LOADCELL_HX711

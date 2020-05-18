@@ -19,6 +19,12 @@
 #include "filament_sensor.h"
 #include "bsod.h"
 #include "main.h"
+#include "config_a3ides2209_02.h"
+
+#ifdef ADC_EXT_MUX
+    #include "ext_mux.h"
+#endif
+//#include "config_a3ides2209_02.h"
 
 //hwio arduino wrapper errors
 #define HWIO_ERR_UNINI_DIG_RD 0x01
@@ -62,9 +68,17 @@ const uint32_t _do_pin32[] = {
 
 // a3ides analog input pins
 const uint32_t _adc_pin32[] = {
+#ifdef ADC_EXT_MUX
+    PIN_EXT_MUX_CHANELL_A,
+#else
     PIN_HW_IDENTIFY,
+#endif
     PIN_TEMP_BED,
+#ifdef ADC_EXT_MUX
+    PIN_EXT_MUX_CHANNEL_B,
+#else
     PIN_THERM2,
+#endif
     PIN_TEMP_HEATBREAK,
     PIN_TEMP_0, // THERM0 (nozzle)
 };
@@ -78,6 +92,7 @@ int _adc_val[] = { 0, 0, 0, 0, 0 };
 const uint32_t _dac_pin32[] = {};
 // a3ides analog output maximum values
 const int _dac_max[] = { 0 };
+
 #define _DAC_CNT (sizeof(_dac_pin32) / sizeof(uint32_t))
 
 #define _FAN_ID_MIN HWIO_PWM_FAN1
@@ -561,7 +576,7 @@ void adc_ready(uint8_t index) {
 }
 
 // channel priority sequence callback
-const uint8_t adc_seq[18] = { 4, 1, 4, 1, 4, 0, 4, 1, 4, 1, 4, 2, 4, 1, 4, 1, 4, 3 };
+const uint8_t adc_seq[16] = { 4, 1, 4, 1, 4, 4, 1, 4, 1, 4, 4, 1, 4, 1, 4, 3 };
 uint8_t adc_seq2idx(uint8_t seq) {
     return adc_seq[seq];
     //	return 2;
@@ -823,6 +838,10 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
             return hwio_adc_get_val(_ADC_TEMP_0);
         case PIN_TEMP_HEATBREAK:
             return hwio_adc_get_val(_ADC_TEMP_HEATBREAK);
+#if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+        case PIN_THERM2:
+            return hwio_adc_get_val(_ADC_TEMP_2);
+#endif
         default:
             hwio_arduino_error(HWIO_ERR_UNDEF_ANA_RD, ulPin); //error: undefined pin analog read
         }

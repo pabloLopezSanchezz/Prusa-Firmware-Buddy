@@ -330,7 +330,7 @@
 
 // If you want endstops to stay on (by default) even when not homing
 // enable this option. Override at any time with M120, M121.
-//#define ENDSTOPS_ALWAYS_ON_DEFAULT
+#define ENDSTOPS_ALWAYS_ON_DEFAULT
 
 // @section extras
 
@@ -358,12 +358,12 @@
  * in X2. Dual endstop offsets can be set at runtime with 'M666 X<offset> Y<offset> Z<offset>'.
  */
 
-//#define X_DUAL_STEPPER_DRIVERS
+#define X_DUAL_STEPPER_DRIVERS
 #if ENABLED(X_DUAL_STEPPER_DRIVERS)
-    #define INVERT_X2_VS_X_DIR true // Set 'true' if X motors should rotate in opposite directions
-    //#define X_DUAL_ENDSTOPS
+    #define INVERT_X2_VS_X_DIR false // Set 'true' if X motors should rotate in opposite directions
+    #define X_DUAL_ENDSTOPS
     #if ENABLED(X_DUAL_ENDSTOPS)
-        #define X2_USE_ENDSTOP _XMAX_
+        #define X2_USE_ENDSTOP _YMAX_
         #define X_DUAL_ENDSTOPS_ADJUSTMENT 0
     #endif
 #endif
@@ -454,11 +454,11 @@
 // @section homing
 
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
-#define X_HOME_BUMP_MM 0
-#define Y_HOME_BUMP_MM 0
+#define X_HOME_BUMP_MM 2
+#define Y_HOME_BUMP_MM 2
 #define Z_HOME_BUMP_MM 2
 #define HOMING_BUMP_DIVISOR \
-    { 2, 2, 4 } // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+    { 4, 4, 4 } // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 //#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
 
 // When G28 is called, this option will make Y home before X
@@ -655,8 +655,7 @@
 //#define MICROSTEP32 HIGH,LOW,HIGH
 
 // Microstep setting (Only functional when stepper driver microstep pins are connected to MCU.
-#define MICROSTEP_MODES \
-    { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
+//#define MICROSTEP_MODES { 16, 16, 16, 16, 16, 16 } // [1,2,4,8,16]
 
 /**
  *  @section  stepper motor current
@@ -1466,7 +1465,7 @@
  */
 #if HAS_TRINAMIC
 
-    #define HOLD_MULTIPLIER 1 //0.5  // Scales down the holding current from run current
+    constexpr float HOLD_MULTIPLIER[4] = {1, 1, 1, 1};  // Scales down the holding current from run current
     #define INTERPOLATE true // Interpolate X/Y/Z_MICROSTEPS to 256
 
     #if AXIS_IS_TMC(X)
@@ -2060,9 +2059,9 @@
 //#define GCODE_MOTION_MODES  // Remember the motion mode (G0 G1 G2 G3 G5 G38.X) and apply for X Y Z E F, etc.
 
 // Enable and set a (default) feedrate for all G0 moves
-//#define G0_FEEDRATE 3000 // (mm/m)
+#define G0_FEEDRATE 3000 // (mm/m)
 #ifdef G0_FEEDRATE
-//#define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
+    #define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
 #endif
 
 /**
@@ -2117,7 +2116,7 @@
  * Host Prompt Support enables Marlin to use the host for user prompts so
  * filament runout and other processes can be managed from the host side.
  */
-#define HOST_ACTION_COMMANDS
+//#define HOST_ACTION_COMMANDS
 #if ENABLED(HOST_ACTION_COMMANDS)
     #define HOST_PROMPT_SUPPORT
 #endif

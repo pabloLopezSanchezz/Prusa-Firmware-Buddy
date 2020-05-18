@@ -68,7 +68,9 @@ const int32_t manual_feedrate[4] = MANUAL_FEEDRATE;
 const int32_t extrude_min_temp = EXTRUDE_MINTEMP;
 
 //must be in this file, need to access marlin
+#if ENABLED(NOZZLE_PARK_FEATURE)
 constexpr const int park_points[3] = NOZZLE_PARK_POINT;
+#endif
 
 //min int -2147483648 .. 8 digits + 1 for /0
 
