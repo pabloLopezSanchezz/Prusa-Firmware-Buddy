@@ -693,7 +693,7 @@ static uint64_t _send_notify_events_to_client(int client_id, osMessageQId queue,
                     sent |= msk; // event sent, set bit
                 break;
             case MARLIN_EVT_MeshUpdate:
-                break;
+                break; // FIXME: bring back support for EVT_MeshUpdate
                 if (marlin_server.mesh_point_notsent[client_id]) {
                     uint8_t x;
                     uint8_t y;
