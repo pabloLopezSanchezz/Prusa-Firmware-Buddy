@@ -711,7 +711,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_ACCELERATION \
-    { 1250, 1250, 1000, 1500 }
+    { 1250, 1250, 200, 1500 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -909,7 +909,7 @@
 
 // Probe for as long as the last two slow probes don't differ more than DIFF_PROBING_ACCEPT_DIFF
 #define DIFF_PROBING
-#define DIFF_PROBING_ACCEPT_DIFF 0.010
+#define DIFF_PROBING_ACCEPT_DIFF 0.005
 
 // Extra probing  for loadcell to remove out of bounds measured values caused by external non interesting things
 //#define EXTRA_PROBING 1
@@ -933,8 +933,8 @@
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
 #define Z_CLEARANCE_DEPLOY_PROBE 0 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES 1 // Z Clearance between probe points 1
-#define Z_CLEARANCE_MULTI_PROBE 0.7 // Z Clearance between multiple probes
+#define Z_CLEARANCE_BETWEEN_PROBES 0.5 // Z Clearance between probe points 1
+#define Z_CLEARANCE_MULTI_PROBE 0.5 // Z Clearance between multiple probes
 #define Z_AFTER_PROBING 2 // Z position after probing is done 2
 
 #define Z_PROBE_LOW_POINT -2 // Farthest distance below the trigger-point to go before stopping
@@ -1218,8 +1218,14 @@
 
 //#define MESH_EDIT_GFX_OVERLAY   // Display a graphics overlay while editing the mesh
 
-    #define GRID_MAX_POINTS_X 7 // Don't use more than 15 points per axis, implementation limited.
-    #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
+    #define GRID_BORDER 1 // border we are never gonna probe, only border of size 1 is currently supported
+    #define GRID_MAJOR_STEP 5 // the offset between major points
+    #define GRID_MAJOR_POINTS_X 5 // number of major probes on the X axis
+    #define GRID_MAJOR_POINTS_Y 5 // number of major probes on the Y axis
+    #define GRID_MAX_POINTS_X 23
+    #define GRID_MAX_POINTS_Y 23
+    //#define GRID_MAX_POINTS_X (GRID_BORDER * 2 + GRID_MAJOR_POINTS_X + ((GRID_MAJOR_POINTS_X - 1) * (GRID_MAJOR_STEP - 1))) // full resolution of the grid (X axis)
+    //#define GRID_MAX_POINTS_Y (GRID_BORDER * 2 + GRID_MAJOR_POINTS_Y + ((GRID_MAJOR_POINTS_Y - 1) * (GRID_MAJOR_STEP - 1))) // full resolution of the grid (X axis)
 
     #define UBL_MESH_EDIT_MOVES_Z // Sophisticated users prefer no movement of nozzle
     #define UBL_SAVE_ACTIVE_ON_M500 // Save the currently active mesh in the current slot on M500

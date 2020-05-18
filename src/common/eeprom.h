@@ -61,13 +61,14 @@
 
 // loadcell variables
 #if (EEPROM_FEATURES & EEPROM_FEATURE_LOADCELL)
-    #define EEVAR_LOADCELL_SCALE 0x1B
-    #define EEVAR_LOADCELL_THRS  0x1C
-    #define EEVAR_LOADCELL_HYST  0x1D
+    #define EEVAR_LOADCELL_SCALE          0x1B
+    #define EEVAR_LOADCELL_THRS_STATIC    0x1C
+    #define EEVAR_LOADCELL_HYST           0x1D
+    #define EEVAR_LOADCELL_THRS_CONTINOUS 0x1E
 #endif
 
 // sound variable
-#define EEVAR_SOUND_MODE 0x1e // uint8_t
+#define EEVAR_SOUND_MODE 0x1F // uint8_t
 
 #define EEVAR__PADDING 0x18 // 1..4 chars, to ensure (DATASIZE % 4 == 0)
 

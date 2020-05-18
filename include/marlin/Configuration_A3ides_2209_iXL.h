@@ -1202,8 +1202,14 @@
 
 //#define MESH_EDIT_GFX_OVERLAY   // Display a graphics overlay while editing the mesh
 
-    #define GRID_MAX_POINTS_X 7 // Don't use more than 15 points per axis, implementation limited.
-    #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
+    #define GRID_BORDER 1 // border we are never gonna probe, only border of size 1 is currently supported
+    #define GRID_MAJOR_STEP 5 // the offset between major points
+    #define GRID_MAJOR_POINTS_X 5 // number of major probes on the X axis
+    #define GRID_MAJOR_POINTS_Y 5 // number of major probes on the Y axis
+    #define GRID_MAX_POINTS_X 23
+    #define GRID_MAX_POINTS_Y 23
+    //#define GRID_MAX_POINTS_X (GRID_BORDER * 2 + GRID_MAJOR_POINTS_X + ((GRID_MAJOR_POINTS_X - 1) * (GRID_MAJOR_STEP - 1))) // full resolution of the grid (X axis)
+    //#define GRID_MAX_POINTS_Y (GRID_BORDER * 2 + GRID_MAJOR_POINTS_Y + ((GRID_MAJOR_POINTS_Y - 1) * (GRID_MAJOR_STEP - 1))) // full resolution of the grid (X axis)
 
     #define UBL_MESH_EDIT_MOVES_Z // Sophisticated users prefer no movement of nozzle
     #define UBL_SAVE_ACTIVE_ON_M500 // Save the currently active mesh in the current slot on M500

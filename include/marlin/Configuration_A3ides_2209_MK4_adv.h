@@ -456,7 +456,7 @@
 //kill command after probing fails
 #define HALT_ON_PROBING_ERROR
 //after enabling HOMING_MAX_ATTEMPTS, homing can fail
-#define HOMING_MAX_ATTEMPTS 3
+#define HOMING_MAX_ATTEMPTS 10
 #ifdef HOMING_MAX_ATTEMPTS
     //ranges in mm - allowed distance between homing probes
     constexpr float axis_home_min_diff[] = {-1,-1,-0.1};
@@ -1064,10 +1064,10 @@
 
 #if EITHER(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)
 // Override the mesh area if the automatic (max) area is too large
-#define MESH_MIN_X ((-(X_BED_SIZE / (GRID_MAX_POINTS_X - 2 - 1))) + 15)
-#define MESH_MIN_Y ((-(Y_BED_SIZE / (GRID_MAX_POINTS_Y - 2 - 1))) + 15)
-#define MESH_MAX_X X_BED_SIZE - (MESH_MIN_X)
-#define MESH_MAX_Y Y_BED_SIZE - (MESH_MIN_Y)
+#define MESH_MIN_X 0
+#define MESH_MIN_Y 0
+#define MESH_MAX_X X_BED_SIZE
+#define MESH_MAX_Y Y_BED_SIZE
 #endif
 
 /**

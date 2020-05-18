@@ -11,11 +11,13 @@
 Loadcell loadcell;
 static metric_t metric_loadcell_raw = METRIC("loadcell_raw", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_loadcell = METRIC("loadcell", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
+static metric_t metric_loadcell_hp = METRIC("loadcell_hp", METRIC_VALUE_FLOAT, 0, METRIC_HANDLER_DISABLE_ALL);
 static metric_t metric_tare_err = METRIC("tare_err", METRIC_VALUE_INTEGER, 0, METRIC_HANDLER_ENABLE_ALL);
 
 Loadcell::Loadcell()
     : scale(1)
-    , threshold(NAN)
+    , thresholdStatic(NAN)
+    , thresholdContinous(NAN)
     , hysteresis(0)
     , failsOnLoadAbove(INFINITY)
     , failsOnLoadBelow(-INFINITY)
@@ -25,7 +27,7 @@ Loadcell::Loadcell()
     , highPrecision(false)
     , tareMode(TareMode::Static)
     , offset(0)
-    , window() {
+    , highPassFilter() {
 }
 
 void Loadcell::ConfigureSignalEvent(osThreadId threadId, int32_t signal) {
@@ -41,7 +43,7 @@ void Loadcell::Tare(TareMode mode) {
     }
 
     tareMode = mode;
-    int tareCount = mode == TareMode::Continuous ? window.size() : 4;
+    int tareCount = std::max(highPassFilter.GetSettlingTime(), 4);
     int measuredCount = 0;
     int errors = 0;
     int32_t sum = 0;
@@ -62,6 +64,7 @@ void Loadcell::Tare(TareMode mode) {
     } else {
         general_error("loadcell", "tare failed");
     }
+    endstop = false;
 }
 
 bool Loadcell::GetMinZEndstop() const {
@@ -76,10 +79,6 @@ void Loadcell::SetScale(float scale) {
     this->scale = scale;
 }
 
-void Loadcell::SetThreshold(float threshold) {
-    this->threshold = threshold;
-}
-
 void Loadcell::SetHysteresis(float hysteresis) {
     this->hysteresis = hysteresis;
 }
@@ -88,32 +87,8 @@ float Loadcell::GetScale() const {
     return scale;
 }
 
-float Loadcell::GetThreshold() const {
-    return threshold;
-}
-
 float Loadcell::GetHysteresis() const {
     return hysteresis;
-}
-
-float Loadcell::GetLoad() const {
-    float baseline;
-    switch (tareMode) {
-    case TareMode::Static:
-        baseline = offset;
-        break;
-    case TareMode::Continuous: {
-        auto windowCopy = window;
-        auto medianIt = windowCopy.begin() + (windowCopy.size() / 2);
-        std::nth_element(windowCopy.begin(), medianIt, windowCopy.end());
-        baseline = *medianIt;
-        break;
-    }
-    default:
-        general_error("unreachable", "");
-        return 0;
-    }
-    return (scale * (loadcellRaw - baseline));
 }
 
 int32_t Loadcell::GetRawValue() const {
@@ -141,18 +116,15 @@ float Loadcell::GetFailsOnLoadBelow() const {
 }
 
 void Loadcell::ProcessSample(int32_t loadcellRaw) {
-    if (!isSignalEventConfigured) {
-        return;
-    }
-
     this->loadcellRaw = loadcellRaw;
-    std::rotate(window.begin(), window.begin() + 1, window.end());
-    window.back() = loadcellRaw;
+    highPassFilter.Filter(loadcellRaw);
 
     float load = GetLoad();
+    float loadHighPass = GetHighPassLoad();
 
     metric_record_integer(&metric_loadcell_raw, loadcellRaw);
     metric_record_float(&metric_loadcell, load);
+    metric_record_float(&metric_loadcell_hp, loadHighPass);
 
     if (!std::isfinite(load))
         general_error("loadcell", "grams error, not finite");
@@ -161,18 +133,23 @@ void Loadcell::ProcessSample(int32_t loadcellRaw) {
     if (load < failsOnLoadBelow)
         general_error("loadcell", "grams error threshold reached");
 
+    float loadForEndstops = tareMode == TareMode::Static ? load : loadHighPass;
+    float threshold = GetThreshold(tareMode);
     if (endstop) {
-        if (load >= (threshold + hysteresis)) {
+        if (loadForEndstops >= (threshold + hysteresis)) {
             endstop = false;
             endstops_poll();
         }
     } else {
-        if (load <= threshold) {
+        if (loadForEndstops <= threshold) {
             endstop = true;
             endstops_poll();
         }
     }
-    osSignalSet(threadId, signal);
+
+    if (isSignalEventConfigured) {
+        osSignalSet(threadId, signal);
+    }
 }
 
 int32_t Loadcell::WaitForNextSample() {

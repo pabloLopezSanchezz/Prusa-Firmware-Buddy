@@ -44,16 +44,19 @@ static void record_pre_gcode_metrics() {
 
 #ifdef LOADCELL_HX711
     static metric_t loadcell_scale_m = METRIC("loadcell_scale", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
-    static metric_t loadcell_threshold_m = METRIC("loadcell_threshold", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
+    static metric_t loadcell_threshold_static_m = METRIC("loadcell_threshold", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
+    static metric_t loadcell_threshold_continuous_m = METRIC("loadcell_threshold_cont", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
     static metric_t loadcell_hysteresis_m = METRIC("loadcell_hysteresis", METRIC_VALUE_FLOAT, 1000, METRIC_HANDLER_ENABLE_ALL);
     metric_register(&loadcell_scale_m);
-    metric_register(&loadcell_threshold_m);
+    metric_register(&loadcell_threshold_static_m);
+    metric_register(&loadcell_threshold_continuous_m);
     metric_register(&loadcell_hysteresis_m);
 
     if (parser.command_letter == 'G' && parser.codenum == 29) {
         // log loadcell settings on beginning of G29
         metric_record_float(&loadcell_scale_m, loadcell.GetScale());
-        metric_record_float(&loadcell_threshold_m, loadcell.GetThreshold());
+        metric_record_float(&loadcell_threshold_static_m, loadcell.GetThreshold(Loadcell::TareMode::Static));
+        metric_record_float(&loadcell_threshold_continuous_m, loadcell.GetThreshold(Loadcell::TareMode::Continuous));
         metric_record_float(&loadcell_hysteresis_m, loadcell.GetHysteresis());
     }
 #endif

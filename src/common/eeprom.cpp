@@ -68,8 +68,9 @@ typedef struct _eeprom_vars_t {
     char CONNECT_TOKEN[CONNECT_TOKEN_SIZE + 1];
     char LAN_HOSTNAME[LAN_HOSTNAME_MAX_LEN + 1];
     float LOADCELL_SCALE;
-    float LOADCELL_THRS;
+    float LOADCELL_THRS_STATIC;
     float LOADCELL_HYST;
+    float LOADCELL_THRS_CONTINOUS;
     uint8_t SOUND_MODE;
     char _PADDING[EEPROM__PADDING];
     uint32_t CRC32;
@@ -109,8 +110,9 @@ static const eeprom_entry_t eeprom_map[] = {
     { "CONNECT_TOKEN",   VARIANT8_PCHAR, CONNECT_TOKEN_SIZE + 1, 0 }, // EEVAR_CONNECT_TOKEN
     { "LAN_HOSTNAME",    VARIANT8_PCHAR, LAN_HOSTNAME_MAX_LEN + 1, 0 }, // EEVAR_LAN_HOSTNAME
     { "LOADCELL_SCALE",  VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_SCALE
-    { "LOADCELL_THRS",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_THRS
+    { "LOADCELL_THRS_S",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_THRS_STATIC
     { "LOADCELL_HYST",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_HYST
+    { "LOADCELL_THRS_C",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_THRS_CONTINOUS
     { "SOUND_MODE",      VARIANT8_UI8,   1, 0 }, // EEVAR_SOUND_MODE
     { "_PADDING",        VARIANT8_PCHAR, EEPROM__PADDING, 0 }, // EEVAR__PADDING32
     { "CRC32",           VARIANT8_UI32,  1, 0 }, // EEVAR_CRC32
@@ -150,8 +152,9 @@ static const eeprom_vars_t eeprom_var_defaults = {
     "",              // EEVAR_CONNECT_TOKEN
     "PrusaMINI",     // EEVAR_LAN_HOSTNAME
     0.0192,          // EEVAR_LOADCELL_SCALE
-    -125,            // EEVAR_LOADCELL_THRS
-    50,              // EEVAR_LOADCELL_HYST
+    -125,            // EEVAR_LOADCELL_THRS_STATIC
+    80,              // EEVAR_LOADCELL_HYST
+    -25,             // EEVAR_LOADCELL_THRS_CONTINOUS
     0,               // EEVAR_SOUND_MODE
     "",              // EEVAR__PADDING
     0xffffffff,      // EEVAR_CRC32
