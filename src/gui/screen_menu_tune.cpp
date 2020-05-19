@@ -7,6 +7,7 @@
 #include "menu_vars.h"
 #include "screens.h"
 #include "eeprom.h"
+#include "sound_C_wrapper.h"
 
 enum {
     MI_RETURN,
@@ -17,6 +18,7 @@ enum {
     MI_FLOWFACT,
     MI_BABYSTEP,
     MI_FILAMENT,
+    MI_SOUND_MODE,
     MI_LAN_SETTINGS,
     MI_VERSION_INFO,
 #if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
@@ -31,6 +33,9 @@ enum {
     MI_COUNT
 };
 
+const char *menu_tune_sound_opt_modes[] = { "Once", "Loud", "Silent", "Assist", NULL };
+const eSOUND_MODE menu_tune_e_sound_modes[] = { eSOUND_MODE_ONCE, eSOUND_MODE_LOUD, eSOUND_MODE_SILENT, eSOUND_MODE_ASSIST };
+
 //cannot use .wi_spin = { 0, feedrate_range } ...
 //sorry, unimplemented: non-trivial designated initializers not supported
 const menu_item_t _menu_tune_items[] = {
@@ -41,6 +46,7 @@ const menu_item_t _menu_tune_items[] = {
     { { "Flow Factor", 0, WI_SPIN }, SCREEN_MENU_NO_SCREEN },      //set later
     { { "Live Adjust Z", 0, WI_SPIN_FL }, SCREEN_MENU_NO_SCREEN }, //set later
     { { "Change Filament", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN },
+    { { "Sound Mode", 0, WI_SWITCH, 0 }, SCREEN_MENU_NO_SCREEN },
     { { "LAN Setings", 0, WI_LABEL }, get_scr_lan_settings() },
     { { "Version Info", 0, WI_LABEL }, get_scr_version_info() },
 #if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
@@ -97,6 +103,15 @@ void screen_menu_tune_init(screen_t *screen) {
     psmd->items[MI_BABYSTEP].item.wi_spin_fl.value = vars->z_offset;
     psmd->items[MI_BABYSTEP].item.wi_spin_fl.range = zoffset_fl_range;
     psmd->items[MI_BABYSTEP].item.wi_spin_fl.prt_format = zoffset_fl_format;
+
+    // select sound mode from eeprom var
+    for (size_t i = 0; i < sizeof(menu_tune_e_sound_modes); i++) {
+        if (menu_tune_e_sound_modes[i] == Sound_GetMode()) {
+            psmd->items[MI_SOUND_MODE].item.wi_switch_select.index = i;
+            break;
+        }
+    }
+    psmd->items[MI_SOUND_MODE].item.wi_switch_select.strings = menu_tune_sound_opt_modes;
 }
 
 int screen_menu_tune_event(screen_t *screen, window_t *window,
@@ -125,9 +140,12 @@ int screen_menu_tune_event(screen_t *screen, window_t *window,
         case MI_SPEED:
             marlin_set_print_speed((uint16_t)(psmd->items[MI_SPEED].item.wi_spin.value / 1000));
             break;
-        case MI_NOZZLE:
-            marlin_set_target_nozzle((float)(psmd->items[MI_NOZZLE].item.wi_spin.value) / 1000);
+        case MI_NOZZLE: {
+            const float temp = psmd->items[MI_NOZZLE].item.wi_spin.value / 1000.0f;
+            marlin_set_target_nozzle(temp);
+            marlin_set_display_nozzle(temp);
             break;
+        }
         case MI_HEATBED:
             marlin_set_target_bed((float)(psmd->items[MI_HEATBED].item.wi_spin.value) / 1000);
             break;
@@ -153,6 +171,9 @@ int screen_menu_tune_event(screen_t *screen, window_t *window,
             break;
         case MI_BABYSTEP:
             z_offs = psmd->items[MI_BABYSTEP].item.wi_spin_fl.value;
+            break;
+        case MI_SOUND_MODE:
+            Sound_SetMode(menu_tune_e_sound_modes[psmd->items[MI_SOUND_MODE].item.wi_switch_select.index]);
             break;
         }
     }
