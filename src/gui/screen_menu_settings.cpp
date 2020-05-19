@@ -38,7 +38,7 @@ typedef enum {
 #ifdef _DEBUG
     MI_SERVICE,
 #endif //_DEBUG
-#ifdef PRINTER_PRUSA_MK4
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
     MI_TEST,
 #endif
     MI_FW_UPDATE,
@@ -96,8 +96,10 @@ void screen_menu_settings_init(screen_t *screen) {
     psmd->items[MI_FACTORY_DEFAULTS] = (menu_item_t) { { "Factory Reset", 0, WI_LABEL }, SCREEN_MENU_NO_SCREEN };
 #ifdef _DEBUG
     psmd->items[MI_SERVICE] = (menu_item_t) { { "Service", 0, WI_LABEL }, &screen_menu_service };
-    psmd->items[MI_TEST] = (menu_item_t) { { "Test", 0, WI_LABEL }, &screen_test };
 #endif //_DEBUG
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4 || PRINTER_TYPE == PRINTER_PRUSA_XL || PRINTER_TYPE == PRINTER_PRUSA_IXL || _DEBUG)
+    psmd->items[MI_TEST] = (menu_item_t) { { "Test", 0, WI_LABEL }, get_scr_test() };
+#endif
     psmd->items[MI_FW_UPDATE] = (menu_item_t) { { "FW Update", 0, WI_LABEL }, &screen_menu_fw_update };
     psmd->items[MI_FILAMENT_SENSOR] = (menu_item_t) { { "Fil. sens.", 0, WI_SWITCH, 0 }, SCREEN_MENU_NO_SCREEN };
     psmd->items[MI_FILAMENT_SENSOR].item.wi_switch_select.index = (fs != FS_DISABLED);
