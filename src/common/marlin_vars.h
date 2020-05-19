@@ -79,8 +79,9 @@
 #define MARLIN_VAR_MOTION_MSK_Z (1 << MARLIN_VAR_INDEX_Z)
 #define MARLIN_VAR_MOTION_MSK_E (1 << MARLIN_VAR_INDEX_E)
 
-#define FILE_NAME_MAX_LEN (96 + 1 + 5 + 1)
-#define FILE_PATH_MAX_LEN (96 + 1 + 5 + 1)
+#define FILE_NAME_MAX_LEN   (96 + 1 + 5 + 1)
+#define FILE_PATH_MAX_LEN   (96 + 1 + 5 + 1)
+#define TIME_TO_END_INVALID ((uint32_t)-1)
 
 typedef enum {
     mpsIdle = 0,
@@ -126,8 +127,8 @@ typedef struct _marlin_vars_t {
     uint32_t print_duration;          // print_job_timer.duration() [ms]
     uint8_t media_inserted;           // media_is_inserted()
     marlin_print_state_t print_state; // marlin_server.print_state
-    char *media_file_name;            //
-    char *media_file_path;            //
+    char *media_LFN;                  // Long-File-Name of the currently selected file - a pointer to a global static buffer
+    char *media_SFN_path;             // Short-File-Name path to currently selected file - a pointer to a global static buffer
     float display_nozzle;             // nozzle temperature to display [C]
     uint32_t time_to_end;             // oProgressData.oTime2End.mGetValue() [ms]
 } marlin_vars_t;

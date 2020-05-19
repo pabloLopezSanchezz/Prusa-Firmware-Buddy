@@ -67,6 +67,7 @@ typedef struct _eeprom_vars_t {
     uint32_t CONNECT_IP4_ADDR;
     char CONNECT_TOKEN[CONNECT_TOKEN_SIZE + 1];
     char LAN_HOSTNAME[LAN_HOSTNAME_MAX_LEN + 1];
+    int8_t TIMEZONE;
     float LOADCELL_SCALE;
     float LOADCELL_THRS_STATIC;
     float LOADCELL_HYST;
@@ -109,6 +110,7 @@ static const eeprom_entry_t eeprom_map[] = {
     { "CONNECT_IP4",     VARIANT8_UI32,  1, 0 }, // EEVAR_CONNECT_IP4
     { "CONNECT_TOKEN",   VARIANT8_PCHAR, CONNECT_TOKEN_SIZE + 1, 0 }, // EEVAR_CONNECT_TOKEN
     { "LAN_HOSTNAME",    VARIANT8_PCHAR, LAN_HOSTNAME_MAX_LEN + 1, 0 }, // EEVAR_LAN_HOSTNAME
+    { "TIMEZONE",        VARIANT8_I8,    1, 0 }, // EEVAR_TIMEZONE
     { "LOADCELL_SCALE",  VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_SCALE
     { "LOADCELL_THRS_S",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_THRS_STATIC
     { "LOADCELL_HYST",   VARIANT8_FLT, 1, 0 }, // EEVAR_LOADCELL_HYST
@@ -151,6 +153,7 @@ static const eeprom_vars_t eeprom_var_defaults = {
     0,               // EEVAR_CONNECT_IP4
     "",              // EEVAR_CONNECT_TOKEN
     "PrusaMINI",     // EEVAR_LAN_HOSTNAME
+    0,               // EEVAR_TIMEZONE
     0.0192,          // EEVAR_LOADCELL_SCALE
     -125,            // EEVAR_LOADCELL_THRS_STATIC
     80,              // EEVAR_LOADCELL_HYST

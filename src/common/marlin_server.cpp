@@ -169,8 +169,8 @@ void marlin_server_init(void) {
     marlin_server.mesh.xc = 4;
     marlin_server.mesh.yc = 4;
     marlin_server.update_vars = MARLIN_VAR_MSK_DEF;
-    marlin_server.vars.media_file_name = media_print_filename;
-    marlin_server.vars.media_file_path = media_print_filepath;
+    marlin_server.vars.media_LFN = media_print_filename();
+    marlin_server.vars.media_SFN_path = media_print_filepath();
 }
 
 void print_fan_spd() {
@@ -217,6 +217,8 @@ int marlin_server_cycle(void) {
     if (processing)
         return 0;
     processing = 1;
+
+    _server_print_loop(); // we need call print loop here because it must be processed while blocking commands (M109)
 
     FSM_notifier::SendNotification();
 
@@ -307,7 +309,6 @@ int marlin_server_loop(void) {
             }
         }
     marlin_server.idle_cnt = 0;
-    _server_print_loop();
     media_loop();
     return marlin_server_cycle();
 }
