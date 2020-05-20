@@ -81,7 +81,7 @@ void get_telemetry_for_connect(char *data, const uint32_t buf_len) {
                             "\"flow\":%d,"
                             "\"progress\":%d,"
                             "\"printing_time\":%lu,"
-                            "\"end_timestamp\":%lu,"
+                            "\"time_to_end\":%lu,"
                             "\"project_name\":\"%s\","
                             "\"state\":\"PRINTING\""
                             "}",

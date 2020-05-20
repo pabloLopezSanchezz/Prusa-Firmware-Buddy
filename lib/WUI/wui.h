@@ -12,6 +12,7 @@
 #define BUDDY_WEB_STACK_SIZE 512
 #include <marlin_vars.h>
 #include "cmsis_os.h"
+#include "wui_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,6 +24,7 @@ extern "C" {
 *****************************************************************************/
 
 #define HIGH_CMD_MAX_ARGS_CNT 5
+#define REQ_GCODE_MAX_SIZE    100 // maximal gcode request size based on Marlin's maximal request size
 
 void StartWebServerTask(void const *argument);
 
@@ -45,7 +47,7 @@ typedef enum {
 typedef struct {
     CMD_LVL lvl;
     HTTPC_HIGH_LVL_CMD high_lvl_cmd;
-    char arg[100];
+    char arg[REQ_GCODE_MAX_SIZE];
     // TODO: other possible arg's data types
 } wui_cmd_t;
 

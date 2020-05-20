@@ -130,8 +130,8 @@ void MX_LWIP_Init(void) {
         netmask.addr = ethconfig.lan.msk_ip4.addr;
         gw.addr = ethconfig.lan.gw_ip4.addr;
 
-        dns_setserver(0, &ethconfig.dns1_ip4);
-        dns_setserver(1, &ethconfig.dns2_ip4);
+        dns_setserver(DNS_1, &ethconfig.dns1_ip4);
+        dns_setserver(DNS_2, &ethconfig.dns2_ip4);
 
         netif_set_addr(&eth0, &ipaddr, &netmask, &gw);
     }

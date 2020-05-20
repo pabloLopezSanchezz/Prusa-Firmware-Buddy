@@ -10,6 +10,7 @@
 #include "ff.h"
 #include "crc32.h"
 #include "version.h"
+#include "wui_api.h"
 #include "../Marlin/Marlin/src/Marlin.h"
 #include "../Marlin/Marlin/src/module/temperature.h"
 
@@ -153,9 +154,9 @@ static const eeprom_vars_t eeprom_var_defaults = {
     0,               // EEVAR_LAN_IP4_DNS1
     0,               // EEVAR_LAN_IP4_DNS2
     0,               // EEVAR_CONNECT_IP4
-    80,              // EEVAR_CONNECT_PORT
+    CONNECT_PORT_DEF, // EEVAR_CONNECT_PORT
     "",              // EEVAR_CONNECT_TOKEN
-    "PrusaMINI",     // EEVAR_LAN_HOSTNAME
+    LAN_HOSTNAME_DEF, // EEVAR_LAN_HOSTNAME
     0,               // EEVAR_TIMEZONE
     0.0192,          // EEVAR_LOADCELL_SCALE
     -125,            // EEVAR_LOADCELL_THRS_STATIC

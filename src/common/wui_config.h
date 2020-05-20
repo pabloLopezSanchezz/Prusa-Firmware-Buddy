@@ -10,5 +10,6 @@
 #define INCLUDE_WUI_CONFIG_H_
 
 #define WUI_HOST_NAME "Prusa Mini"
+#define BUDDY_ENABLE_CONNECT
 
 #endif /* INCLUDE_WUI_CONFIG_H_ */

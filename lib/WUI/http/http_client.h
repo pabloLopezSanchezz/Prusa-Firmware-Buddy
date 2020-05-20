@@ -10,6 +10,9 @@
 
 #include <stdbool.h>
 
+#define MAX_STATUS_MSG_SIZE 100 // maximal size of status message handling errors - httpc_cmd_status_str_t
+#define MAX_EVENT_NAME_SIZE 20  // maximal size of event name - httpc_con_event_str_t
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,12 +52,12 @@ typedef enum {
 } HTTPC_COMMAND_STATUS;
 
 typedef struct {
-    const char name[100];
+    const char name[MAX_STATUS_MSG_SIZE];
     HTTPC_COMMAND_STATUS status_code;
 } httpc_cmd_status_str_t;
 
 typedef struct {
-    const char name[100];
+    const char name[MAX_EVENT_NAME_SIZE];
     CONNECT_EVENT_TYPE event_code;
 } httpc_con_event_str_t;
 

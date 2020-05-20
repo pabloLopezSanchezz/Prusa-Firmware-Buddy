@@ -15,10 +15,11 @@
 #define DISABLE_WIZARD_CHECK_STARTUP
 
 //marlin api config
-#define MARLIN_MAX_CLIENTS  3   // maximum number of clients registered in same time
-#define MARLIN_MAX_REQUEST  100 // maximum request length in chars
-#define MARLIN_SERVER_QUEUE 128 // size of marlin server input character queue (number of characters)
-#define MARLIN_CLIENT_QUEUE 16  // size of marlin client input message queue (number of messages)
+#define MARLIN_MAX_CLIENTS  3           // maximum number of clients registered in same time
+#define MARLIN_MAX_REQUEST  100         // maximum request length in chars
+#define MARLIN_SERVER_QUEUE 128         // size of marlin server input character queue (number of characters)
+#define MARLIN_CLIENT_QUEUE 16          // size of marlin client input message queue (number of messages)
+#define LAN_HOSTNAME_DEF    "PrusaMINI" // default string used as LAN hostname
 
 //display PSOD instead of BSOD
 //#define PSOD_BSOD

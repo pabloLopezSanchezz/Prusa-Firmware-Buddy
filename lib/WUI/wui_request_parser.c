@@ -4,15 +4,10 @@
 #include "jsmn.h"
 #include "dbg.h"
 
-#define HTTP_DUBAI_HACK 0
-
-#if HTTP_DUBAI_HACK
-    #include "version.h"
-#endif
-
 #define CMD_LIMIT 10 // number of commands accepted in low level command response
 
-#define MAX_ACK_SIZE 16
+#define MAX_ACK_SIZE    16
+#define MAX_JSMN_TOKENS 128
 
 static int json_cmp(const char *json, jsmntok_t *tok, const char *s) {
     if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start && strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
@@ -21,54 +16,18 @@ static int json_cmp(const char *json, jsmntok_t *tok, const char *s) {
     return -1;
 }
 
-uint32_t httpd_json_parser(char *json, uint32_t len) {
-    int ret;
-    jsmn_parser parser;
-    jsmntok_t t[128]; // Just a raw value, we do not expect more that 128 tokens
-
-    jsmn_init(&parser);
-    ret = jsmn_parse(&parser, json, len, t, sizeof(t) / sizeof(jsmntok_t));
-
-    if (ret < 1 || t[0].type != JSMN_OBJECT) {
-        // Fail to parse JSON or top element is not an object
-        return 0;
-    }
-
-    for (int i = 1; i < ret; i++) {
-        if (t[i].size >= MAX_REQ_MARLIN_SIZE) {
-            // Request is too long
-            return 0;
-        }
-    }
-
-    for (int i = 0; i < ret; i++) {
-        wui_cmd_t request;
-#if HTTP_DUBAI_HACK
-        if (json_cmp(json, &t[i], project_firmware_name) == 0) {
-#else
-        if (json_cmp(json, &t[i], "command") == 0) {
-#endif //HTTP_DUBAI_HACK
-            strlcpy(request.arg, json + t[i + 1].start, t[i + 1].size + 1);
-            request.lvl = LOW_LVL_CMD;
-            i++;
-            _dbg("command received: %s", request.arg);
-            send_request_to_wui(&request);
-        }
-    }
-    return 1;
-}
-
 static HTTPC_COMMAND_STATUS parse_high_level_cmd(char *json, uint32_t len) {
     int ret;
     jsmn_parser parser;
-    jsmntok_t t[128]; // Just a raw value, we do not expect more that 128 tokens
+    jsmntok_t token[MAX_JSMN_TOKENS];
     char request[MAX_REQ_MARLIN_SIZE];
 
     jsmn_init(&parser);
-    ret = jsmn_parse(&parser, json, len, t, sizeof(t) / sizeof(jsmntok_t));
+    ret = jsmn_parse(&parser, json, len, token, sizeof(token) / sizeof(jsmntok_t));
 
-    if (ret < 1 || t[0].type != JSMN_OBJECT) {
+    if (ret < 1 || token[0].type != JSMN_OBJECT) {
         // Fail to parse JSON or top element is not an object
+        // Returned data structure error: Not enough tokens | Invalid character | Unfinished data
         return CMD_REJT_CMD_STRUCT;
     }
 
@@ -76,8 +35,8 @@ static HTTPC_COMMAND_STATUS parse_high_level_cmd(char *json, uint32_t len) {
     HTTPC_COMMAND_STATUS ret_status = CMD_ACCEPTED;
 
     for (int i = 0; i < ret; i++) {
-        if (json_cmp(json, &t[i], "command") == 0) {
-            strlcpy(request, json + t[i + 1].start, (t[i + 1].end - t[i + 1].start + 1));
+        if (json_cmp(json, &token[i], "command") == 0) {
+            strlcpy(request, json + token[i + 1].start, token[i + 1].size + 1);
             i++;
 
             if (strcmp(request, "SEND_INFO") == 0) {
@@ -156,4 +115,38 @@ HTTPC_COMMAND_STATUS parse_http_reply(char *reply, uint32_t reply_len, httpc_hea
         cmd_status = CMD_REJT_CONT_TYPE;
     }
     return cmd_status;
+}
+
+uint32_t httpd_json_parser(char *json, uint32_t len) {
+    int ret;
+    jsmn_parser parser;
+    jsmntok_t token[128]; // Just a raw value, we do not expect more that 128 tokens
+
+    jsmn_init(&parser);
+    ret = jsmn_parse(&parser, json, len, token, sizeof(token) / sizeof(jsmntok_t));
+
+    if (ret < 1 || token[0].type != JSMN_OBJECT) {
+        // Fail to parse JSON or top element is not an object
+        // Returned data structure error: Not enough tokens | Invalid character | Unfinished data
+        return 0;
+    }
+
+    for (int i = 1; i < ret; i++) {
+        if (token[i].size >= MAX_REQ_MARLIN_SIZE) {
+            // Request is too long
+            return 0;
+        }
+    }
+
+    for (int i = 0; i < ret; i++) {
+        wui_cmd_t request;
+        if (json_cmp(json, &token[i], "command") == 0) {
+            strlcpy(request.arg, json + token[i + 1].start, token[i + 1].size + 1);
+            request.lvl = LOW_LVL_CMD;
+            i++;
+            _dbg("command received: %s", request.arg);
+            send_request_to_wui(&request);
+        }
+    }
+    return 1;
 }

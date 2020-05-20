@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include "netif_settings.h"
 
+#define CONNECT_PORT_DEF  80  // default CONNECT port [0;65535]
 #define FW_VER_STR_LEN    32  // length of full Firmware version string
 #define MAC_ADDR_STR_LEN  18  // length of mac address string ("MM:MM:MM:SS:SS:SS" + 0)
 #define SER_NUM_STR_LEN   16  // length of serial number string
