@@ -40,14 +40,18 @@
 //--------------------------------------
 //  bit fedc ba98 7654 3210
 // mask 0000 0100 0111 1000 == 0x0478
-#define ADC_CHAN_MSK  0x0478      //used physical AD channels bit mask (3,4,5,6,10)
-#define ADC_CHAN_CNT  5           //number of used channels
-#define ADC2_CHAN_CNT 2           //number of used channels
-#define ADC_OVRSAMPL  4           //oversampling multiplier (common for all channels)
-#define ADC_SEQ_LEN   16          //sampling sequence length
-#define ADC_SEQ2IDX   adc_seq2idx //callback function (convert seq to channel index)
-#define ADC_READY     adc_ready   //callback function (value for any channel is ready)
-#define ADC_VREF      5010        //reference voltage [mV]
+#define ADC_CHAN_MSK  0x0478 //used physical AD channels bit mask (3,4,5,6,10)
+#define ADC_CHAN_CNT  5      //number of used channels
+#define ADC2_CHAN_CNT 2      //number of used channels
+#define ADC_OVRSAMPL  4      //oversampling multiplier (common for all channels)
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+    #define ADC_SEQ_LEN 16 //sampling sequence length for MK4 with ext mux
+#else
+    #define ADC_SEQ_LEN 18 //sampling sequence length for MINI
+#endif
+#define ADC_SEQ2IDX adc_seq2idx //callback function (convert seq to channel index)
+#define ADC_READY   adc_ready   //callback function (value for any channel is ready)
+#define ADC_VREF    5010        //reference voltage [mV]
 //simulated values
 #define ADC_SIM_VAL0 512 * 4 //HW_IDENTIFY
 #define ADC_SIM_VAL1 966 * 4 //THERM1 (bed)     means 30C

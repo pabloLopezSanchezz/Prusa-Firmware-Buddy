@@ -56,6 +56,7 @@
 #include "timer_defaults.h"
 #include "thread_measurement.h"
 #include "metric_handlers.h"
+#include "printers.h"
 
 /* USER CODE END Includes */
 
@@ -392,7 +393,7 @@ static void MX_ADC1_Init(void) {
 
     /* USER CODE END ADC1_Init 2 */
 }
-
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
 static void MX_ADC2_Init(void) {
 
     /* USER CODE BEGIN ADC1_Init 0 */
@@ -433,6 +434,7 @@ static void MX_ADC2_Init(void) {
 
     /* USER CODE END ADC1_Init 2 */
 }
+#endif
 
 /**
   * @brief I2C1 Initialization Function

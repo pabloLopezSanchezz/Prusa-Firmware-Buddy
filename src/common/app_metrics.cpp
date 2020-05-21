@@ -55,6 +55,11 @@ void Buddy::Metrics::RecordMarlinVariables() {
     metric_record_float(&heatbreak, thermalManager.degHeatbreak());
 #endif
 
+#if HAS_TEMP_BOARD
+    static metric_t board
+        = METRIC("temp_brd", METRIC_VALUE_FLOAT, 1000 - 9, METRIC_HANDLER_DISABLE_ALL);
+    metric_record_float(&board, thermalManager.degBoard());
+#endif
     static metric_t bed = METRIC("temp_bed", METRIC_VALUE_FLOAT, 2000 + 23, METRIC_HANDLER_DISABLE_ALL);
     metric_record_float(&bed, thermalManager.degBed());
 

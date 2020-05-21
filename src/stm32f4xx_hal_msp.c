@@ -42,7 +42,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 /* USER CODE BEGIN Includes */
-
+#include "printers.h"
 /* USER CODE END Includes */
 extern DMA_HandleTypeDef hdma_spi2_tx;
 
@@ -136,8 +136,11 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc) {
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(THERM_0_GPIO_Port, &GPIO_InitStruct);
-
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
         GPIO_InitStruct.Pin = THERM_1_Pin | THERM_PINDA_Pin;
+#else
+        GPIO_InitStruct.Pin = THERM_1_Pin | THERM_PINDA_Pin | HW_IDENTIFY_Pin | THERM_2_Pin;
+#endif
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -146,7 +149,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc) {
 
         /* USER CODE END ADC1_MspInit 1 */
     }
-
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     if (hadc->Instance == ADC2) {
         /* USER CODE BEGIN ADC1_MspInit 0 */
 
@@ -169,6 +172,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc) {
 
         /* USER CODE END ADC1_MspInit 1 */
     }
+#endif
 }
 
 /**
@@ -202,7 +206,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc) {
 
         /* USER CODE END ADC1_MspDeInit 1 */
     }
-
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
     if (hadc->Instance == ADC2) {
         /* USER CODE BEGIN ADC1_MspDeInit 0 */
 
@@ -224,6 +228,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc) {
 
         /* USER CODE END ADC1_MspDeInit 1 */
     }
+#endif
 }
 
 /**

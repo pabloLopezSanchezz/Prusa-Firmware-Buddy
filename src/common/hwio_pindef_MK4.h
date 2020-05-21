@@ -8,6 +8,7 @@
 #define PIN_TEMP_BED          PA4
 #define PIN_EXT_MUX_CHANNEL_B PA5
 #define PIN_TEMP_HEATBREAK    PA6
+#define PIN_TEMP_BOARD        PA3_MUX_0_1
 #define PIN_Z_MIN             PA8
 #define PIN_Z_MAX             PA9
 

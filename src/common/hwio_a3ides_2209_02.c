@@ -576,7 +576,11 @@ void adc_ready(uint8_t index) {
 }
 
 // channel priority sequence callback
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
 const uint8_t adc_seq[16] = { 4, 1, 4, 1, 4, 4, 1, 4, 1, 4, 4, 1, 4, 1, 4, 3 };
+#else
+const uint8_t adc_seq[18] = { 4, 1, 4, 1, 4, 0, 4, 1, 4, 1, 4, 2, 4, 1, 4, 1, 4, 3 };
+#endif
 uint8_t adc_seq2idx(uint8_t seq) {
     return adc_seq[seq];
     //	return 2;
@@ -838,10 +842,14 @@ uint32_t hwio_arduino_analogRead(uint32_t ulPin) {
             return hwio_adc_get_val(_ADC_TEMP_0);
         case PIN_TEMP_HEATBREAK:
             return hwio_adc_get_val(_ADC_TEMP_HEATBREAK);
-#if (PRINTER_TYPE == PRINTER_PRUSA_MINI)
+#if ((PRINTER_TYPE == PRINTER_PRUSA_MINI) || (PRINTER_TYPE == PRINTER_PRUSA_XL) || (PRINTER_TYPE == PRINTER_PRUSA_IXL) || (PRINTER_TYPE == PRINTER_PRUSA_PICKER) || (PRINTER_TYPE == PRINTER_PRUSA_EXTRACTOR))
         case PIN_THERM2:
             return hwio_adc_get_val(_ADC_TEMP_2);
+#elif (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+        case PIN_TEMP_BOARD:
+            return (adc_ext_mux_get_raw(MUX_CHANNEL_A, THERM_2) >> 2);
 #endif
+
         default:
             hwio_arduino_error(HWIO_ERR_UNDEF_ANA_RD, ulPin); //error: undefined pin analog read
         }
