@@ -327,8 +327,8 @@ class Application:
 
 
 async def main(database, serial_port, syslog_port, database_password,
-               database_username):
-    async with aioinflux.InfluxDBClient(host='localhost',
+               database_username, database_host):
+    async with aioinflux.InfluxDBClient(host=database_host,
                                         db=database,
                                         username=database_username,
                                         password=database_password) as influx:
@@ -341,18 +341,21 @@ async def main(database, serial_port, syslog_port, database_password,
 
 @click.command()
 @click.option('--database', default='buddy')
+@click.option('--database-host', default='localhost')
 @click.option('--database-username')
 @click.option('--database-password')
 @click.option('--serial')
 @click.option('--syslog-port', default=8514, type=int)
-def cmd(database, serial, syslog_port, database_username, database_password):
+def cmd(database, serial, syslog_port, database_username, database_password,
+        database_host):
     loop = asyncio.get_event_loop()
     asyncio.ensure_future(
         main(database=database,
              serial_port=serial,
              syslog_port=syslog_port,
              database_username=database_username,
-             database_password=database_password))
+             database_password=database_password,
+             database_host=database_host))
     loop.run_forever()
     loop.close()
 
