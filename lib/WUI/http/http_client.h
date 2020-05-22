@@ -75,8 +75,15 @@ typedef struct {
     HTTPC_COMMAND_STATUS cmd_status;
 } httpc_req_t;
 
-void buddy_httpc_handler();
-void buddy_httpc_handler_init();
+/*!*************************************************************************************************
+* \brief Sends telemetry periodicaly and other requests evoked from printer
+***************************************************************************************************/
+void buddy_httpc_handler(void);
+
+/*!*************************************************************************************************
+* \brief Inicialization of HTTP client handler
+***************************************************************************************************/
+void buddy_httpc_handler_init(void);
 
 #ifdef __cplusplus
 }

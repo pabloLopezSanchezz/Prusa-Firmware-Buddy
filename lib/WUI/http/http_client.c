@@ -160,7 +160,12 @@ typedef struct _httpc_state {
 #endif
 } httpc_state_t;
 
-static void send_request_to_httpc(httpc_req_t reqest) {
+/*!*************************************************************************************************
+* \brief Stores HTTP Client request in thread-safe fragmentation-free memory pool
+*
+* \param [in] request - HTTP Client request structure
+***************************************************************************************************/
+static void send_request_to_httpc(httpc_req_t request) {
 
     osSemaphoreWait(wui_httpc_semaphore_id, osWaitForever);
     if (0 != wui_httpc_queue_id) // queue valid
@@ -170,7 +175,7 @@ static void send_request_to_httpc(httpc_req_t reqest) {
 
             httpc_req_t *mptr;
             mptr = osPoolAlloc(httpc_req_mpool_id);
-            *mptr = reqest;
+            *mptr = request;
             osMessagePut(wui_httpc_queue_id, (uint32_t)mptr, osWaitForever); // Send Message
             osDelay(100);
         } else {
@@ -180,7 +185,15 @@ static void send_request_to_httpc(httpc_req_t reqest) {
     osSemaphoreRelease(wui_httpc_semaphore_id);
 }
 
-/** Free http client state and deallocate all resources within */
+/*!*************************************************************************************************
+* \brief Free http client state and deallocate all resources within
+*
+* \param [in] req - pointer to HTTP Client request structure
+*
+* \return err_t
+*
+* \retval ERR_OK if ok, ERR_ABRT if deallocation went wrong
+***************************************************************************************************/
 static err_t
 httpc_free_state(httpc_state_t *req) {
     struct altcp_pcb *tpcb;
@@ -214,7 +227,19 @@ httpc_free_state(httpc_state_t *req) {
     return ERR_OK;
 }
 
-/** Close the connection: call finished callback and free the state */
+/*!*************************************************************************************************
+* \brief Close the connection: call finished callback and free the state
+*
+* \param [in] req - pointer to HTTP Client request structure
+*
+* \param [out] result - return variable for result_fn() (unused for now)
+*
+* \param [in] server_response - request's RX status
+*
+* \return err_t
+*
+* \retval ERR_OK if ok, ERR_ABRT if deallocation went wrong
+***************************************************************************************************/
 static err_t
 httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, err_t err) {
     httpc_req_active = false;
@@ -230,9 +255,21 @@ httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, er
     return ERR_OK;
 }
 
-/** Parse http header response line 1 */
+/*!*************************************************************************************************
+* \brief Parses first line of http response (http version, status)
+*
+* \param [in] p - buffer, that holds whole http request/response
+*
+* \param [out] http_version - pointer to HTTP version variable
+*
+* \param [out] http_status - poionter to HTTP status variable
+*
+* \return err_t
+*
+* \retval ERR_OK if ok, ERR_VAL if something went wrong or some of out parameters are invalid
+***************************************************************************************************/
 static err_t
-http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_status, u16_t *http_status_str_offset) {
+http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_status) {
     u16_t end1 = pbuf_memfind(p, "\r\n", 2, 0);
     if (end1 != 0xFFFF) {
         /* get parts of first line */
@@ -251,7 +288,6 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
                 /* parse http status number */
                 space2 = pbuf_memfind(p, " ", 1, space1 + 1);
                 if (space2 != 0xFFFF) {
-                    *http_status_str_offset = space2 + 1;
                     status_num_len = space2 - space1 - 1;
                 } else {
                     status_num_len = end1 - space1 - 1;
@@ -270,6 +306,19 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
     return ERR_VAL;
 }
 
+/*!***************************************************************************************************************************************************************
+* \brief Wait for all headers to be received and parses vital information from HTTP header, if available (header length, content length, content-type, command-id)
+*
+* \param [in] p - buffer, that holds whole http request/response
+*
+* \param [out] content_length - pointer to HTTP request's/respons's content data length
+*
+* \param [out] total_header_len - pointer to HTTP request's/respons's header length
+*
+* \return err_t
+*
+* \retval ERR_OK if ok, ERR_VAL if something went wrong or some of out parameters are invalid
+*****************************************************************************************************************************************************************/
 /** Wait for all headers to be received, return its length and content-length (if available) */
 static err_t
 http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
@@ -366,7 +415,21 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
     return ERR_VAL;
 }
 
-/** http client tcp recv callback */
+/*!****************************************************************************************************************************************************************
+* \brief HTTP Client TCP reveive callback. It calls all appropriate functions to pass parsed correct http message or close connection if http message is incorrect.
+*
+* \param [in, out] arg - request structure
+*
+* \param [in] pcb - pointer to TCP control block
+*
+* \param [out] p - poionter to HTTP data buffer (or linked list of pbufs)
+*
+* \param [out] r - return value parameter
+*
+* \return err_t
+*
+* \retval ERR_OK if ok
+******************************************************************************************************************************************************************/
 static err_t
 httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
     httpc_state_t *req = (httpc_state_t *)arg;
@@ -393,8 +456,7 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
             pbuf_cat(req->rx_hdrs, p);
         }
         if (req->parse_state == HTTPC_PARSE_WAIT_FIRST_LINE) {
-            u16_t status_str_off;
-            err_t err = http_parse_response_status(req->rx_hdrs, &req->rx_http_version, &req->rx_status, &status_str_off);
+            err_t err = http_parse_response_status(req->rx_hdrs, &req->rx_http_version, &req->rx_status);
             if (err == ERR_OK) {
                 /* continue only if allowed  status codes */
                 if (200 != req->rx_status) {
@@ -443,6 +505,13 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
 }
 
 /** http client tcp err callback */
+/*!*************************************************************************************************
+* \brief HTTP client TCP error callback
+*
+* \param [in] arg - pointer to HTTP client's request structure
+*
+* \param [in] err - error value for result_fn()
+***************************************************************************************************/
 static void
 httpc_tcp_err(void *arg, err_t err) {
     httpc_state_t *req = (httpc_state_t *)arg;
@@ -453,7 +522,17 @@ httpc_tcp_err(void *arg, err_t err) {
     }
 }
 
-/** http client tcp poll callback */
+/*!*************************************************************************************************
+* \brief HTTP client TCP poll callback
+*
+* \param [in] arg - pointer to HTTP client's request structure
+*
+* \param [in] pcb - pointer to TCP control block
+*
+* \return err_t
+*
+* \retval ERR_OK if ok, ERR_ABRT if deallocation went wrong
+***************************************************************************************************/
 static err_t
 httpc_tcp_poll(void *arg, struct altcp_pcb *pcb) {
     /* implement timeout */
@@ -470,7 +549,19 @@ httpc_tcp_poll(void *arg, struct altcp_pcb *pcb) {
     return ERR_OK;
 }
 
-/** http client tcp sent callback */
+/*!*************************************************************************************************
+* \brief UNUSED HTTP client TCP sent callback
+*
+* \param [in] arg - pointer to HTTP client's request structure
+*
+* \param [in] pcb - pointer to TCP control block
+*
+* \param [in] len - The amount of bytes acknowledged
+*
+* \return err_t
+*
+* \retval ERR_OK if success
+***************************************************************************************************/
 static err_t
 httpc_tcp_sent(void *arg, struct altcp_pcb *pcb, u16_t len) {
     /* nothing to do here for now */
@@ -480,7 +571,19 @@ httpc_tcp_sent(void *arg, struct altcp_pcb *pcb, u16_t len) {
     return ERR_OK;
 }
 
-/** http client tcp connected callback */
+/*!*************************************************************************************************
+* \brief UNUSED HTTP client TCP connected callback
+*
+* \param [in] arg - pointer to HTTP client's request structure
+*
+* \param [in] pcb - pointer to TCP control block
+*
+* \param [in] err - An unused error code, always ERR_OK currently
+*
+* \return err_t
+*
+* \retval ERR_OK if success
+***************************************************************************************************/
 static err_t
 httpc_tcp_connected(void *arg, struct altcp_pcb *pcb, err_t err) {
     err_t r;
@@ -502,16 +605,19 @@ httpc_tcp_connected(void *arg, struct altcp_pcb *pcb, err_t err) {
     return ERR_OK;
 }
 
-/** Function for tcp receive callback functions. Called when data has
- * been received.
- *
- * @param arg Additional argument to pass to the callback function (@see tcp_arg())
- * @param tpcb The connection pcb which received data
- * @param p The received data (or NULL when the connection has been closed!)
- * @param err An error code if there has been an error receiving
- *            Only return ERR_ABRT if you have called tcp_abort from within the
- *            callback function!
- */
+/*!*************************************************************************************************
+* \brief Function for tcp receive callback functions. Called when data has been received.
+*
+* \param arg  - Additional argument to pass to the callback function (@see tcp_arg())
+*
+* \param tpcb - The connection pcb which received data
+*
+* \param p - The received data (or NULL when the connection has been closed!)
+*
+* \param err - An error code if there has been an error receiving
+*            Only return ERR_ABRT if you have called tcp_abort from within the
+*            callback function!
+*/
 err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err) {
 
     LWIP_UNUSED_ARG(tpcb);
@@ -602,6 +708,15 @@ err_t data_received_fun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     return ERR_OK;
 }
 
+/*!*************************************************************************************************
+* \brief Creates JSON strucure with acknowledgement info and fills hte data string with it.
+*
+* \param [in] request - pointer to HTTP client's request structure
+*
+* \param [out] data - destination data string
+*
+* \param [in] buf_len - destination string size
+***************************************************************************************************/
 void get_ack_str(httpc_req_t *request, char *data, const uint32_t buf_len) {
 
     const char *event_name = conn_event_str[request->connect_event_type].name;
@@ -623,6 +738,17 @@ void get_ack_str(httpc_req_t *request, char *data, const uint32_t buf_len) {
     }
 }
 
+/*!*************************************************************************************************
+* \brief Creates JSON strucure with printer's info and fills the data string with it.
+*
+* \param [in] request - pointer to HTTP client's request structure
+*
+* \param [in] info - pointer to data structure that holds printer's info
+*
+* \param [out] data - destination data string
+*
+* \param [in] buf_len - destination string size
+***************************************************************************************************/
 static void get_info_str(httpc_req_t *request, printer_info_t *info, char *dest, const uint32_t buf_len) {
     const char *event_name = conn_event_str[request->connect_event_type].name;
     snprintf(dest, buf_len, "{"
@@ -643,6 +769,17 @@ static void get_info_str(httpc_req_t *request, printer_info_t *info, char *dest,
         info->mcu_uuid, info->printer_state);
 }
 
+/*!*************************************************************************************************
+* \brief Decides what JSON strucure to create and passes http_body_str destination string.
+*
+* \param [out] http_body_str - destination string for body of the HTTP request
+*
+* \param [in] request - pointer to HTTP client request data structure
+*
+* \return uint32_t HTTP body content length
+*
+* \retval 0 if unknown EVENT
+***************************************************************************************************/
 static uint32_t get_event_data(char *http_body_str, httpc_req_t *request) {
     uint32_t content_length = 0;
     switch (request->connect_event_type) {
@@ -663,6 +800,16 @@ static uint32_t get_event_data(char *http_body_str, httpc_req_t *request) {
     }
     return content_length;
 }
+
+/*!*************************************************************************************************
+* \brief Creates header of the HTTP request
+*
+* \param [out] http_header_str - destination request string
+*
+* \param [in] content_length - content length of HTTP request's body
+*
+* \param [in] request - pointer to HTTP request data structure
+***************************************************************************************************/
 static void create_http_header(char *http_header_str, uint32_t content_length, httpc_req_t *request) {
     _dbg("creating request header");
     char printer_token[CONNECT_TOKEN_LEN + 1]; // extra space of end of line
@@ -691,6 +838,17 @@ static void create_http_header(char *http_header_str, uint32_t content_length, h
         uri, printer_token, content_length, content_type);
 }
 
+/*!*************************************************************************************************
+* \brief Decides what to send in HTTP request's body
+*
+* \param [out] http_body_str - destination string
+*
+* \param [in] request - pointer to HTTP client request strucutre
+*
+* \return uint32_t Content length of HTTP request's body
+*
+* \retval 0 if unknown request was passed
+***************************************************************************************************/
 static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
     _dbg("creating request body");
     uint32_t content_length = 0;
@@ -709,6 +867,13 @@ static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
     return content_length;
 }
 
+/*!***************************************************************************************************
+* \brief Calls appropriate function to create HTTP request's header and body and merges them together
+*
+* \param [in] request - pointer to HTTP request data strucutre
+*
+* \return const char * - pointer to static request buffer with whole request
+*****************************************************************************************************/
 static const char *create_http_request(httpc_req_t *request) {
     // reset data
     memset(httpc_req_header, 0, REQ_HEADER_MAX_SIZE); // reset the memory
@@ -720,6 +885,15 @@ static const char *create_http_request(httpc_req_t *request) {
     return (const char *)&httpc_req_buffer;
 }
 
+/*!*************************************************************************************************
+* \brief Creates connection with CONNECT, creates HTTP request and sends it.
+*
+* \param [in] request - pointer to HTTP client's request structure
+*
+* \return wui_err (implicitely converted from err_t)
+*
+* \retval ERR_OK if success
+***************************************************************************************************/
 static wui_err buddy_http_client_req(httpc_req_t *request) {
     _dbg("creating client reqest");
     size_t alloc_len;
@@ -791,7 +965,7 @@ static wui_err buddy_http_client_req(httpc_req_t *request) {
     return ERR_OK;
 }
 
-void buddy_httpc_handler() {
+void buddy_httpc_handler(void) {
 
     ETH_config_t ethconfig;
     ethconfig.var_mask = ETHVAR_MSK(ETHVAR_CONNECT_IP4);
@@ -833,7 +1007,7 @@ void buddy_httpc_handler() {
     }
 }
 
-void buddy_httpc_handler_init() {
+void buddy_httpc_handler_init(void) {
     // semaphore initalization
     osSemaphoreDef(wui_httpc_semaphore);
     wui_httpc_semaphore_id = osSemaphoreCreate(osSemaphore(wui_httpc_semaphore), 1);
