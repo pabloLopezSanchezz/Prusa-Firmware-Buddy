@@ -691,7 +691,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_ACCELERATION \
-    { 1250, 1250, 400, 4000 }
+    { 250, 1250, 250, 4000 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
