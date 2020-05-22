@@ -442,7 +442,7 @@ static err_t parse_command_id(struct pbuf *p) {
 }
 
 /*!***************************************************************************************************************************************************************
-* \brief Wait for all headers to be received and parses vital information from HTTP header, if available (header length, content length, content-type, command-id)
+* \brief Parse vital information from HTTP header, if available (header length, content length, content-type, command-id)
 *
 * \param [in] p - buffer, that holds whole http request/response
 *
@@ -456,7 +456,7 @@ static err_t parse_command_id(struct pbuf *p) {
 * \retval ERR_VAL There is no end of the header or some field parsed is invalid or unsupported
 *****************************************************************************************************************************************************************/
 static err_t
-http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
+http_parse_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
     header_info.valid_request = true;
     header_info.content_type = TYPE_INVALID;
     header_info.content_lenght = 0;
@@ -537,7 +537,7 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
         }
         if (req->parse_state == HTTPC_PARSE_WAIT_HEADERS) {
             u16_t total_header_len;
-            err_t err = http_wait_headers(req->rx_hdrs, &req->hdr_content_len, &total_header_len);
+            err_t err = http_parse_headers(req->rx_hdrs, &req->hdr_content_len, &total_header_len);
             if (err == ERR_OK) {
                 struct pbuf *q;
                 /* full header received, send window update for header bytes and call into client callback */
