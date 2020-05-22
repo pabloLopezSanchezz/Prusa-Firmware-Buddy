@@ -356,7 +356,7 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 static err_t parse_content_type(struct pbuf *p) {
     const char *str_content_type = "Content-Type: ";
     const u16_t parse_str_len = (u16_t)strlen(str_content_type);
-    const u16_t content_type_hdr = pbuf_memfind(p, str_content_type, parse_str_len, 0); // 0 = search from begining
+    const u16_t content_type_hdr = pbuf_memfind(p, str_content_type, parse_str_len, 0); // 0 = search from beginning
 
     if (content_type_hdr == 0xFFFF) {
         return ERR_OK; // no content type
@@ -410,10 +410,8 @@ static err_t parse_content_length(struct pbuf *p, u32_t *content_length) {
     if (ERR_OK == ret) {
         *content_length = c_len;
         header_info.content_lenght = c_len;
-    } else {
-        return ERR_VAL;
     }
-    return ERR_OK;
+    return ret;
 }
 
 /*!***************************************************************************************************************************************************************
@@ -430,7 +428,7 @@ static err_t parse_command_id(struct pbuf *p) {
 
     const u16_t command_id_hdr = pbuf_memfind(p, str_cmd_id, parse_str_len, 0);
     if (command_id_hdr == 0xFFFF) {
-        return ERR_OK;
+        return ERR_OK; // no command id
     }
 
     u32_t c_id = 0;
@@ -462,13 +460,13 @@ http_parse_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_le
     header_info.content_lenght = 0;
     header_info.command_id = 0;
 
-    const u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0); // checks end of header
+    const u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0);
     *content_length = HTTPC_CONTENT_LEN_INVALID;
     *total_header_len = header_end_pos + 4;
 
     if (header_end_pos >= (0xFFFF - 2)) {
         header_info.valid_request = false;
-        return ERR_VAL;
+        return ERR_VAL; // no end of header
     }
     if (parse_content_type(p) != ERR_OK) {
         header_info.valid_request = false;
