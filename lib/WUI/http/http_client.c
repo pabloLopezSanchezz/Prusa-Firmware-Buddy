@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include "stm32f4xx_hal.h"
 #include <string.h>
+#include <stdlib.h>
 #include "lwip/altcp.h"
 #include "lwip.h"
 #include "marlin_vars.h"
@@ -21,13 +22,18 @@
 #define CLIENT_CONNECT_DELAY      1000 // 1000 = 1 Sec.
 #define REQ_HEADER_MAX_SIZE       256
 #define REQ_BODY_MAX_SIZE         512
-#define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
+#define HTTPC_CONTENT_LEN_INVALID ULONG_MAX
+#define HTTPC_COMMAND_ID_INVALID  ULONG_MAX
+#define HTTPC_HTTP_STATUS_INVALID UINT_MAX
 #define HTTPC_POLL_INTERVAL       1   // tcp_poll call interval (1 = 0.5 s)
 #define HTTPC_POLL_TIMEOUT        3   // number of tcp_poll calls before quiting the current connection request (total time = HTTPC_POLL_TIMEOUT*HTTPC_POLL_INTERVAL)
 #define HTTPC_RESPONSE_BUFF_SZ    512 // buffer size for http response from server on client request
 #define HTTPC_REQUEST_BUFF_SZ     (REQ_HEADER_MAX_SIZE + REQ_BODY_MAX_SIZE)
 #define WUI_HTTPC_Q_SZ            32 // WUI HTTPC queue size
-#define CONENT_TYPE_STR_MAX_LEN   30 // content type allowed string length
+#define CONTENT_TYPE_STR_MAX_LEN  30 // content type allowed string length
+#define HTTP_STATUS_STR_MAX_LEN   4  // max length of status string representation
+#define CONTENT_LEN_STR_MAX_LEN   5  // value on the string cannot be more than "65535"
+#define COMMAND_ID_STR_MAX_LEN    16 // max length of command_id value string
 
 static char httpc_req_header[REQ_HEADER_MAX_SIZE];
 static char httpc_req_body[REQ_BODY_MAX_SIZE];
@@ -256,6 +262,52 @@ httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, er
 }
 
 /*!*************************************************************************************************
+* \brief Copies and parses 4 byte unsigned intager from string representation in pbuf
+*
+* \param [in] p - buffer, that holds whole http request/response
+*
+* \param [out] dest - pointer to destination u32_t, where value will be stored
+*
+* \param [in] limit_str - limit of number's string representation length
+*
+* \param [in] limit_num - limit (up to ULONG_MAX) that value have to pass for success
+*
+* \param [in] start - offset from where number string starts (first digit)
+*
+* \return err_t
+*
+* \retval ERR_OK if success
+*
+* \retval ERR_VAL if didn't parsed correctly
+*
+* \retval ERR_VAL if value is greater or equal to limit
+***************************************************************************************************/
+static err_t
+http_copy_and_parse_u32(struct pbuf *p, u32_t *dest, u32_t limit_str, u32_t limit_num, u16_t start) {
+    u16_t str_len, endline = pbuf_memfind(p, "\r\n", 1, start);
+    if (endline == 0xFFFF) {
+        return ERR_VAL;
+    }
+    str_len = endline - start;
+    if (str_len > limit_str) {
+        return ERR_VAL;
+    }
+    char buffer[str_len + 1];
+    memset(buffer, 0, sizeof(buffer));
+    if (pbuf_copy_partial(p, buffer, str_len, start + 1) == str_len) {
+        u32_t status = strtoul(buffer, NULL, 0);
+        if (status < limit_num) {
+            *dest = (u16_t)status;
+            return ERR_OK;
+        } else {
+            return ERR_VAL;
+        }
+    } else {
+        return ERR_VAL;
+    }
+}
+
+/*!*************************************************************************************************
 * \brief Parses first line of http response (http version, status)
 *
 * \param [in] p - buffer, that holds whole http request/response
@@ -266,40 +318,27 @@ httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, er
 *
 * \return err_t
 *
-* \retval ERR_OK if ok, ERR_VAL if something went wrong or some of out parameters are invalid
+* \retval ERR_OK if ok
+* \retval ERR_VAL if something went wrong or some of out parameters are invalid
 ***************************************************************************************************/
 static err_t
 http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_status) {
-    u16_t end1 = pbuf_memfind(p, "\r\n", 2, 0);
-    if (end1 != 0xFFFF) {
-        /* get parts of first line */
-        u16_t space1, space2;
-        space1 = pbuf_memfind(p, " ", 1, 0);
-        if (space1 != 0xFFFF) {
-            if ((pbuf_memcmp(p, 0, "HTTP/", 5) == 0) && (pbuf_get_at(p, 6) == '.')) {
-                char status_num[10];
-                size_t status_num_len;
-                /* parse http version */
-                u16_t version = pbuf_get_at(p, 5) - '0';
-                version <<= 8;
-                version |= pbuf_get_at(p, 7) - '0';
-                *http_version = version;
 
-                /* parse http status number */
-                space2 = pbuf_memfind(p, " ", 1, space1 + 1);
-                if (space2 != 0xFFFF) {
-                    status_num_len = space2 - space1 - 1;
-                } else {
-                    status_num_len = end1 - space1 - 1;
-                }
-                memset(status_num, 0, sizeof(status_num));
-                if (pbuf_copy_partial(p, status_num, (u16_t)status_num_len, space1 + 1) == status_num_len) {
-                    int status = atoi(status_num);
-                    if ((status > 0) && (status <= 0xFFFF)) {
-                        *http_status = (u16_t)status;
-                        return ERR_OK;
-                    }
-                }
+    /* get parts of first line */
+    u16_t space1 = pbuf_memfind(p, " ", 1, 0);
+    if (space1 != 0xFFFF) {
+        if ((pbuf_memcmp(p, 0, "HTTP/", 5) == 0) && (pbuf_get_at(p, 6) == '.')) {
+            /* parse http version */
+            u16_t version = pbuf_get_at(p, 5) - '0';
+            version <<= 8;
+            version |= pbuf_get_at(p, 7) - '0';
+            *http_version = version;
+
+            /* parse http status number */
+            u32_t status = 0;
+            if (ERR_OK == http_copy_and_parse_u32(p, &status, HTTP_STATUS_STR_MAX_LEN, HTTPC_HTTP_STATUS_INVALID, space1 + 1)) {
+                *http_status = (u16_t)status; // limit in http_copy_and_parse_u32 ensures that it contains u16_t number
+                return ERR_OK;
             }
         }
     }
@@ -317,7 +356,8 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 *
 * \return err_t
 *
-* \retval ERR_OK if ok, ERR_VAL if something went wrong or some of out parameters are invalid
+* \retval ERR_OK if ok,
+* \retval ERR_VAL if something went wrong or some of out parameters are invalid
 *****************************************************************************************************************************************************************/
 /** Wait for all headers to be received, return its length and content-length (if available) */
 static err_t
@@ -326,68 +366,70 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
     header_info.content_type = TYPE_INVALID;
     header_info.content_lenght = 0;
     header_info.command_id = 0;
+    err_t ret = ERR_VAL;
 
     u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0); // checks end of header
 
     if (header_end_pos < (0xFFFF - 2)) {
+        ret = ERR_OK;
         /* all headers received */
         /* check if we have a content length (@todo: case insensitive?) */
         u16_t content_len_hdr;
-        uint32_t parse_str_len = 0;
+        u16_t parse_str_len = 0;
         *content_length = HTTPC_CONTENT_LEN_INVALID;
         *total_header_len = header_end_pos + 4;
 
         // parse Content-type
         const char *str_content_type = "Content-Type: ";
-        parse_str_len = strlen(str_content_type);
-        uint32_t content_type_hdr;
+        parse_str_len = (u16_t)strlen(str_content_type);
+        u16_t content_type_hdr;
 
         content_type_hdr = pbuf_memfind(p, str_content_type, parse_str_len, 0); // 0 = search from begining
         if (content_type_hdr != 0xFFFF) {
+            // content type header is located in request's payload
+            ret = ERR_VAL;
             u16_t content_type_line_end = pbuf_memfind(p, "\r\n", 2, content_type_hdr);
             if (content_type_line_end != 0xFFFF) {
-                char content_type_str[CONENT_TYPE_STR_MAX_LEN] = {};
-                u16_t content_type_len = (u16_t)(content_type_line_end - content_type_hdr - parse_str_len);
-                if (CONENT_TYPE_STR_MAX_LEN < content_type_len) {
+                u16_t content_type_len = content_type_line_end - content_type_hdr - parse_str_len;
+                if (CONTENT_TYPE_STR_MAX_LEN < content_type_len) {
                     header_info.valid_request = false;
-                    return ERR_VAL;
+                    return ret;
                 }
-
+                char content_type_str[content_type_len + 1];
+                memset(content_type_str, 0, sizeof(content_type_str));
                 if (pbuf_copy_partial(p, content_type_str, content_type_len, content_type_hdr + parse_str_len) == content_type_len) {
                     char *type_json_str = "application/json";
                     char *type_xgcode_str = "text/x.gcode";
                     if (0 == strncmp(content_type_str, type_json_str, strlen(type_json_str))) {
                         header_info.content_type = TYPE_JSON;
+                        ret = ERR_OK;
                     } else if (0 == strncmp(content_type_str, type_xgcode_str, strlen(type_xgcode_str))) {
                         header_info.content_type = TYPE_GCODE;
-                    } else {
-                        header_info.valid_request = false;
-                        return ERR_VAL; // quit the connection if content type is un-supported
+                        ret = ERR_OK;
                     }
                 }
+            }
+            if (ret != ERR_OK) {
+                header_info.valid_request = false;
+                return ret;
             }
         }
 
         // prase Content-length
         const char *str_content_len = "Content-Length: ";
-        parse_str_len = strlen(str_content_len);
+        parse_str_len = (u16_t)strlen(str_content_len);
 
         content_len_hdr = pbuf_memfind(p, str_content_len, parse_str_len, 0);
         if (content_len_hdr != 0xFFFF) {
-            u16_t content_len_line_end = pbuf_memfind(p, "\r\n", 2, content_len_hdr);
-            if (content_len_line_end != 0xFFFF) {
-                char content_len_num[16];
-                u16_t content_len_num_len = (u16_t)(content_len_line_end - content_len_hdr - parse_str_len);
-                memset(content_len_num, 0, sizeof(content_len_num));
-                if (pbuf_copy_partial(p, content_len_num, content_len_num_len, content_len_hdr + parse_str_len) == content_len_num_len) {
-                    int len = atoi(content_len_num);
-                    if ((len >= 0) && ((u32_t)len < HTTPC_CONTENT_LEN_INVALID)) {
-                        *content_length = (u32_t)len;
-                        header_info.content_lenght = (u32_t)len;
-                    } else {
-                        header_info.valid_request = false;
-                    }
-                }
+            // content length header is located in request's payload
+            u32_t c_len = 0;
+            ret = http_copy_and_parse_u32(p, &c_len, CONTENT_LEN_STR_MAX_LEN, HTTPC_CONTENT_LEN_INVALID, content_len_hdr + parse_str_len);
+            if (ERR_OK == ret) {
+                *content_length = c_len;
+                header_info.content_lenght = c_len;
+            } else {
+                header_info.valid_request = false;
+                return ret;
             }
         }
 
@@ -397,22 +439,22 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
 
         u16_t command_id_hdr = pbuf_memfind(p, str_cmd_id, parse_str_len, 0);
         if (command_id_hdr != 0xFFFF) {
-            u16_t command_id_line_end = pbuf_memfind(p, "\r\n", 2, command_id_hdr);
-            if (command_id_line_end != 0xFFFF) {
-                char command_id_num[16];
-                u16_t command_id_num_len = (u16_t)(command_id_line_end - command_id_hdr - parse_str_len);
-                memset(command_id_num, 0, sizeof(command_id_num));
-                if (pbuf_copy_partial(p, command_id_num, command_id_num_len, command_id_hdr + parse_str_len) == command_id_num_len) {
-                    header_info.command_id = atoi(command_id_num);
-                } else {
-                    header_info.valid_request = false;
-                }
+            // command id header is located in request's payload
+            u32_t c_id = 0;
+            ret = http_copy_and_parse_u32(p, &c_id, COMMAND_ID_STR_MAX_LEN, HTTPC_COMMAND_ID_INVALID, command_id_hdr + parse_str_len);
+            if (ERR_OK == ret) {
+                header_info.command_id = c_id;
+            } else {
+                header_info.valid_request = false;
+                return ret;
             }
         }
 
-        return ERR_OK;
+    } else {
+        header_info.valid_request = false;
     }
-    return ERR_VAL;
+
+    return ret;
 }
 
 /*!****************************************************************************************************************************************************************
