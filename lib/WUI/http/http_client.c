@@ -920,7 +920,7 @@ static void create_http_header(char *http_header_str, uint32_t content_length, h
 *
 * \retval 0 if unknown request was passed
 ***************************************************************************************************/
-static uint32_t get_reqest_body(char *http_body_str, httpc_req_t *request) {
+static uint32_t get_request_body(char *http_body_str, httpc_req_t *request) {
     _dbg("creating request body");
     uint32_t content_length = 0;
     switch (request->req_type) {
@@ -950,7 +950,7 @@ static const char *create_http_request(httpc_req_t *request) {
     memset(httpc_req_header, 0, REQ_HEADER_MAX_SIZE); // reset the memory
     memset(httpc_req_body, 0, REQ_BODY_MAX_SIZE);     // reset the memory
 
-    uint32_t content_length = get_reqest_body(httpc_req_body, request);
+    uint32_t content_length = get_request_body(httpc_req_body, request);
     create_http_header(httpc_req_header, content_length, request);
     snprintf(httpc_req_buffer, HTTPC_REQUEST_BUFF_SZ, "%s%s", httpc_req_header, httpc_req_body);
     return (const char *)&httpc_req_buffer;
