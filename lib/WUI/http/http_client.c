@@ -444,7 +444,7 @@ static err_t parse_command_id(struct pbuf *p) {
 *
 * \param [in] p - buffer, that holds whole http request/response
 *
-* \param [out] content_length - pointer to HTTP request's/respons's content data length
+* \param [out] content_length - pointer to HTTP request's/respons's content data length, HTTPC_CONTENT_LEN_INVALID if not present
 *
 * \param [out] total_header_len - pointer to HTTP request's/respons's header length
 *
@@ -460,11 +460,14 @@ http_parse_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_le
     header_info.content_lenght = 0;
     header_info.command_id = 0;
 
-    const u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0);
-    *content_length = HTTPC_CONTENT_LEN_INVALID;
-    *total_header_len = header_end_pos + 4;
+    const char *header_end = "\r\n\r\n";
+    const u16_t header_end_len = (u16_t)strlen(header_end);
 
-    if (header_end_pos >= (0xFFFF - 3)) {
+    const u16_t header_end_pos = pbuf_memfind(p, header_end, header_end_len, 0);
+    *content_length = HTTPC_CONTENT_LEN_INVALID;
+    *total_header_len = header_end_pos + header_end_len;
+
+    if (header_end_pos > (0xFFFF - header_end_len)) {
         header_info.valid_request = false;
         return ERR_VAL; // no end of header
     }
