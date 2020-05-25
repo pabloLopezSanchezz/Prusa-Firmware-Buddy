@@ -16,13 +16,20 @@
 #define TURN_LAN_ON(flg)          (flg &= ~LAN_FLAG_ONOFF_POS) // flip lan switch flg to ON
 #define TURN_LAN_OFF(flg)         (flg |= LAN_FLAG_ONOFF_POS)  // flip lan switch flg to OFF
 
-#define ETH_HOSTNAME_LEN 20 // ethernet hostname MAX length
+#define ETH_HOSTNAME_LEN  20 // ethernet hostname MAX length
+#define CONNECT_TOKEN_LEN 20 // CONNECT security token length
 
 typedef enum {
     ETH_UNLINKED,   // ETH cabel is unlinked
     ETH_NETIF_DOWN, // ETH interface is DOWN
     ETH_NETIF_UP,   // ETH interface is UP
 } ETH_STATUS_t;
+
+typedef struct {
+    char token[CONNECT_TOKEN_LEN + 1]; // security token: 20 chars
+    ip4_addr_t ip4;                    // user defined CONNECT ip4
+    uint16_t port;                     // user defined CONNECT port
+} connect_t;
 
 typedef struct {
     uint8_t flag;        // lan flags: pos0 = switch(ON=0, OFF=1), pos1 = type(DHCP=0, STATIC=1)
@@ -34,6 +41,9 @@ typedef struct {
 typedef struct {
     char hostname[ETH_HOSTNAME_LEN + 1]; // ETH hostname: MAX 20 chars
     int8_t timezone;                     // user defined difference to UTC
+    ip_addr_t dns1_ip4;                  // user defined DNS #1
+    ip_addr_t dns2_ip4;                  // user defined DNS #2
+    connect_t connect;                   // user defined CONNECT configurations
     lan_t lan;                           // user defined LAN configurations
     uint32_t var_mask;                   // mask for setting ethvars
 } ETH_config_t;

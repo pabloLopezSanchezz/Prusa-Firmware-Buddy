@@ -13,6 +13,7 @@
 #include "wui_api.h"
 #include "lwip.h"
 #include "ethernetif.h"
+#include "http_client.h"
 #include <string.h>
 #include "sntp_client.h"
 #include "dbg.h"
@@ -108,6 +109,10 @@ void StartWebServerTask(void const *argument) {
     http_server_init();
     sntp_client_init();
 
+#ifdef BUDDY_ENABLE_CONNECT
+    buddy_httpc_handler_init();
+#endif // BUDDY_ENABLE_CONNECT
+
     for (;;) {
 
         ethernetif_link(&eth0); // handles Ethernet link plug/un-plug events
@@ -117,6 +122,10 @@ void StartWebServerTask(void const *argument) {
             marlin_client_loop();
             update_wui_vars();
         }
+
+#ifdef BUDDY_ENABLE_CONNECT
+        buddy_httpc_handler();
+#endif // BUDDY_ENABLE_CONNECT
 
         osDelay(100);
     }

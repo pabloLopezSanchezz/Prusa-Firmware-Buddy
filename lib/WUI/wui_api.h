@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include "netif_settings.h"
 
+#define CONNECT_PORT_DEF  80  // default CONNECT port [0;65535]
 #define FW_VER_STR_LEN    32  // length of full Firmware version string
 #define MAC_ADDR_STR_LEN  18  // length of mac address string ("MM:MM:MM:SS:SS:SS" + 0)
 #define SER_NUM_STR_LEN   16  // length of serial number string
@@ -35,12 +36,17 @@ extern "C" {
 #endif
 
 typedef enum {
-    ETHVAR_LAN_FLAGS,    // uint8_t, lan.flag
-    ETHVAR_HOSTNAME,     // char[20 + 1], hostname
-    ETHVAR_LAN_ADDR_IP4, // ip4_addr_t, lan.addr_ip4
-    ETHVAR_LAN_MSK_IP4,  // ip4_addr_t, lan.msk_ip4
-    ETHVAR_LAN_GW_IP4,   // ip4_addr_t, lan.gw_ip4
-    ETHVAR_TIMEZONE,     // int8_t, timezone
+    ETHVAR_LAN_FLAGS,     // uint8_t, lan.flag
+    ETHVAR_HOSTNAME,      // char[20 + 1], hostname
+    ETHVAR_CONNECT_TOKEN, // char[20 + 1], connect.token
+    ETHVAR_LAN_ADDR_IP4,  // ip4_addr_t, lan.addr_ip4
+    ETHVAR_LAN_MSK_IP4,   // ip4_addr_t, lan.msk_ip4
+    ETHVAR_LAN_GW_IP4,    // ip4_addr_t, lan.gw_ip4
+    ETHVAR_CONNECT_IP4,   // ip4_addr_t, connect.ip4
+    ETHVAR_CONNECT_PORT,  // unsigned, connect.port (0-65535)
+    ETHVAR_TIMEZONE,      // int8_t, timezone
+    ETHVAR_DNS1_IP4,      // ip_addr_t, dns1_ip4
+    ETHVAR_DNS2_IP4,      // ip_addr_t, dns2_ip4
 } ETHVAR_t;
 
 typedef char mac_address_t[MAC_ADDR_STR_LEN];

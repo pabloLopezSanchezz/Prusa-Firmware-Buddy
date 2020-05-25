@@ -55,25 +55,26 @@
     #define EEVAR_LAN_IP4_DNS1  0x16 // X.X.X.X address encoded in uint32
     #define EEVAR_LAN_IP4_DNS2  0x17 // X.X.X.X address encoded in uint32
     #define EEVAR_CONNECT_IP4   0x18 // X.X.X.X address encoded in uint32
-    #define EEVAR_CONNECT_TOKEN 0x19 // 20char string
-    #define EEVAR_LAN_HOSTNAME  0x1A // 20char string
-    #define EEVAR_TIMEZONE      0x1B // [-12 ; 12] from UTC
+    #define EEVAR_CONNECT_PORT  0x19 // uint16 [0;65535]
+    #define EEVAR_CONNECT_TOKEN 0x1A // 20char string
+    #define EEVAR_LAN_HOSTNAME  0x1B // 20char string
+    #define EEVAR_TIMEZONE      0x1C // [-12 ; 12] from UTC
 #endif                               // (EEPROM_FEATURES & EEPROM_FEATURE_LAN)
 
 // loadcell variables
 #if (EEPROM_FEATURES & EEPROM_FEATURE_LOADCELL)
-    #define EEVAR_LOADCELL_SCALE          0x1C
-    #define EEVAR_LOADCELL_THRS_STATIC    0x1D
-    #define EEVAR_LOADCELL_HYST           0x1E
-    #define EEVAR_LOADCELL_THRS_CONTINOUS 0x1F
+    #define EEVAR_LOADCELL_SCALE          0x1D
+    #define EEVAR_LOADCELL_THRS_STATIC    0x1E
+    #define EEVAR_LOADCELL_HYST           0x1F
+    #define EEVAR_LOADCELL_THRS_CONTINOUS 0x20
 #endif
 
 // sound variable
-#define EEVAR_SOUND_MODE 0x20 // uint8_t
+#define EEVAR_SOUND_MODE 0x21 // uint8_t
 
-#define EEVAR__PADDING 0x21 // 1..4 chars, to ensure (DATASIZE % 4 == 0)
+#define EEVAR__PADDING 0x22 // 1..4 chars, to ensure (DATASIZE % 4 == 0)
 
-#define EEVAR_CRC32 0x22 // uint32_t crc32 for
+#define EEVAR_CRC32 0x23 // uint32_t crc32 for
 
 #define LAN_HOSTNAME_MAX_LEN 20
 #define CONNECT_TOKEN_SIZE   20

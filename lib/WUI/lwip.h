@@ -83,6 +83,9 @@ extern "C" {
 #include "wui_api.h"
 /* Global Variables ---------------------------------------------------------*/
 
+#define DNS_1 0
+#define DNS_2 1
+
 extern struct netif eth0;
 extern ip4_addr_t ipaddr;
 extern ip4_addr_t netmask;

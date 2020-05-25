@@ -34,6 +34,65 @@ static void print_dur_to_string(char *buffer, size_t buffer_len, uint32_t print_
     }
 }
 
+void get_telemetry_for_connect(char *data, const uint32_t buf_len) {
+
+    osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);
+    if (status == osOK) {
+        wui_vars_copy = wui_vars;
+    }
+    osMutexRelease(wui_thread_mutex_id);
+
+    float z_pos_mm = wui_vars_copy.pos[Z_AXIS_POS];
+    const char *filament_material = filaments[get_filament()].name;
+
+    if (!wui_vars_copy.sd_printing) {
+        snprintf(data, buf_len, "{"
+                                "\"temp_nozzle\":%.2f,"
+                                "\"temp_bed\":%.2f,"
+                                "\"target_nozzle\":%.2f,"
+                                "\"target_bed\":%.2f,"
+                                "\"p_fan\":%d,"
+                                "\"material\":\"%s\","
+                                "\"z_axis\":%.2f,"
+                                "\"speed\":%d,"
+                                "\"flow\":%d"
+                                "}",
+            wui_vars_copy.temp_nozzle, wui_vars_copy.temp_bed,
+            wui_vars_copy.target_nozzle, wui_vars_copy.target_bed,
+            wui_vars_copy.fan_speed, filament_material,
+            z_pos_mm, wui_vars_copy.print_speed, wui_vars_copy.flow_factor);
+
+        return;
+    }
+
+    char print_time[13];
+
+    print_dur_to_string(print_time, sizeof(print_time), wui_vars_copy.print_dur);
+
+    snprintf(data, buf_len, "{"
+                            "\"temp_nozzle\":%.2f,"
+                            "\"temp_bed\":%.2f,"
+                            "\"target_nozzle\":%.2f,"
+                            "\"target_bed\":%.2f,"
+                            "\"p_fan\":%d,"
+                            "\"material\":\"%s\","
+                            "\"z_axis\":%.2f,"
+                            "\"speed\":%d,"
+                            "\"flow\":%d,"
+                            "\"progress\":%d,"
+                            "\"printing_time\":%lu,"
+                            "\"time_to_end\":%lu,"
+                            "\"project_name\":\"%s\","
+                            "\"state\":\"PRINTING\""
+                            "}",
+        wui_vars_copy.temp_nozzle, wui_vars_copy.temp_bed,
+        wui_vars_copy.target_nozzle, wui_vars_copy.target_bed,
+        wui_vars_copy.fan_speed, filament_material,
+        z_pos_mm, wui_vars_copy.print_speed, wui_vars_copy.flow_factor,
+        wui_vars_copy.sd_precent_done, wui_vars_copy.print_dur,
+        (wui_vars_copy.time_to_end / 1000), wui_vars_copy.gcode_name);
+}
+
 void get_telemetry_for_local(char *data, const uint32_t buf_len) {
 
     osStatus status = osMutexWait(wui_thread_mutex_id, osWaitForever);

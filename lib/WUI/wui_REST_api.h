@@ -22,6 +22,22 @@ extern "C" {
 extern marlin_vars_t webserver_marlin_vars;
 extern osMutexId wui_web_mutex_id;
 
+/*!*************************************************************************************************
+* \brief Creates string with JSON structure syntax storing valueble data for CONNECT
+*
+* \param [out] data - destination buffer
+*
+* \param [in] buff_len - destination buffer size
+***************************************************************************************************/
+void get_telemetry_for_connect(char *data, const uint32_t buff_len);
+
+/*!*************************************************************************************************
+* \brief Creates string with JSON structure syntax storing valueble data for local webpage
+*
+* \param [out] data - destination buffer
+*
+* \param [in] buff_len - destination buffer size
+***************************************************************************************************/
 void get_telemetry_for_local(char *data, const uint32_t buf_len);
 
 #ifdef __cplusplus
