@@ -284,7 +284,7 @@ httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, er
 ***************************************************************************************************/
 static err_t
 http_copy_and_parse_u32(struct pbuf *p, u32_t *dest, u32_t limit_str, u32_t limit_num, u16_t start) {
-    u16_t str_len, endline = pbuf_memfind(p, "\r\n", 1, start);
+    u16_t str_len, endline = pbuf_memfind(p, "\r\n", 2, start);
     if (endline == 0xFFFF) {
         return ERR_VAL;
     }
@@ -294,7 +294,7 @@ http_copy_and_parse_u32(struct pbuf *p, u32_t *dest, u32_t limit_str, u32_t limi
     }
     char buffer[str_len + 1];
     memset(buffer, 0, sizeof(buffer));
-    if (pbuf_copy_partial(p, buffer, str_len, start + 1) == str_len) {
+    if (pbuf_copy_partial(p, buffer, str_len, start) == str_len) {
         u32_t status = strtoul(buffer, NULL, 0);
         if (status < limit_num) {
             *dest = (u16_t)status;
@@ -312,9 +312,9 @@ http_copy_and_parse_u32(struct pbuf *p, u32_t *dest, u32_t limit_str, u32_t limi
 *
 * \param [in] p - buffer, that holds whole http request/response
 *
-* \param [out] http_version - pointer to HTTP version variable
+* \param [out] http_version - holds HTTP version, that request/response is using
 *
-* \param [out] http_status - poionter to HTTP status variable
+* \param [out] http_status - holds HTTP status, that was sent with request/response
 *
 * \return err_t
 *
@@ -464,7 +464,7 @@ http_parse_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_le
     *content_length = HTTPC_CONTENT_LEN_INVALID;
     *total_header_len = header_end_pos + 4;
 
-    if (header_end_pos >= (0xFFFF - 2)) {
+    if (header_end_pos >= (0xFFFF - 3)) {
         header_info.valid_request = false;
         return ERR_VAL; // no end of header
     }
