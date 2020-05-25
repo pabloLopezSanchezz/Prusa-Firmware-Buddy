@@ -512,8 +512,8 @@ target_sources(
           src/common/sound_C_wrapper.cpp
           src/common/sound.cpp
           src/common/support_utils.cpp
-          src/common/errors.c
-          src/common/lang.c
+          src/common/errors.cpp
+          src/common/lang.cpp
           src/common/client_response.cpp
           src/common/crc32.c
           src/common/ini_handler.c
@@ -529,6 +529,7 @@ target_sources(
           src/marlin_stubs/pause/M603.cpp
           $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_PAUSE}>:src/marlin_stubs/pause/M70X.cpp>
           $<$<IN_LIST:${PRINTER},${PRINTERS_WITH_ADVANCED_PAUSE}>:src/marlin_stubs/pause/pause.cpp>
+          src/marlin_stubs/sdcard/M20-M30_M32-M34.cpp
           src/gui/filament.cpp
   )
 

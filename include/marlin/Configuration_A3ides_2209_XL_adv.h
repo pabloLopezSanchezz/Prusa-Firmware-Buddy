@@ -2368,6 +2368,9 @@
 // Prusa M73 implementation
 #define M73_PRUSA
 
+// Enable SDCARD gcodes M20 - M30
+#define SDCARD_GCODES
+
 // @section develop
 
 /**
