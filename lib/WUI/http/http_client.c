@@ -346,7 +346,101 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 }
 
 /*!***************************************************************************************************************************************************************
-* \brief Wait for all headers to be received and parses vital information from HTTP header, if available (header length, content length, content-type, command-id)
+* \brief Parse content type
+*
+* \param [in] p - buffer, that holds whole http request/response
+*
+* \retval ERR_OK No content type or supported content type
+* \retval ERR_VAL Incomplete or unsupported content type
+*****************************************************************************************************************************************************************/
+static err_t parse_content_type(struct pbuf *p) {
+    const char *str_content_type = "Content-Type: ";
+    const u16_t parse_str_len = (u16_t)strlen(str_content_type);
+    const u16_t content_type_hdr = pbuf_memfind(p, str_content_type, parse_str_len, 0); // 0 = search from beginning
+
+    if (content_type_hdr == 0xFFFF) {
+        return ERR_OK; // no content type
+    }
+    const u16_t content_type_line_end = pbuf_memfind(p, "\r\n", 2, content_type_hdr);
+    if (content_type_line_end == 0xFFFF) {
+        return ERR_VAL; // incomplete, no line end
+    }
+    const u16_t content_type_len = content_type_line_end - content_type_hdr - parse_str_len;
+    if (CONTENT_TYPE_STR_MAX_LEN < content_type_len) {
+        return ERR_VAL; // too long, unsupported
+    }
+    char content_type_str[content_type_len + 1];
+    memset(content_type_str, 0, sizeof(content_type_str));
+    if (pbuf_copy_partial(p, content_type_str, content_type_len, content_type_hdr + parse_str_len) == content_type_len) {
+        const char *type_json_str = "application/json";
+        const char *type_xgcode_str = "text/x.gcode";
+        if (0 == strncmp(content_type_str, type_json_str, strlen(type_json_str))) {
+            header_info.content_type = TYPE_JSON;
+            return ERR_OK;
+        } else if (0 == strncmp(content_type_str, type_xgcode_str, strlen(type_xgcode_str))) {
+            header_info.content_type = TYPE_GCODE;
+            return ERR_OK;
+        }
+    }
+    return ERR_VAL; // unsupported content type
+}
+
+/*!***************************************************************************************************************************************************************
+* \brief Parse content length
+*
+* \todo case insensitive?
+*
+* \param [in] p - buffer, that holds whole http request/response
+*
+* \param [out] content_length Content length, set only if present, otherwise left potentially uninitialized
+*
+* \retval ERR_OK No content length or length parsed successfully and in allowed range
+* \retval ERR_VAL Unable to parse content length or out of range
+*****************************************************************************************************************************************************************/
+static err_t parse_content_length(struct pbuf *p, u32_t *content_length) {
+    const char *str_content_len = "Content-Length: ";
+    const u16_t parse_str_len = (u16_t)strlen(str_content_len);
+
+    const u16_t content_len_hdr = pbuf_memfind(p, str_content_len, parse_str_len, 0);
+    if (content_len_hdr == 0xFFFF) {
+        return ERR_OK; // no content length
+    }
+    u32_t c_len = 0;
+    const err_t ret = http_copy_and_parse_u32(p, &c_len, CONTENT_LEN_STR_MAX_LEN, HTTPC_CONTENT_LEN_INVALID, content_len_hdr + parse_str_len);
+    if (ERR_OK == ret) {
+        *content_length = c_len;
+        header_info.content_lenght = c_len;
+    }
+    return ret;
+}
+
+/*!***************************************************************************************************************************************************************
+* \brief Parse command id
+*
+* \param [in] p - buffer, that holds whole http request/response
+*
+* \retval ERR_OK No command id or command id parsed successfully and in allowed range
+* \retval ERR_VAL Unable to parse command id or out of range
+*****************************************************************************************************************************************************************/
+static err_t parse_command_id(struct pbuf *p) {
+    const char *str_cmd_id = "Command-Id: ";
+    const u16_t parse_str_len = strlen(str_cmd_id);
+
+    const u16_t command_id_hdr = pbuf_memfind(p, str_cmd_id, parse_str_len, 0);
+    if (command_id_hdr == 0xFFFF) {
+        return ERR_OK; // no command id
+    }
+
+    u32_t c_id = 0;
+    const err_t ret = http_copy_and_parse_u32(p, &c_id, COMMAND_ID_STR_MAX_LEN, HTTPC_COMMAND_ID_INVALID, command_id_hdr + parse_str_len);
+    if (ERR_OK == ret) {
+        header_info.command_id = c_id;
+    }
+    return ret;
+}
+
+/*!***************************************************************************************************************************************************************
+* \brief Parse vital information from HTTP header, if available (header length, content length, content-type, command-id)
 *
 * \param [in] p - buffer, that holds whole http request/response
 *
@@ -356,115 +450,47 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 *
 * \return err_t
 *
-* \retval ERR_OK if ok,
-* \retval ERR_VAL if something went wrong or some of out parameters are invalid
+* \retval ERR_OK End of header present, if some of checked fields are present they are valid, understood and supported.
+* \retval ERR_VAL There is no end of the header or some field parsed is invalid or unsupported
 *****************************************************************************************************************************************************************/
-/** Wait for all headers to be received, return its length and content-length (if available) */
 static err_t
-http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
+http_parse_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len) {
     header_info.valid_request = true;
     header_info.content_type = TYPE_INVALID;
     header_info.content_lenght = 0;
     header_info.command_id = 0;
-    err_t ret = ERR_VAL;
 
-    u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0); // checks end of header
+    const u16_t header_end_pos = pbuf_memfind(p, "\r\n\r\n", 4, 0);
+    *content_length = HTTPC_CONTENT_LEN_INVALID;
+    *total_header_len = header_end_pos + 4;
 
-    if (header_end_pos < (0xFFFF - 2)) {
-        ret = ERR_OK;
-        /* all headers received */
-        /* check if we have a content length (@todo: case insensitive?) */
-        u16_t content_len_hdr;
-        u16_t parse_str_len = 0;
-        *content_length = HTTPC_CONTENT_LEN_INVALID;
-        *total_header_len = header_end_pos + 4;
-
-        // parse Content-type
-        const char *str_content_type = "Content-Type: ";
-        parse_str_len = (u16_t)strlen(str_content_type);
-        u16_t content_type_hdr;
-
-        content_type_hdr = pbuf_memfind(p, str_content_type, parse_str_len, 0); // 0 = search from begining
-        if (content_type_hdr != 0xFFFF) {
-            // content type header is located in request's payload
-            ret = ERR_VAL;
-            u16_t content_type_line_end = pbuf_memfind(p, "\r\n", 2, content_type_hdr);
-            if (content_type_line_end != 0xFFFF) {
-                u16_t content_type_len = content_type_line_end - content_type_hdr - parse_str_len;
-                if (CONTENT_TYPE_STR_MAX_LEN < content_type_len) {
-                    header_info.valid_request = false;
-                    return ret;
-                }
-                char content_type_str[content_type_len + 1];
-                memset(content_type_str, 0, sizeof(content_type_str));
-                if (pbuf_copy_partial(p, content_type_str, content_type_len, content_type_hdr + parse_str_len) == content_type_len) {
-                    char *type_json_str = "application/json";
-                    char *type_xgcode_str = "text/x.gcode";
-                    if (0 == strncmp(content_type_str, type_json_str, strlen(type_json_str))) {
-                        header_info.content_type = TYPE_JSON;
-                        ret = ERR_OK;
-                    } else if (0 == strncmp(content_type_str, type_xgcode_str, strlen(type_xgcode_str))) {
-                        header_info.content_type = TYPE_GCODE;
-                        ret = ERR_OK;
-                    }
-                }
-            }
-            if (ret != ERR_OK) {
-                header_info.valid_request = false;
-                return ret;
-            }
-        }
-
-        // prase Content-length
-        const char *str_content_len = "Content-Length: ";
-        parse_str_len = (u16_t)strlen(str_content_len);
-
-        content_len_hdr = pbuf_memfind(p, str_content_len, parse_str_len, 0);
-        if (content_len_hdr != 0xFFFF) {
-            // content length header is located in request's payload
-            u32_t c_len = 0;
-            ret = http_copy_and_parse_u32(p, &c_len, CONTENT_LEN_STR_MAX_LEN, HTTPC_CONTENT_LEN_INVALID, content_len_hdr + parse_str_len);
-            if (ERR_OK == ret) {
-                *content_length = c_len;
-                header_info.content_lenght = c_len;
-            } else {
-                header_info.valid_request = false;
-                return ret;
-            }
-        }
-
-        // prase Command-ld
-        const char *str_cmd_id = "Command-Id: ";
-        parse_str_len = strlen(str_cmd_id);
-
-        u16_t command_id_hdr = pbuf_memfind(p, str_cmd_id, parse_str_len, 0);
-        if (command_id_hdr != 0xFFFF) {
-            // command id header is located in request's payload
-            u32_t c_id = 0;
-            ret = http_copy_and_parse_u32(p, &c_id, COMMAND_ID_STR_MAX_LEN, HTTPC_COMMAND_ID_INVALID, command_id_hdr + parse_str_len);
-            if (ERR_OK == ret) {
-                header_info.command_id = c_id;
-            } else {
-                header_info.valid_request = false;
-                return ret;
-            }
-        }
-
-    } else {
+    if (header_end_pos >= (0xFFFF - 2)) {
         header_info.valid_request = false;
+        return ERR_VAL; // no end of header
     }
-
-    return ret;
+    if (parse_content_type(p) != ERR_OK) {
+        header_info.valid_request = false;
+        return ERR_VAL;
+    }
+    if (parse_content_length(p, content_length) != ERR_OK) {
+        header_info.valid_request = false;
+        return ERR_VAL;
+    }
+    if (parse_command_id(p) != ERR_OK) {
+        header_info.valid_request = false;
+        return ERR_VAL;
+    }
+    return ERR_OK;
 }
 
 /*!****************************************************************************************************************************************************************
-* \brief HTTP Client TCP reveive callback. It calls all appropriate functions to pass parsed correct http message or close connection if http message is incorrect.
+* \brief HTTP Client TCP receive callback. It calls all appropriate functions to pass parsed correct http message or close connection if http message is incorrect.
 *
 * \param [in, out] arg - request structure
 *
 * \param [in] pcb - pointer to TCP control block
 *
-* \param [out] p - poionter to HTTP data buffer (or linked list of pbufs)
+* \param [out] p - pointer to HTTP data buffer (or linked list of pbufs)
 *
 * \param [out] r - return value parameter
 *
@@ -509,7 +535,7 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r) {
         }
         if (req->parse_state == HTTPC_PARSE_WAIT_HEADERS) {
             u16_t total_header_len;
-            err_t err = http_wait_headers(req->rx_hdrs, &req->hdr_content_len, &total_header_len);
+            err_t err = http_parse_headers(req->rx_hdrs, &req->hdr_content_len, &total_header_len);
             if (err == ERR_OK) {
                 struct pbuf *q;
                 /* full header received, send window update for header bytes and call into client callback */
