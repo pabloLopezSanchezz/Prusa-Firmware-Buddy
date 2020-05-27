@@ -14,8 +14,6 @@
 #define BUTTON_PAUSE      1
 #define BUTTON_DISCONNECT 2
 
-#pragma pack(push, 1)
-
 enum item_id_t {
     iid_tune,
     iid_pause,
@@ -34,6 +32,8 @@ const char *serial_printing_labels[iid_count] = {
     "Pause",
     "Disconnect"
 };
+
+#pragma pack(push, 1)
 
 typedef struct
 {
@@ -140,7 +140,6 @@ void screen_printing_serial_init(screen_t *screen) {
 }
 
 void screen_printing_serial_done(screen_t *screen) {
-    marlin_gcode("M86 S1800"); // enable safety timer after screen is closed
     window_destroy(pw->root.win.id);
 }
 
