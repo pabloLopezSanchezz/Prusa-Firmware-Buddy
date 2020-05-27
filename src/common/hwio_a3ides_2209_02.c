@@ -63,6 +63,9 @@ const uint32_t _do_pin32[] = {
     PIN_Y_STEP,
     PIN_Y_ENABLE,
     PIN_Z_DIR,
+#if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+    PIN_HEATER_ENABLE
+#endif
 };
 #define _DO_CNT (sizeof(_do_pin32) / sizeof(uint32_t))
 
@@ -698,6 +701,14 @@ int hwio_arduino_digitalRead(uint32_t ulPin) {
             return hwio_di_get_val(_DI_BTN_EN2) || !hwio_jogwheel_enabled;
         case PIN_Z_DIR:
             return hwio_do_get_val(_DO_Z_DIR);
+        case PIN_X_ENABLE:
+            return hwio_do_get_val(_DO_X_ENABLE);
+        case PIN_Y_ENABLE:
+            return hwio_do_get_val(_DO_Y_ENABLE);
+        case PIN_Z_ENABLE:
+            return hwio_do_get_val(_DO_Z_ENABLE);
+        case PIN_E_ENABLE:
+            return hwio_do_get_val(_DO_E_ENABLE);
         default:
             hwio_arduino_error(HWIO_ERR_UNDEF_DIG_RD, ulPin); //error: undefined pin digital read
         }
@@ -789,7 +800,7 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
         case PIN_Z_DIR:
             sim_motion_set_dir(2, ulVal ? 1 : 0);
             return;
-#else  //SIM_MOTION
+#else //SIM_MOTION
         case PIN_X_DIR:
             hwio_do_set_val(_DO_X_DIR, ulVal ? 1 : 0);
             return;
@@ -826,6 +837,11 @@ void hwio_arduino_digitalWrite(uint32_t ulPin, uint32_t ulVal) {
         case PIN_Z_DIR:
             hwio_do_set_val(_DO_Z_DIR, ulVal ? 1 : 0);
             return;
+    #if (PRINTER_TYPE == PRINTER_PRUSA_MK4)
+        case PIN_HEATER_ENABLE:
+            hwio_do_set_val(_DO_HEATER_ENABLE, ulVal ? 1 : 0);
+    #endif
+            break;
 #endif //SIM_MOTION
         default:
             hwio_arduino_error(HWIO_ERR_UNDEF_DIG_WR, ulPin); //error: undefined pin digital write

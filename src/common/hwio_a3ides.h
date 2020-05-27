@@ -33,6 +33,8 @@
 #endif
 #define _DO_Z_DIR 11 // PD15
 
+#define _DO_HEATER_ENABLE 12
+
 //a3ides analog inputs
 #ifdef ADC_EXT_MUX
     #define _ADC_MUX_CHANNEL_A 0

@@ -2031,6 +2031,22 @@
 
 // @section extras
 
+//Enable autopower control
+//Automaticly turn off power when is not need it
+#define AUTO_POWER_CONTROL
+
+//Timeout for disenable psu [s]
+#define POWER_TIMEOUT 1
+
+//Enable psu control
+#define PSU_CONTROL
+
+//Psu active logit state
+#define PSU_ACTIVE_HIGH 1
+
+//Ignore Z axes enable mod
+#define POWER_IGNORE_Z 1
+
 // Increase the FAN PWM frequency. Removes the PWM noise but increases heating in the FET/Arduino
 //#define FAST_PWM_FAN
 

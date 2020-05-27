@@ -45,4 +45,6 @@
 
 #define PIN_FSENSOR PB4
 
+#define PIN_HEATER_ENABLE PC14
+
 #endif //_HWIO_PINDEF_H

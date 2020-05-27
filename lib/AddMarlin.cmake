@@ -18,6 +18,7 @@ add_library(
   Marlin/Marlin/src/feature/binary_protocol.cpp
   Marlin/Marlin/src/feature/host_actions.cpp
   Marlin/Marlin/src/feature/joystick.cpp
+  Marlin/Marlin/src/feature/power.cpp
   Marlin/Marlin/src/feature/runout.cpp
   Marlin/Marlin/src/feature/safety_timer.cpp
   Marlin/Marlin/src/feature/spindle_laser.cpp

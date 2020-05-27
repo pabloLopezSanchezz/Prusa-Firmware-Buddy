@@ -199,6 +199,9 @@ void Error_Handler(void);
 #define WP1_GPIO_Port         GPIOE
 #define Z_DIAGE1_Pin          GPIO_PIN_1
 #define Z_DIAGE1_GPIO_Port    GPIOE
+
+#define HEATER_ENABLE_Pin       GPIO_PIN_14
+#define HEATER_ENABLE_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
