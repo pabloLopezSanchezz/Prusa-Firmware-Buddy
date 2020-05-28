@@ -6,6 +6,7 @@
 #include "malloc.h"
 #include "heap.h"
 #include "advanced_power.h"
+#include "media.h"
 
 #include "../Marlin/src/module/temperature.h"
 #include "../Marlin/src/module/planner.h"
@@ -122,3 +123,13 @@ void Buddy::Metrics::RecordPowerStats() {
     metric_record_integer(&metric_oc_input_fault, advancedpower.OvercurrentFaultDetected());
 }
 #endif //ADC_EXT_MUX
+
+void Buddy::Metrics::RecordPrintFilename() {
+    static metric_t file_name = METRIC("print_filename", METRIC_VALUE_STRING, 5000, METRIC_HANDLER_ENABLE_ALL);
+    if (media_print_get_state() != media_print_state_t::media_print_state_NONE) {
+        //The docstring for media_print_filename() advises against using this function; however, there is currently no replacement for it.
+        metric_record_string(&file_name, "%s", media_print_filename());
+    } else {
+        metric_record_string(&file_name, "");
+    }
+}
