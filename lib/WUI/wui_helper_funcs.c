@@ -8,8 +8,9 @@ uint32_t send_request_to_wui(wui_cmd_t *req_ptr) {
     if (0 != tcp_wui_queue_id) // queue valid
     {
         uint32_t q_space = osMessageAvailableSpace(tcp_wui_queue_id);
-        if (q_space < sizeof(wui_cmd_t)) {
+        if (q_space < sizeof(uint32_t)) {
             _dbg("message queue to wui full");
+            osSemaphoreRelease(tcp_wui_semaphore_id);
             return 1;
         }
         wui_cmd_t *ptr = osPoolAlloc(tcp_wui_mpool_id);

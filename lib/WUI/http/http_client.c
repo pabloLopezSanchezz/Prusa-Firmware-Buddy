@@ -31,8 +31,8 @@
 #define HTTPC_REQUEST_BUFF_SZ     (REQ_HEADER_MAX_SIZE + REQ_BODY_MAX_SIZE)
 #define WUI_HTTPC_Q_SZ            32 // WUI HTTPC queue size
 #define CONTENT_TYPE_STR_MAX_LEN  30 // content type allowed string length
-#define HTTP_STATUS_STR_MAX_LEN   4  // max length of status string representation
-#define CONTENT_LEN_STR_MAX_LEN   5  // value on the string cannot be more than "65535"
+#define HTTP_STATUS_STR_MAX_LEN   6  // max length of status string representation
+#define CONTENT_LEN_STR_MAX_LEN   6  // value on the string cannot be more than "65535"
 #define COMMAND_ID_STR_MAX_LEN    16 // max length of command_id value string
 
 static char httpc_req_header[REQ_HEADER_MAX_SIZE];
@@ -274,6 +274,8 @@ httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, er
 *
 * \param [in] start - offset from where number string starts (first digit)
 *
+* \param [in] delim - it copies pbufs payload from start to found delim (mostly "\r\n" end of line)
+*
 * \return err_t
 *
 * \retval ERR_OK if success
@@ -283,13 +285,13 @@ httpc_close(httpc_state_t *req, httpc_result_t result, u32_t server_response, er
 * \retval ERR_VAL if value is greater or equal to limit
 ***************************************************************************************************/
 static err_t
-http_copy_and_parse_u32(struct pbuf *p, u32_t *dest, u32_t limit_str, u32_t limit_num, u16_t start) {
-    u16_t str_len, endline = pbuf_memfind(p, "\r\n", 2, start);
+http_copy_and_parse_u32(struct pbuf *p, u32_t *dest, u32_t limit_str, u32_t limit_num, u16_t start, const char *delim) {
+    u16_t str_len, endline = pbuf_memfind(p, delim, strlen(delim), start);
     if (endline == 0xFFFF) {
         return ERR_VAL;
     }
     str_len = endline - start;
-    if (str_len > limit_str) {
+    if (str_len > limit_str || str_len == 0) {
         return ERR_VAL;
     }
     char buffer[str_len + 1];
@@ -336,7 +338,7 @@ http_parse_response_status(struct pbuf *p, u16_t *http_version, u16_t *http_stat
 
             /* parse http status number */
             u32_t status = 0;
-            if (ERR_OK == http_copy_and_parse_u32(p, &status, HTTP_STATUS_STR_MAX_LEN, HTTPC_HTTP_STATUS_INVALID, space1 + 1)) {
+            if (ERR_OK == http_copy_and_parse_u32(p, &status, HTTP_STATUS_STR_MAX_LEN, HTTPC_HTTP_STATUS_INVALID, space1 + 1, " ")) {
                 *http_status = (u16_t)status; // limit in http_copy_and_parse_u32 ensures that it contains u16_t number
                 return ERR_OK;
             }
@@ -406,7 +408,7 @@ static err_t parse_content_length(struct pbuf *p, u32_t *content_length) {
         return ERR_OK; // no content length
     }
     u32_t c_len = 0;
-    const err_t ret = http_copy_and_parse_u32(p, &c_len, CONTENT_LEN_STR_MAX_LEN, HTTPC_CONTENT_LEN_INVALID, content_len_hdr + parse_str_len);
+    const err_t ret = http_copy_and_parse_u32(p, &c_len, CONTENT_LEN_STR_MAX_LEN, HTTPC_CONTENT_LEN_INVALID, content_len_hdr + parse_str_len, "\r\n");
     if (ERR_OK == ret) {
         *content_length = c_len;
         header_info.content_lenght = c_len;
@@ -432,7 +434,7 @@ static err_t parse_command_id(struct pbuf *p) {
     }
 
     u32_t c_id = 0;
-    const err_t ret = http_copy_and_parse_u32(p, &c_id, COMMAND_ID_STR_MAX_LEN, HTTPC_COMMAND_ID_INVALID, command_id_hdr + parse_str_len);
+    const err_t ret = http_copy_and_parse_u32(p, &c_id, COMMAND_ID_STR_MAX_LEN, HTTPC_COMMAND_ID_INVALID, command_id_hdr + parse_str_len, "\r\n");
     if (ERR_OK == ret) {
         header_info.command_id = c_id;
     }
