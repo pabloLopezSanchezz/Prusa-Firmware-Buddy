@@ -12,6 +12,7 @@
 #ifdef BUDDY_ENABLE_ETHERNET
     #include "screen_lan_settings.h"
     #include "menu_vars.h"
+    #include "wui_api.h"
 #endif //BUDDY_ENABLE_ETHERNET
 #include "screen_menu_fw_update.h"
 #include "filament_sensor.h"
@@ -101,7 +102,7 @@ void screen_menu_settings_init(screen_t *screen) {
     psmd->items[MI_TEST] = (menu_item_t) { { "Test", 0, WI_LABEL }, get_scr_test() };
 #endif
     psmd->items[MI_FW_UPDATE] = (menu_item_t) { { "FW Update", 0, WI_LABEL }, &screen_menu_fw_update };
-    psmd->items[MI_FILAMENT_SENSOR] = (menu_item_t) { { "Fil. sens.", 0, WI_SWITCH, 0 }, SCREEN_MENU_NO_SCREEN };
+    psmd->items[MI_FILAMENT_SENSOR] = (menu_item_t) { { "Fil. Sens.", 0, WI_SWITCH, 0 }, SCREEN_MENU_NO_SCREEN };
     psmd->items[MI_FILAMENT_SENSOR].item.wi_switch_select.index = (fs != FS_DISABLED);
     psmd->items[MI_FILAMENT_SENSOR].item.wi_switch_select.strings = settings_opt_enable_disable;
     psmd->items[MI_TIMEOUT] = (menu_item_t) { { "Timeout", 0, WI_SWITCH, 0 }, SCREEN_MENU_NO_SCREEN };
@@ -244,6 +245,12 @@ int screen_menu_settings_event(screen_t *screen, window_t *window, uint8_t event
         case MI_TIMEZONE: {
             int8_t time_zone = (int8_t)(psmd->items[MI_TIMEZONE].item.wi_spin.value / 1000);
             eeprom_set_var(EEVAR_TIMEZONE, variant8_i8(time_zone));
+            struct tm now;
+            uint32_t seconds = 0;
+            if ((seconds = sntp_get_system_time(&now))) {
+                seconds += (time_zone * 3600);
+                sntp_set_system_time(seconds);
+            }
             break;
         }
         }
